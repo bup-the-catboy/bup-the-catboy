@@ -1,10 +1,15 @@
 #include "assets/assets.h"
 #include "assets/sound.h"
+#include "game/data.h"
+#include "game/level.h"
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <time.h>
 
 int main() {
+    srand(time(NULL));
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     SDL_Window* window = SDL_CreateWindow("Super Mario Bros. Reimagined", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 768, 512, 0);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -12,6 +17,8 @@ int main() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     audio_init();
     load_assets(renderer);
+    init_data();
+    load_level(GET_ASSET(struct Binary, "levels/entry.lvl"));
     while (loop) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {

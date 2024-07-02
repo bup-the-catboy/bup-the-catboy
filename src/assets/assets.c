@@ -9,6 +9,7 @@
 
 #include "assets.h"
 #include "sound.h"
+#include "binary_reader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -100,17 +101,16 @@ void load_assets(SDL_Renderer* renderer) {
     struct Asset* curr = asset_list;
     int ptr = 0;
     char buf[PATH_MAX];
+    struct BinaryStream* stream = binary_stream_create(asset_data);
     while (true) {
         memset(buf, 0, PATH_MAX);
         struct Asset* asset = malloc(sizeof(struct Asset));
-        strncpy(buf, (char*)asset_data + ptr, PATH_MAX);
+        binary_stream_read_string(stream, buf, PATH_MAX);
         if (!buf[0]) break;
-        ptr += strlen(buf) + 1;
-        int datasize = *(int*)(asset_data + ptr);
-        ptr += 4;
+        int datasize;
+        BINARY_STREAM_READ(stream, datasize);
         void* data = malloc(datasize);
-        memcpy(data, asset_data + ptr, datasize);
-        ptr += datasize;
+        binary_stream_read(stream, data, datasize);
         memcpy(asset->name, buf, PATH_MAX);
         char ext[PATH_MAX];
         curr->next = asset;
@@ -166,6 +166,7 @@ void load_assets(SDL_Renderer* renderer) {
             asset->data = bin;
         }
     }
+    binary_stream_close(stream);
 }
 
 void* get_asset(const char* name) {
