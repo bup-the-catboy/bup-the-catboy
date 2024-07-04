@@ -20,7 +20,7 @@ CFLAGS = -Wall -g -I src -I include
 LDFLAGS := -L./$(LIBS_DIR)
 LIBS :=
 
-BUILD_FILES := build $(LIBS_BIN) $(LIBS_BUILD) src/assets/asset_data.h
+BUILD_FILES := $(BIN_DIR) $(LIBS_BIN) $(LIBS_BUILD) src/assets/asset_data.h
 
 ifeq ($(OS),Windows_NT)
 	CFLAGS += -DWINDOWS
