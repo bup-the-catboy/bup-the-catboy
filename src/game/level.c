@@ -8,8 +8,10 @@
 #include "camera.h"
 #include "data.h"
 
+#define NO_VSCODE
+#define MUSIC(_1, _2) _2,
 const char* music_table[] = {
-    "audio/music/grass.ogg"
+#include "game/data/music.h"
 };
 
 struct Level* current_level = NULL;

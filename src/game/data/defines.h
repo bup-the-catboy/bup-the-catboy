@@ -31,4 +31,6 @@
 #define KEYMAP(_) = _;
 #define MOUSEBTN(_) = _;
 
+#define MUSIC(_1, _2) static char* _1 = (char*)_2;
+
 #endif
