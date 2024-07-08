@@ -343,7 +343,7 @@ void editor_run(SDL_Renderer* renderer) {
                 if (ImGui::BeginCombo("Tilemap Layer", (
                     curr_layer->entity_tilemap_layer == NULL
                         ? std::string("(None)")
-                        : curr_layer->name
+                        : curr_layer->entity_tilemap_layer->name
                 ).c_str())) {
                     if (ImGui::Selectable("(None)")) curr_layer->entity_tilemap_layer = NULL;
                     for (int i = 0; i < layers.size(); i++) {
