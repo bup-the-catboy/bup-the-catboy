@@ -12,9 +12,9 @@ LIBS =
 
 ifeq ($(OS),Windows_NT)
 	CFLAGS += -DWINDOWS
-	LIBS += -static $(shell pkg-config --libs --static sdl2 SDL2_mixer vorbis vorbisfile) -lm $(LIBS_FLAGS)
+	LIBS += -static $(shell pkg-config --libs --static sdl2) -lm $(LIBS_FLAGS)
 else
-	LIBS += -lSDL2 -lSDL2main -lSDL2_mixer -lvorbis -lvorbisfile -lm $(LIBS_FLAGS)
+	LIBS += -lSDL2 -lSDL2main -lm $(LIBS_FLAGS)
 endif
 
 .PHONY: all clean

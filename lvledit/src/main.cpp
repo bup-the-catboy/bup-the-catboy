@@ -9,7 +9,7 @@
 SDL_Renderer* renderer;
 SDL_Window* window;
 
-int main() {
+int main(int argc, char** argv) {
     SDL_Init(SDL_INIT_VIDEO);
     window = SDL_CreateWindow("SMBR Level Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -45,4 +45,5 @@ int main() {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    return 0;
 }
