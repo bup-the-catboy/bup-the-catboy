@@ -118,7 +118,7 @@ SDL_Texture* get_texture(const char* texture_path) {
 }
 
 void set_tile(int x, int y, int tile) {
-    long coord = ((long)x << 32) | y;
+    long coord = ((long)x << 32) | (unsigned int)y;
     auto pos = curr_layer->tilemap.find(coord);
     if (tile == 0) {
         if (pos != curr_layer->tilemap.end()) curr_layer->tilemap.erase(pos);
@@ -130,7 +130,7 @@ void set_tile(int x, int y, int tile) {
 }
 
 int get_tile(int x, int y) {
-    long coord = ((long)x << 32) | y;
+    long coord = ((long)x << 32) | (unsigned int)y;
     auto pos = curr_layer->tilemap.find(coord);
     if (pos == curr_layer->tilemap.end()) return 0;
     return curr_layer->tilemap[coord];
@@ -245,8 +245,8 @@ void get_tile_position_from_pixel(int inx, int iny, int* outx, int* outy) {
     if (!curr_layer) return;
     float grid_width  = theme_data[curr_theme].width  * 2.f;
     float grid_height = theme_data[curr_theme].height * 2.f;
-    if (outx) *outx = camx + (inx / grid_width ) / curr_layer->scx * curr_layer->smx + curr_layer->sox;
-    if (outy) *outy = camy + (iny / grid_height) / curr_layer->scy * curr_layer->smy + curr_layer->soy;
+    if (outx) *outx = floor(camx + (inx / grid_width ) / curr_layer->scx * curr_layer->smx + curr_layer->sox);
+    if (outy) *outy = floor(camy + (iny / grid_height) / curr_layer->scy * curr_layer->smy + curr_layer->soy);
 }
 
 void stub_start(int x, int y) {}
