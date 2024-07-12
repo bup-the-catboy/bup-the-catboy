@@ -2,9 +2,12 @@
 
 #include "imgui/imgui.h"
 
-#include <SDL2/SDL_render.h>
+#include <map>
 #include <vector>
 #include <string>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 bool inited = false;
 bool init() {
@@ -27,9 +30,10 @@ enum EditMode {
 
 enum Tool {
     TOOL_BRUSH,
+    TOOL_ERASER,
     TOOL_SELECTION,
     TOOL_HAND,
-    TOOL_EYEDROPPER
+    TOOL_PICKER,
 };
 
 enum RenderMode {
@@ -60,6 +64,7 @@ struct Layer {
     float scx, scy;
     struct Layer* entity_tilemap_layer;
     std::string name;
+    std::map<long, int> tilemap;
 };
 
 struct ThemeData {
@@ -78,8 +83,12 @@ struct ThemeData theme_data[] = {
 #include "../../src/game/data/tilesets.h"
 };
 
+extern SDL_Renderer* renderer;
+extern SDL_Window* window;
+
 enum EditMode curr_mode = EDITMODE_LAYER;
 enum Tool curr_tool = TOOL_BRUSH;
+enum Tool selected_tool = TOOL_BRUSH;
 enum RenderMode curr_rendermode = RENDERMODE_TRANSLUCENT;
 int shown_windows = WINDOWFLAG_NONE;
 bool lock_to_grid = false;
@@ -90,20 +99,90 @@ int curr_cambound = 0;
 struct Layer* curr_layer = NULL;
 std::vector<std::pair<int, int>> cambounds = {};
 std::vector<struct Layer> layers = {};
+std::map<std::string, SDL_Texture*> texture_cache = {};
+int selected_tile = 0;
 
+int frames_drawn = 0;
 int layers_created = 0;
 
+SDL_Texture* get_texture(const char* texture_path) {
+    if (texture_cache.find(texture_path) == texture_cache.end()) {
+        int w, h, c;
+        unsigned char* data = stbi_load((std::string("../assets/") + texture_path).c_str(), &w, &h, &c, 4);
+        SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(data, w, h, 32, 4 * w, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_FreeSurface(surface);
+        texture_cache.insert({ texture_path, texture });
+    }
+    return texture_cache[texture_path];
+}
+
+void set_tile(int x, int y, int tile) {
+    long coord = ((long)x << 32) | y;
+    auto pos = curr_layer->tilemap.find(coord);
+    if (tile == 0) {
+        if (pos != curr_layer->tilemap.end()) curr_layer->tilemap.erase(pos);
+    }
+    else {
+        if (pos == curr_layer->tilemap.end()) curr_layer->tilemap.insert({ coord, tile });
+        else curr_layer->tilemap[coord] = tile;
+    }
+}
+
+int get_tile(int x, int y) {
+    long coord = ((long)x << 32) | y;
+    auto pos = curr_layer->tilemap.find(coord);
+    if (pos == curr_layer->tilemap.end()) return 0;
+    return curr_layer->tilemap[coord];
+} 
+
 void draw_grid(SDL_Renderer* renderer, float scalex, float scaley, float speedx, float speedy, float offsetx, float offsety) {
+    float grid_width  = theme_data[curr_theme].width  * 2.f;
+    float grid_height = theme_data[curr_theme].height * 2.f;
     float camX = camx / scalex * speedx + offsetx;
     float camY = camy / scaley * speedy + offsety;
     int fromX = camX - 1;
     int fromY = camY - 1;
-    int toX = camX + windoww / scalex / 32.f + 1;
-    int toY = camY + windowh / scaley / 32.f + 1;
+    int toX = camX + windoww / scalex / grid_width  + 1;
+    int toY = camY + windowh / scaley / grid_height + 1;
     for (int y = fromY; y <= toY; y++) {
         for (int x = fromX; x <= toX; x++) {
-            SDL_Rect rect = (SDL_Rect){ .x = (int)((x - camX) * 32 * scalex), .y = (int)((y - camY) * 32 * scaley), .w = (int)(32 * scalex) + 1, .h = (int)(32 * scaley) + 1 };
+            SDL_Rect rect = (SDL_Rect){
+                .x = (int)((x - camX) * grid_width  * scalex),
+                .y = (int)((y - camY) * grid_height * scaley),
+                .w = (int)(grid_width  * scalex) + 1,
+                .h = (int)(grid_height * scaley) + 1
+            };
             SDL_RenderDrawRect(renderer, &rect);
+        }
+    }
+}
+
+void draw_tilemap(struct Layer* layer) {
+    float grid_width  = theme_data[curr_theme].width  * 2.f;
+    float grid_height = theme_data[curr_theme].height * 2.f;
+    float camX = camx / layer->scx * layer->smx + layer->sox;
+    float camY = camy / layer->scy * layer->smy + layer->soy;
+    int fromX = camX - 1;
+    int fromY = camY - 1;
+    int toX = camX + windoww / layer->scx / grid_width + 1;
+    int toY = camY + windowh / layer->scy / grid_height + 1;
+    for (int y = fromY; y <= toY; y++) {
+        for (int x = fromX; x <= toX; x++) {
+            int tile = get_tile(x, y);
+            SDL_Rect src = (SDL_Rect){
+                .x = (tile % theme_data[curr_theme].tiles_in_row) * theme_data[curr_theme].width,
+                .y = (tile / theme_data[curr_theme].tiles_in_row) * theme_data[curr_theme].height,
+                .w = theme_data[curr_theme].width,
+                .h = theme_data[curr_theme].height
+            };
+            SDL_Rect dst = (SDL_Rect){
+                .x = (int)((x - camX) * grid_width  * layer->scx),
+                .y = (int)((y - camY) * grid_height * layer->scy),
+                .w = (int)(grid_width  * layer->scx) + 1,
+                .h = (int)(grid_height * layer->scy) + 1
+            };
+            SDL_RenderCopy(renderer, get_texture(theme_data[curr_theme].texture_path), &src, &dst);
         }
     }
 }
@@ -162,6 +241,43 @@ void move_layer(int from, int to) {
 })
 #define TOGGLE_WINDOW(flag) (shown_windows = (shown_windows & (flag) ? (shown_windows & ~(flag)) : (shown_windows | (flag))))
 
+void get_tile_position_from_pixel(int inx, int iny, int* outx, int* outy) {
+    if (!curr_layer) return;
+    float grid_width  = theme_data[curr_theme].width  * 2.f;
+    float grid_height = theme_data[curr_theme].height * 2.f;
+    if (outx) *outx = camx + (inx / grid_width ) / curr_layer->scx * curr_layer->smx + curr_layer->sox;
+    if (outy) *outy = camy + (iny / grid_height) / curr_layer->scy * curr_layer->smy + curr_layer->soy;
+}
+
+void stub_start(int x, int y) {}
+void stub_drag(int x, int y, int dx, int dy) {}
+void stub_end() {}
+
+void tile_modif_drag(int x, int y, int tile) {
+    if (!curr_layer) return;
+    if (curr_layer->type != LAYERTYPE_TILEMAP) return;
+    int tileX, tileY;
+    get_tile_position_from_pixel(x, y, &tileX, &tileY);
+    set_tile(tileX, tileY, tile);
+}
+
+void brush_drag(int x, int y, int dx, int dy) {
+    tile_modif_drag(x, y, selected_tile);
+}
+
+void eraser_drag(int x, int y, int dx, int dy) {
+    tile_modif_drag(x, y, 0);
+}
+
+struct {
+    void(*start)(int x, int y);
+    void(*drag)(int x, int y, int dx, int dy);
+    void(*end)();
+} tools[] = {
+    { stub_start, brush_drag, stub_end },
+    { stub_start, eraser_drag, stub_end }
+};
+
 void activate_shortcut(bool ctrl, bool shift, bool alt, char letter) {
     if (MODIF(CTRL)) {
         switch (letter) {
@@ -201,10 +317,11 @@ void activate_shortcut(bool ctrl, bool shift, bool alt, char letter) {
     }
     if (MODIF(_)) {
         switch (letter) {
-            case 'B': curr_tool = TOOL_BRUSH; break;
-            case 'S': curr_tool = TOOL_SELECTION; break;
-            case 'H': curr_tool = TOOL_HAND; break;
-            case 'E': curr_tool = TOOL_EYEDROPPER; break;
+            case 'B': selected_tool = TOOL_BRUSH; break;
+            case 'E': selected_tool = TOOL_ERASER; break;
+            case 'S': selected_tool = TOOL_SELECTION; break;
+            case 'H': selected_tool = TOOL_HAND; break;
+            case 'P': selected_tool = TOOL_PICKER; break;
         }
     }
 }
@@ -237,6 +354,8 @@ bool should_quit() {
 }))
 
 void editor_run(SDL_Renderer* renderer) {
+    SDL_GetWindowSize(window, &windoww, &windowh);
+
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New", "Ctrl+N")) activate_shortcut(CTRL 'N');
@@ -258,10 +377,11 @@ void editor_run(SDL_Renderer* renderer) {
             if (ImGui::MenuItem("Paste", "Ctrl+V")) activate_shortcut(CTRL 'V');
             if (ImGui::MenuItem("Cut", "Ctrl+X")) activate_shortcut(CTRL 'X');
             ImGui::SeparatorText("Tools");
-            if (ImGui::MenuItem("Brush", "B", curr_tool == TOOL_BRUSH)) activate_shortcut(_ 'B');
-            if (ImGui::MenuItem("Selection", "S", curr_tool == TOOL_SELECTION)) activate_shortcut(_ 'S');
-            if (ImGui::MenuItem("Hand", "H", curr_tool == TOOL_HAND)) activate_shortcut(_ 'L');
-            if (ImGui::MenuItem("Eyedropper", "E", curr_tool == TOOL_EYEDROPPER)) activate_shortcut(_ 'E');
+            if (ImGui::MenuItem("Brush", "B", selected_tool == TOOL_BRUSH)) activate_shortcut(_ 'B');
+            if (ImGui::MenuItem("Eraser", "E", selected_tool == TOOL_ERASER)) activate_shortcut(_ 'E');
+            if (ImGui::MenuItem("Selection", "S", selected_tool == TOOL_SELECTION)) activate_shortcut(_ 'S');
+            if (ImGui::MenuItem("Hand", "H", selected_tool == TOOL_HAND)) activate_shortcut(_ 'L');
+            if (ImGui::MenuItem("Picker", "P", selected_tool == TOOL_PICKER)) activate_shortcut(_ 'P');
             ImGui::SeparatorText("Settings");
             if (ImGui::MenuItem("Lock Entities to Grid", "Ctrl+Shift+L", lock_to_grid)) activate_shortcut(CTRL_SHIFT 'L');
             ImGui::SeparatorText("Layers");
@@ -359,11 +479,55 @@ void editor_run(SDL_Renderer* renderer) {
     }
 
     WINDOW(WINDOWFLAG_TILE_PALETTE, "Tile Palette") {
+        int i = 0;
+        const char* name = "";
+        bool hide = false;
+#undef TEXTURE
+#define TILE(_1, _2) if (i % 5 != 0) ImGui::SameLine(); name = #_1; hide = false; _2 i++;
+#define TEXTURE(_1)
+#define COLLISION(_1)
+#define SOLID()
+#define SIMPLE_STATIONARY_TEXTURE(_1) SIMPLE_ANIMATED_TEXTURE(1, _1)
+#define LVLEDIT_HIDE hide = true;
+#define SIMPLE_ANIMATED_TEXTURE(_1, ...) if (!hide) {                                                                   \
+            int frames[] = { __VA_ARGS__ };                                                                              \
+            int curr_frame = frames[frames_drawn % (sizeof(frames) / sizeof(int))];                                       \
+            int width, height;                                                                                             \
+            SDL_Texture* tex = get_texture(theme_data[curr_theme].texture_path);                                            \
+            SDL_QueryTexture(tex, NULL, NULL, &width, &height);                                                              \
+            float u1 = (curr_frame % theme_data[curr_theme].tiles_in_row) / ((float)width  / theme_data[curr_theme].width);   \
+            float v1 = (curr_frame / theme_data[curr_theme].tiles_in_row) / ((float)height / theme_data[curr_theme].height);   \
+            float u2 = (curr_frame % theme_data[curr_theme].tiles_in_row + 1) / ((float)width  / theme_data[curr_theme].width); \
+            float v2 = (curr_frame / theme_data[curr_theme].tiles_in_row + 1) / ((float)height / theme_data[curr_theme].height); \
+            ImGui::BeginDisabled(selected_tile == i);                                                                             \
+            if (ImGui::ImageButton(                                                                                                \
+                ("tile" + std::to_string(i)).c_str(),                                                                               \
+                tex,                                                                                                                 \
+                ImVec2(                                                                                                               \
+                    theme_data[curr_theme].width * 2,                                                                                  \
+                    theme_data[curr_theme].height * 2                                                                                   \
+                ), ImVec2(u1, v1), ImVec2(u2, v2)                                                                                        \
+            )) {                                                                                                                          \
+                selected_tile = i;                                                                                                         \
+            }                                                                                                                               \
+            ImGui::SetItemTooltip("%s", name);                                                                                               \
+            ImGui::EndDisabled();                                                                                                             \
+        }
+#include "../../src/game/data/tiles.h"
         ImGui::End();
     }
     WINDOW(WINDOWFLAG_ENTITY_PALETTE, "Entity Palette") { ImGui::End(); }
     WINDOW(WINDOWFLAG_ENTITY_SETTINGS, "Entity Settings") { ImGui::End(); }
     WINDOW(WINDOWFLAG_WARPS, "Warps") { ImGui::End(); }
+
+    for (int i = layers.size() - 1; i >= 0; i--) {
+        int opacity;
+        if (curr_layer == &layers[i]) opacity = 255;
+        else opacity = curr_rendermode;
+        if (opacity == 0) continue;
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, opacity);
+        if (layers[i].type == LAYERTYPE_TILEMAP) draw_tilemap(&layers[i]);
+    }
     
     if (curr_layer) {
         struct Layer layer = *curr_layer;
@@ -377,14 +541,11 @@ void editor_run(SDL_Renderer* renderer) {
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     draw_grid(renderer, 24, 16, 1, 1, 0, 0);
+
+    frames_drawn++;
 }
 
 void editor_process_event(SDL_Event* event) {
-    if (event->type == SDL_WINDOWEVENT_RESIZED) {
-        SDL_Window* window = SDL_GetWindowFromID(event->window.windowID);
-        SDL_GetWindowSize(window, &windoww, &windowh);
-    }
-
     if (!ImGui::GetIO().WantCaptureKeyboard) {
         if (event->type == SDL_KEYDOWN) {
             if (event->key.keysym.sym >= SDLK_a && event->key.keysym.sym <= SDLK_z) activate_shortcut(
@@ -398,10 +559,25 @@ void editor_process_event(SDL_Event* event) {
 
     if (!ImGui::GetIO().WantCaptureMouse) {
         if (event->type == SDL_MOUSEMOTION) {
+            if (event->motion.state & SDL_BUTTON(SDL_BUTTON_LEFT)) {
+                tools[curr_tool].drag(
+                    event->motion.x, event->motion.y,
+                    event->motion.xrel, event->motion.yrel
+                );
+            }
             if (event->motion.state & SDL_BUTTON(SDL_BUTTON_RIGHT)) {
                 camx -= event->motion.xrel / 32.f;
                 camy -= event->motion.yrel / 32.f;
             }
+        }
+        if (event->type == SDL_MOUSEBUTTONDOWN) {
+            if (event->button.button == SDL_BUTTON_LEFT) {
+                curr_tool = selected_tool;
+                tools[curr_tool].start(event->button.x, event->button.y);
+            }
+        }
+        if (event->type == SDL_MOUSEBUTTONUP) {
+            if (event->button.button == SDL_BUTTON_LEFT) tools[curr_tool].end();
         }
     }
 }

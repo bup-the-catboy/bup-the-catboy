@@ -33,4 +33,7 @@
 
 #define MUSIC(_1, _2) static char* _1 = (char*)_2;
 
+#define SIMPLE_ANIMATED_TEXTURE(_1, ...) (void)(_1);
+#define SIMPLE_STATIONARY_TEXTURE(_1) SIMPLE_ANIMATED_TEXTURE(1, _1)
+
 #endif
