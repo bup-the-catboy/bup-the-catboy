@@ -273,9 +273,13 @@ struct {
     void(*start)(int x, int y);
     void(*drag)(int x, int y, int dx, int dy);
     void(*end)();
+    char letter;
 } tools[] = {
-    { stub_start, brush_drag, stub_end },
-    { stub_start, eraser_drag, stub_end }
+    { stub_start, brush_drag, stub_end, 'B' },
+    { stub_start, eraser_drag, stub_end, 'E' },
+    { stub_start, stub_drag, stub_end, 'S' },
+    { stub_start, stub_drag, stub_end, 'H' },
+    { stub_start, stub_drag, stub_end, 'P' },
 };
 
 void activate_shortcut(bool ctrl, bool shift, bool alt, char letter) {
@@ -357,6 +361,9 @@ void editor_run(SDL_Renderer* renderer) {
     SDL_GetWindowSize(window, &windoww, &windowh);
 
     if (ImGui::BeginMainMenuBar()) {
+        ImGui::BeginDisabled();
+        ImGui::Text("(%c)", tools[selected_tool].letter);
+        ImGui::EndDisabled();
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New", "Ctrl+N")) activate_shortcut(CTRL 'N');
             if (ImGui::MenuItem("Open", "Ctrl+O")) activate_shortcut(CTRL 'O');
@@ -380,7 +387,7 @@ void editor_run(SDL_Renderer* renderer) {
             if (ImGui::MenuItem("Brush", "B", selected_tool == TOOL_BRUSH)) activate_shortcut(_ 'B');
             if (ImGui::MenuItem("Eraser", "E", selected_tool == TOOL_ERASER)) activate_shortcut(_ 'E');
             if (ImGui::MenuItem("Selection", "S", selected_tool == TOOL_SELECTION)) activate_shortcut(_ 'S');
-            if (ImGui::MenuItem("Hand", "H", selected_tool == TOOL_HAND)) activate_shortcut(_ 'L');
+            if (ImGui::MenuItem("Hand", "H", selected_tool == TOOL_HAND)) activate_shortcut(_ 'H');
             if (ImGui::MenuItem("Picker", "P", selected_tool == TOOL_PICKER)) activate_shortcut(_ 'P');
             ImGui::SeparatorText("Settings");
             if (ImGui::MenuItem("Lock Entities to Grid", "Ctrl+Shift+L", lock_to_grid)) activate_shortcut(CTRL_SHIFT 'L');
