@@ -57,6 +57,13 @@ enum LayerType {
     LAYERTYPE_ENTITY
 };
 
+union Point {
+    struct {
+        int32_t x, y;
+    };
+    uint64_t id;
+};
+
 struct Layer {
     enum LayerType type;
     float smx, smy;
@@ -64,7 +71,7 @@ struct Layer {
     float scx, scy;
     struct Layer* entity_tilemap_layer;
     std::string name;
-    std::map<long, int> tilemap;
+    std::map<uint64_t, int> tilemap;
 };
 
 struct ThemeData {
@@ -118,7 +125,7 @@ SDL_Texture* get_texture(const char* texture_path) {
 }
 
 void set_tile(int x, int y, int tile) {
-    long coord = ((long)x << 32) | (unsigned int)y;
+    uint64_t coord = (Point){ .x = x, .y = y }.id;
     auto pos = curr_layer->tilemap.find(coord);
     if (tile == 0) {
         if (pos != curr_layer->tilemap.end()) curr_layer->tilemap.erase(pos);
@@ -130,7 +137,7 @@ void set_tile(int x, int y, int tile) {
 }
 
 int get_tile(int x, int y) {
-    long coord = ((long)x << 32) | (unsigned int)y;
+    uint64_t coord = (Point){ .x = x, .y = y }.id;
     auto pos = curr_layer->tilemap.find(coord);
     if (pos == curr_layer->tilemap.end()) return 0;
     return curr_layer->tilemap[coord];
