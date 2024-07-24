@@ -1,13 +1,14 @@
 #include <SDL2/SDL.h>
 
-#include "imgui/imgui.h"
-
 #include <map>
 #include <vector>
 #include <string>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "portable-file-dialogs.h"
+#include "imgui/imgui.h"
+#include "writer.h"
 
 bool inited = false;
 bool init() {
@@ -289,12 +290,120 @@ struct {
     { stub_start, stub_drag, stub_end, 'P' },
 };
 
+void get_tilemap_size(struct Layer* layer, int* tilemap_width, int* tilemap_height, int* offset_x, int* offset_y) {
+    int w = 0, h = 0, ox = 0, oy = 0;
+    if (!layer->tilemap.empty()) {
+        int left  = INT32_MAX;
+        int right = INT32_MIN;
+        int up    = INT32_MAX;
+        int down  = INT32_MIN;
+        for (auto tile : layer->tilemap) {
+            union Point p = *(union Point*)&tile.first;
+            int x = floor(p.x / 24.f);
+            int y = floor(p.y / 16.f);
+            if (left  > x) left  = x;
+            if (right < x) right = x;
+            if (up    > y) up    = y;
+            if (down  < y) down  = y;
+        }
+        w = right - left + 1;
+        h = down - up + 1;
+        ox = left * -24;
+        oy = up   * -16;
+    }
+    if (tilemap_width)  *tilemap_width  = w;
+    if (tilemap_height) *tilemap_height = h;
+    if (offset_x)       *offset_x       = ox;
+    if (offset_y)       *offset_y       = oy;
+}
+
+char* create_tilemap_data(struct Layer* layer, int* width, int* height) {
+    int screen_w, screen_h, offset_x, offset_y;
+    get_tilemap_size(layer, &screen_w, &screen_h, &offset_x, &offset_y);
+    int w = screen_w * 24;
+    int h = screen_h * 16;
+    char* data = (char*)malloc(w * h);
+    memset(data, 0, w * h);
+    for (auto tile : layer->tilemap) {
+        union Point p = *(union Point*)&tile.first;
+        data[(p.y + offset_y) * w + (p.x + offset_x)] = tile.second;
+    }
+    if (*width)  *width  = w;
+    if (*height) *height = h;
+    return data;
+}
+
+std::string last_saved = "";
+
+void save_file(bool force_select) {
+    if (last_saved == "" || force_select) {
+        last_saved = pfd::save_file("Save Level", "", { "Level Files", "*.lvl", "All Files", "*" }).result();
+    }
+
+    WriteStream* stream = writer_create(16);
+    writer_make_offset(stream, 12);
+    writer_write<int32_t>(stream, curr_theme);
+    writer_write<int32_t>(stream, curr_music);
+    writer_write<int32_t>(stream, curr_cambound);
+    writer_pop_block(stream);
+
+    writer_make_offset(stream, 4);
+    writer_write<int32_t>(stream, 0);
+    writer_pop_block(stream);
+
+    writer_make_offset(stream, 4);
+    writer_write<int32_t>(stream, 0);
+    writer_pop_block(stream);
+
+    writer_make_offset(stream, 4 + layers.size() * 4);
+    writer_write<int32_t>(stream, layers.size());
+    for (struct Layer layer : layers) {
+        writer_make_offset(stream, 32);
+        writer_write<int32_t>(stream, layer.type);
+        writer_write_ptr(stream, &layer.smx, sizeof(float));
+        writer_write_ptr(stream, &layer.smy, sizeof(float));
+        writer_write_ptr(stream, &layer.sox, sizeof(float));
+        writer_write_ptr(stream, &layer.soy, sizeof(float));
+        writer_write_ptr(stream, &layer.scx, sizeof(float));
+        writer_write_ptr(stream, &layer.scy, sizeof(float));
+
+        int width, height;
+        char* tilemap_data;
+        switch (layer.type) {
+            case LAYERTYPE_TILEMAP:
+            tilemap_data = create_tilemap_data(&layer, &width, &height);
+            writer_make_offset(stream, 8 + width * height);
+            writer_write<int32_t>(stream, width / 24);
+            writer_write<int32_t>(stream, height / 16);
+            for (int i = 0; i < width * height; i++) {
+                writer_write_ptr(stream, tilemap_data + i, 1);
+            }
+            writer_pop_block(stream);
+            free(tilemap_data);
+            break;
+
+            case LAYERTYPE_ENTITY:
+            writer_make_null_offset(stream);
+            break;
+        }
+
+        writer_pop_block(stream);
+    }
+
+    int size;
+    char* data = writer_close(stream, &size);
+    FILE* f = fopen(last_saved.c_str(), "w");
+    fwrite(data, size, 1, f);
+    fclose(f);
+    free(data);
+}
+
 void activate_shortcut(bool ctrl, bool shift, bool alt, char letter) {
     if (MODIF(CTRL)) {
         switch (letter) {
             case 'N': break; // todo
             case 'O': break; // todo
-            case 'S': break; // todo
+            case 'S': save_file(false); break;
             case 'Q': quit = true; break;
             case 'L': curr_mode = EDITMODE_LAYER; break;
             case 'B': curr_mode = EDITMODE_CAMBOUND; break;
@@ -308,7 +417,7 @@ void activate_shortcut(bool ctrl, bool shift, bool alt, char letter) {
     }
     if (MODIF(CTRL SHIFT)) {
         switch (letter) {
-            case 'S': break; // todo
+            case 'S': save_file(true); break; // todo
             case 'Z': break; // todo
             case 'O': curr_rendermode = RENDERMODE_OPAQUE; break;
             case 'T': curr_rendermode = RENDERMODE_TRANSLUCENT; break;
