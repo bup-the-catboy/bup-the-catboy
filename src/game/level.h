@@ -24,8 +24,12 @@ struct Level {
     unsigned char* raw;
 };
 
+extern struct Level* current_level;
+extern uint64_t global_timer;
+
 void load_level(struct Binary* data);
 void load_level_impl(const unsigned char* data);
 struct Level* get_current_level();
+void update_level();
 
 #endif

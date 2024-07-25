@@ -15,6 +15,7 @@ const char* music_table[] = {
 };
 
 struct Level* current_level = NULL;
+uint64_t global_timer = 0;
 
 void destroy_level(struct Level* level) {
     for (int i = 0; i < level->num_cambounds; i++) {
@@ -115,7 +116,7 @@ void load_level_impl(const unsigned char* data) {
     stream = binary_stream_goto(stream);
     unsigned int num_layers;
     BINARY_STREAM_READ(stream, num_layers);
-    LE_LayerList* layers = LE_CreateLayerList();
+    level->layers = LE_CreateLayerList();
     for (int i = 0; i < num_layers; i++) {
         stream = binary_stream_goto(stream);
         unsigned int type;
@@ -129,8 +130,9 @@ void load_level_impl(const unsigned char* data) {
         BINARY_STREAM_READ(stream, scy);
         LE_Layer* layer;
         stream = binary_stream_goto(stream);
+        int scale_x = 1, scale_y = 1;
         switch (type) {
-        case 0: { // tilemap
+        case LE_LayerType_Tilemap: {
             unsigned int w, h;
             BINARY_STREAM_READ(stream, w);
             BINARY_STREAM_READ(stream, h);
@@ -143,10 +145,12 @@ void load_level_impl(const unsigned char* data) {
                     LE_TilemapSetTile(tilemap, x, y, tile);
                 }
             }
-            LE_TilemapSetTileset(tilemap, num_get_tileset(theme));
-            layer = LE_AddTilemapLayer(layers, tilemap);
+            LE_Tileset* tileset = get_tileset(theme);
+            LE_TilemapSetTileset(tilemap, tileset);
+            LE_TilesetGetTileSize(tileset, &scale_x, &scale_y);
+            layer = LE_AddTilemapLayer(level->layers, tilemap);
         } break;
-        case 1: { // entities
+        case LE_LayerType_Entity: {
             LE_EntityList* el = LE_CreateEntityList();
             unsigned int tilemap, num_entities;
             BINARY_STREAM_READ(stream, tilemap);
@@ -160,7 +164,7 @@ void load_level_impl(const unsigned char* data) {
                 float x, y;
                 BINARY_STREAM_READ(stream, x);
                 BINARY_STREAM_READ(stream, y);
-                LE_Entity* entity = LE_CreateEntity(el, num_get_entity_builder(entityID), x, y);
+                LE_Entity* entity = LE_CreateEntity(el, get_entity_builder(entityID), x, y);
                 unsigned int num_properties;
                 BINARY_STREAM_READ(stream, num_properties);
                 for (unsigned int i = 0; i < num_properties; i++) {
@@ -174,27 +178,38 @@ void load_level_impl(const unsigned char* data) {
                 }
                 stream = binary_stream_close(stream);
             }
-            layer = LE_AddEntityLayer(layers, el);
+            layer = LE_AddEntityLayer(level->layers, el);
         } break; }
         layer->scrollSpeedX = smx;
         layer->scrollSpeedY = smy;
         layer->scrollOffsetX = sox;
         layer->scrollOffsetY = soy;
-        layer->scaleW = scx;
-        layer->scaleH = scy;
+        layer->scaleW = scx * scale_x;
+        layer->scaleH = scy * scale_y;
         stream = binary_stream_close(stream);
         stream = binary_stream_close(stream);
-    }
-    LE_LayerListIter* iter = LE_LayerListGetIter(layers);
-    while (iter) {
-        LE_Layer* layer = LE_LayerListGet(iter);
-        enum LE_LayerType type = LE_LayerGetType(layer);
-        iter = LE_LayerListNext(iter);
     }
     stream = binary_stream_close(stream);
 
-    camera_set_bounds(level->cambounds[cambound]);
-    play_music(GET_ASSET(struct Audio, music_table[music]));
+    if (cambound >= 0 && cambound < level->num_cambounds) camera_set_bounds(level->cambounds[cambound]);
+    //play_music(GET_ASSET(struct Audio, music_table[music]));
+
+    camera_set_focus(12, 8);
 
     current_level = level;
+}
+
+void update_level() {
+    global_timer++;
+    LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
+    while (iter) {
+        LE_Layer* layer = LE_LayerListGet(iter);
+        enum LE_LayerType type = LE_LayerGetType(layer);
+        if (type == LE_LayerType_Entity) LE_UpdateEntities(LE_LayerGetDataPointer(layer));
+        iter = LE_LayerListNext(iter);
+    }
+    float x, y;
+    camera_update();
+    camera_get(&x, &y);
+    LE_ScrollCamera(current_level->layers, x, y);
 }

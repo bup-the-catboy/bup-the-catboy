@@ -4,7 +4,7 @@
 #include "assets/assets.h"
 
 struct BinaryStream {
-    int ptr, off;
+    int ptr;
     const unsigned char* data;
     struct BinaryStream* parent;
 };

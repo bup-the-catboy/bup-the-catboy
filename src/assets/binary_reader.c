@@ -2,7 +2,7 @@
 
 struct BinaryStream* binary_stream_create(const unsigned char* binary) {
     struct BinaryStream* stream = malloc(sizeof(struct BinaryStream));
-    stream->off = stream->ptr = 0;
+    stream->ptr = 0;
     stream->data = binary;
     stream->parent = NULL;
     return stream;
@@ -12,8 +12,8 @@ struct BinaryStream* binary_stream_goto(struct BinaryStream* stream) {
     unsigned int offset;
     binary_stream_read(stream, &offset, sizeof(offset));
     if (offset == 0) return stream;
-    struct BinaryStream* offsetted = binary_stream_create(stream->data + offset);
-    offsetted->off = offset;
+    struct BinaryStream* offsetted = binary_stream_create(stream->data);
+    offsetted->ptr = offset;
     offsetted->parent = stream;
     return offsetted;
 }

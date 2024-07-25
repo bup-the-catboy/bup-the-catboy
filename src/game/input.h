@@ -4,7 +4,9 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 
+#ifndef NO_VSCODE
 #define NO_VSCODE
+#endif
 
 #define INPUT(_) _ = (1 << (__COUNTER__)),
 #define MOUSEBTN(_)

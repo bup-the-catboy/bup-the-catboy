@@ -3,9 +3,9 @@
 
 #include <lunarengine.h>
 
-#define get_entity_builder(id) num_get_entity_builder(ENTITY_BUILDER_##id)
-#define get_tile_data(     id) num_get_tile_data     (     TILE_DATA_##id)
-#define get_tileset(       id) num_get_tileset       (       TILESET_##id)
+#define get_entity_builder_by_id(id) get_entity_builder(ENTITY_BUILDER_##id)
+#define get_tile_data_by_id(     id) get_tile_data     (     TILE_DATA_##id)
+#define get_tileset_by_id(       id) get_tileset       (       TILESET_##id)
 
 #define ENTITY( id, _1) ,ENTITY_BUILDER_##id
 #define TILESET(id, _1) ,       TILESET_##id
@@ -13,7 +13,9 @@
 
 #define ENUM(value) = value
 
+#ifndef NO_VSCODE
 #define NO_VSCODE
+#endif
 
 enum EntityBuilderIDs {
     __ENTITY_BUILDER = -1
@@ -31,9 +33,10 @@ enum TilesetIDs {
 };
 
 void init_data();
-LE_EntityBuilder* num_get_entity_builder(int id);
-LE_TileData*      num_get_tile_data     (int id);
-LE_Tileset*       num_get_tileset       (int id);
+
+LE_EntityBuilder* get_entity_builder(enum EntityBuilderIDs id);
+LE_TileData*      get_tile_data     (enum      TileDataIDs id);
+LE_Tileset*       get_tileset       (enum       TilesetIDs id);
 
 #undef ENTITY
 #undef TILESET

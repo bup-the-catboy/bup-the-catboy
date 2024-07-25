@@ -31,12 +31,10 @@ endif
 
 CFLAGS += -DNO_VSCODE
 
-.PHONY: all clean compile-libs compile-tools run-tools compile
+.PHONY: all clean compile-libs compile-tools run-tools tools compile
 
 all:
 	@$(MAKE) compile-libs --silent
-	@$(MAKE) compile-tools --silent
-	@$(MAKE) run-tools --silent
 	@$(MAKE) compile --silent
 
 compile-libs: $(LIBS_BIN)
@@ -59,6 +57,10 @@ run-tools:
 		$$tool; \
 	done
 
+tools:
+	@$(MAKE) compile-tools --silent
+	@$(MAKE) run-tools --silent
+
 compile: $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJS)
@@ -71,12 +73,16 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
 	@$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ_DIR)/%.d: $(SRC_DIR)/%.c
-	@mkdir -p $(dir $@)
-	@$(CC) $(CFLAGS) -MM -MT $(@:.d=.o) $< -o $@
-
 clean:
 	@for i in $(BUILD_FILES); do \
 		printf "\033[1m\033[32mDeleting \033[36m$$i \033[32m-> \033[31mX\033[0m\n"; \
 		rm -rf $$i; \
 	done
+
+-include $(OBJS:.o=.d)
+
+$(OBJ_DIR)/%.d: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	@$(CC) $(CFLAGS) -MM -MT $(@:.d=.o) $< -o $@ 2> /dev/null
+
+-include $(OBJS:.o=.d)
