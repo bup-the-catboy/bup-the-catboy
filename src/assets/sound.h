@@ -7,6 +7,7 @@
 struct Audio {
     float loop;
     bool looping;
+    SDL_RWops* raw;
     union {
         Mix_Music* music;
         Mix_Chunk* sound;

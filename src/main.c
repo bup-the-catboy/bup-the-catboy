@@ -2,12 +2,15 @@
 #include "assets/sound.h"
 #include "game/data.h"
 #include "game/level.h"
+#include "nsf/nsf.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_render.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
+
+#include <sys/stat.h>
 
 #define FPS 60
 
@@ -34,6 +37,44 @@ void drawlist_renderer(void* texture, float dstx, float dsty, float dstw, float 
 }
 
 int main() {
+    printf("reading file\n");
+    struct stat file_info;
+    stat("test.nsf", &file_info);
+    unsigned char* data = malloc(file_info.st_size);
+    FILE* f = fopen("test.nsf", "r");
+    fread(data, file_info.st_size, 1, f);
+    fclose(f);
+
+    printf("loading nsf\n");
+    NSFHandle* handle = nsf_load(data, file_info.st_size);
+
+    printf("selecting song\n");
+    nsf_select(handle, 4);
+
+    printf("playing song\n");
+    nsf_play(handle);
+
+    printf("sleeping 5s\n");
+    SDL_Delay(5000);
+
+    printf("stopping song\n");
+    nsf_stop(handle);
+
+    printf("sleeping 1s\n");
+    SDL_Delay(1000);
+
+    printf("resuming for 5s\n");
+    nsf_resume(handle);
+    SDL_Delay(5000);
+
+    printf("stopping song\n");
+    nsf_stop(handle);
+
+    printf("freeing nsf handle\n");
+    nsf_dispose(handle);
+
+    return 0;
+
     srand(time(NULL));
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     window = SDL_CreateWindow("Super Mario Bros. Reimagined", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 384, 256, 0);

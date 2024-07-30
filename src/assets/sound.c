@@ -12,10 +12,12 @@ void music_finished() {
 }
 
 void play_sound(struct Audio* sound) {
+    printf("playing sound from ptr %p\n", sound);
     Mix_PlayChannel(-1, sound->sound, 0);
 }
 
 void play_music(struct Audio* music) {
+    printf("playing music from ptr %p\n", music);
     paused = false;
     currmusic = music;
     Mix_PlayMusic(music->music, 0);
@@ -32,7 +34,7 @@ void resume_sound() {
 }
 
 void audio_init() {
-    Mix_Init(MIX_INIT_OGG);
-    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512);
+    printf("initing audio\n");
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     Mix_HookMusicFinished(music_finished);
 }
