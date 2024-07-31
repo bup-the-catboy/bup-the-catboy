@@ -192,7 +192,7 @@ void load_level_impl(const unsigned char* data) {
     stream = binary_stream_close(stream);
 
     if (cambound >= 0 && cambound < level->num_cambounds) camera_set_bounds(level->cambounds[cambound]);
-    play_music(GET_ASSET(struct Audio, music_table[music]));
+    //play_music(GET_ASSET(struct Audio, music_table[music]));
 
     camera_set_focus(12, 8);
 

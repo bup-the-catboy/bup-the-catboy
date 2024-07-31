@@ -115,7 +115,6 @@ void load_assets(SDL_Renderer* renderer) {
         curr->next = asset;
         curr = asset;
         get_extension(ext, buf);
-        printf("reading %s (%s)\n", asset->name, ext);
         _ EXT(png) {
             int w, h;
             unsigned char* image = stbi_load_from_memory(data, datasize, &w, &h, NULL, STBI_rgb_alpha);
@@ -127,17 +126,16 @@ void load_assets(SDL_Renderer* renderer) {
         }
         EXT(wav) {
             struct Audio* audio = malloc(sizeof(struct Audio));
-            audio->raw = SDL_RWFromMem(data, datasize);
-            audio->sound = Mix_LoadWAV_RW(audio->raw, false);
+            SDL_RWops* src = SDL_RWFromMem(data, datasize);
+            audio->sound = Mix_LoadWAV_RW(src, true);
             audio->looping = false;
             asset->data = audio;
             free(data);
         }
         EXT(ogg) {
             struct Audio* audio = malloc(sizeof(struct Audio));
-            //audio->raw = SDL_RWFromMem(data, datasize);
-            //audio->music = Mix_LoadMUS_RW(audio->raw, false);
-            audio->music = Mix_LoadMUS("assets/audio/music/grass.ogg");
+            SDL_RWops* src = SDL_RWFromMem(data, datasize);
+            audio->music = Mix_LoadMUS_RW(src, true);
             OggVorbis_File f;
             struct MemoryStream stream = (struct MemoryStream){ .data = data, .size = datasize, .ptr = 0 };
             ov_open_callbacks(&stream, &f, NULL, 0, (ov_callbacks){
@@ -168,7 +166,6 @@ void load_assets(SDL_Renderer* renderer) {
         }
     }
     binary_stream_close(stream);
-    printf("done\n");
 }
 
 void* get_asset(const char* name) {
