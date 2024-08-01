@@ -8,6 +8,7 @@
 #include "audio/audio.h"
 #include "camera.h"
 #include "data.h"
+#include "input.h"
 
 struct AudioInstance* music_instance;
 struct Level* current_level = NULL;
@@ -217,4 +218,7 @@ void update_level() {
     camera_update();
     camera_get(&x, &y);
     LE_ScrollCamera(current_level->layers, x, y);
+    if (is_button_pressed(BUTTON_MOUSE_LEFT)) {
+        audio_play_oneshot(GET_ASSET(struct Audio, "audio/test.wav"));
+    }
 }

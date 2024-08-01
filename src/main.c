@@ -2,6 +2,7 @@
 #include "audio/audio.h"
 #include "game/data.h"
 #include "game/level.h"
+#include "game/input.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_render.h>
@@ -40,18 +41,14 @@ int main() {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     window = SDL_CreateWindow("Super Mario Bros. Reimagined", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 384, 256, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    bool loop = true;
     SDL_SetRenderDrawColor(renderer, 127, 127, 127, 255);
     audio_init();
     load_assets(renderer);
     init_data();
     load_level(GET_ASSET(struct Binary, "levels/test.lvl"));
     LE_DrawList* drawlist = LE_CreateDrawList();
-    while (loop) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) loop = false;
-        }
+    while (true) {
+        if (handle_sdl_events()) break;
         frame_begin();
         SDL_RenderClear(renderer);
         if (current_level != NULL) {
