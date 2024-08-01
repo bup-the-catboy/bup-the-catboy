@@ -1,5 +1,5 @@
 #include "assets/assets.h"
-#include "assets/sound.h"
+#include "audio/audio.h"
 #include "game/data.h"
 #include "game/level.h"
 
@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
+
+#include <gme/gme.h>
 
 #define FPS 60
 
@@ -61,6 +63,7 @@ int main() {
         SDL_RenderPresent(renderer);
         frame_end();
     }
+    audio_deinit();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

@@ -26,7 +26,7 @@ ifeq ($(OS),Windows_NT)
 	CFLAGS += -DWINDOWS
 	LIBS += -static $(shell pkg-config --libs --static sdl2) -lm $(LIBS_FLAGS)
 else
-	LIBS += -lSDL2 -lSDL2main -lSDL2_mixer -lvorbis -lvorbisfile -lm $(LIBS_FLAGS)
+	LIBS += -lSDL2 -lSDL2main -lgme -lm $(LIBS_FLAGS)
 endif
 
 CFLAGS += -DNO_VSCODE

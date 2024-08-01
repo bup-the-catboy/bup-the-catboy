@@ -8,7 +8,9 @@
 #include <vorbis/vorbisfile.h>
 
 #include "assets.h"
-#include "sound.h"
+#include "audio/audio.h"
+#include "audio/nsf.h"
+#include "audio/wav.h"
 #include "binary_reader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -125,38 +127,10 @@ void load_assets(SDL_Renderer* renderer) {
             free(data);
         }
         EXT(wav) {
-            struct Audio* audio = malloc(sizeof(struct Audio));
-            SDL_RWops* src = SDL_RWFromMem(data, datasize);
-            audio->sound = Mix_LoadWAV_RW(src, true);
-            audio->looping = false;
-            asset->data = audio;
-            free(data);
+            asset->data = audio_load_wav(data, datasize);
         }
-        EXT(ogg) {
-            struct Audio* audio = malloc(sizeof(struct Audio));
-            SDL_RWops* src = SDL_RWFromMem(data, datasize);
-            audio->music = Mix_LoadMUS_RW(src, true);
-            OggVorbis_File f;
-            struct MemoryStream stream = (struct MemoryStream){ .data = data, .size = datasize, .ptr = 0 };
-            ov_open_callbacks(&stream, &f, NULL, 0, (ov_callbacks){
-                memstream_read,
-                memstream_seek,
-                memstream_close,
-                memstream_tell
-            });
-            vorbis_comment* comments = ov_comment(&f, -1);
-            audio->looping = false;
-            if (comments) {
-                for (int i = 0; i < comments->comments; i++) {
-                    if (starts_with(comments->user_comments[i], "_SMBR_LOOP=")) {
-                        audio->looping = true;
-                        audio->loop = atof(comments->user_comments[i] + strlen("_SMBR_LOOP="));
-                    }
-                }
-            }
-            ov_clear(&f);
-            free(data);
-            asset->data = audio;
+        EXT(nsf) {
+            asset->data = audio_load_nsf(data, datasize);
         }
         else {
             struct Binary* bin = malloc(sizeof(struct Binary));

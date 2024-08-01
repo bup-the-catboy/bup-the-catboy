@@ -4,18 +4,23 @@
 #include <lunarengine.h>
 
 #include "assets/binary_reader.h"
-#include "assets/sound.h"
+#include "audio/nsf.h"
+#include "audio/audio.h"
 #include "camera.h"
 #include "data.h"
 
-#define NO_VSCODE
-#define MUSIC(_1, _2) _2,
-const char* music_table[] = {
-#include "game/data/music.h"
-};
-
+struct AudioInstance* music_instance;
 struct Level* current_level = NULL;
 uint64_t global_timer = 0;
+
+void change_level_music(int track) {
+    struct Audio* nsf = GET_ASSET(struct Audio, "audio/music.nsf");
+    if (music_instance) {
+        audio_stop(music_instance);
+    }
+    audio_nsf_select_track(nsf, track);
+    music_instance = audio_play(nsf);
+}
 
 void destroy_level(struct Level* level) {
     for (int i = 0; i < level->num_cambounds; i++) {
@@ -192,7 +197,7 @@ void load_level_impl(const unsigned char* data) {
     stream = binary_stream_close(stream);
 
     if (cambound >= 0 && cambound < level->num_cambounds) camera_set_bounds(level->cambounds[cambound]);
-    //play_music(GET_ASSET(struct Audio, music_table[music]));
+    change_level_music(music);
 
     camera_set_focus(12, 8);
 

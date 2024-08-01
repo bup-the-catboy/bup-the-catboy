@@ -27,6 +27,7 @@ struct Level {
 extern struct Level* current_level;
 extern uint64_t global_timer;
 
+void change_level_music(int track);
 void load_level(struct Binary* data);
 void load_level_impl(const unsigned char* data);
 struct Level* get_current_level();
