@@ -10,13 +10,13 @@ struct Context {
 };
 
 void validate_wav(unsigned char* data) {
-    int format, num_channels, sample_rate, bits_per_sample;
+    int format = 0, num_channels = 0, sample_rate = 0, bits_per_sample = 0;
     memcpy(&format, data + 20, 2);
     memcpy(&num_channels, data + 22, 2);
     memcpy(&sample_rate, data + 24, 4);
     memcpy(&bits_per_sample, data + 34, 2);
     if (format != 1 || num_channels != 2 || sample_rate != AUDIO_SAMPLE_RATE || bits_per_sample != 16) {
-        printf("WAV file should be signed 16-bit stereo PCM with 48000 Hz sample rate");
+        printf("WAV file should be signed 16-bit stereo PCM with 48000 Hz sample rate\n");
     }
 }
 
@@ -59,6 +59,7 @@ struct Audio* audio_load_wav(unsigned char* bin, int len) {
     struct Context* context = malloc(sizeof(struct Context));
     memcpy(&context->samples, bin + 40, 4);
     context->samples = (short*)bin + 44;
+    context->length = len / 4; // 16-bit stereo (4 bytes per sample)
     audio->context = context;
     audio->init = audio_wav_init;
     audio->seek = audio_wav_seek;
