@@ -221,4 +221,10 @@ void update_level() {
     if (is_button_pressed(BUTTON_MOUSE_LEFT)) {
         audio_play_oneshot(GET_ASSET(struct Audio, "audio/test.wav"));
     }
+    if (is_button_pressed(BUTTON_MOUSE_RIGHT)) {
+        audio_play_oneshot(GET_ASSET(struct Audio, "audio/pingas.wav"));
+    }
+    if (is_button_pressed(BUTTON_MOUSE_MIDDLE)) {
+        audio_play_oneshot(GET_ASSET(struct Audio, "audio/luigi.wav"));
+    }
 }

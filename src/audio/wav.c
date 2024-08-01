@@ -39,27 +39,25 @@ void audio_wav_free(void* context, void* instance) {
 bool audio_wav_play(void* context, void* instance, short* out, int samples) {
     struct Context* ctx = context;
     int* ptr = instance;
-    int samples_left = ctx->length - *ptr;
-    int padding = samples - samples_left;
-    if (padding < 0) padding = 0;
-    int copy_count = samples_left > samples ? samples : samples_left;
-    if (copy_count > 0) memcpy(out, ctx->samples + *ptr, copy_count * sizeof(short));
-    if (padding > 0) memset(out + copy_count, 0, padding * sizeof(short));
-    *ptr += samples;
-    if (*ptr >= ctx->length) {
-        *ptr = ctx->length;
-        return false;
+    bool done = false;
+    for (int i = 0; i < samples; i++) {
+        if (*ptr >= ctx->length) {
+            out[i] = 0;
+            done = true;
+        }
+        else out[i] = ctx->samples[*ptr];
+        (*ptr)++;
     }
-    return true;
+    return !done;
 }
 
 struct Audio* audio_load_wav(unsigned char* bin, int len) {
     validate_wav(bin);
     struct Audio* audio = malloc(sizeof(struct Audio));
     struct Context* context = malloc(sizeof(struct Context));
-    memcpy(&context->samples, bin + 40, 4);
+    memcpy(&context->length, bin + 40, 4);
     context->samples = (short*)bin + 44;
-    context->length = len / 4; // 16-bit stereo (4 bytes per sample)
+    context->length = (context->length - 44) / 2;
     audio->context = context;
     audio->init = audio_wav_init;
     audio->seek = audio_wav_seek;

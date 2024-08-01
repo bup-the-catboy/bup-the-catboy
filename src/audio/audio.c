@@ -92,13 +92,16 @@ void audio_update(short* out, int num_samples) {
             list->instance->meta->free(list->instance->meta->context, list->instance->data);
             if (list->next) list->next->prev = list->prev;
             if (list->prev) list->prev->next = list->next;
+            else instances = next;
             free(list->instance);
             free(list);
             list = next;
             continue;
         }
         if (!list->instance->playing) continue;
-        list->instance->meta->play(list->instance->meta->context, list->instance->data, samples, num_samples);
+        if (!list->instance->meta->play(list->instance->meta->context, list->instance->data, samples, num_samples)) {
+            list->instance->playing = false;
+        }
         for (int i = 0; i < num_samples; i++) {
             mixed[i] += samples[i];
         }
