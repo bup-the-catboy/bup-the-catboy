@@ -5,14 +5,12 @@
 #include "game/input.h"
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_render.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
 
 #define FPS 60
 
-Uint64 start_ticks;
 SDL_Window* window;
 SDL_Renderer* renderer;
 
@@ -23,14 +21,14 @@ float scale = 1;
 float translate_x = 0;
 float translate_y = 0;
 
-void frame_begin() {
-    start_ticks = SDL_GetTicks64();
+Uint64 frame_begin() {
+    return SDL_GetTicks64();
 }
 
-void frame_end() {
+void frame_end(Uint64 start_ticks, int fps) {
     Uint64 end_ticks = SDL_GetTicks64();
     Uint64 frame_time = end_ticks - start_ticks;
-    Sint64 wait_time = (1000 / FPS) - frame_time;
+    Sint64 wait_time = (1000 / fps) - frame_time;
     if (wait_time <= 0) return;
     SDL_Delay(wait_time);
 }
@@ -75,9 +73,10 @@ int main() {
     init_data();
     load_level(GET_ASSET(struct Binary, "levels/test.lvl"));
     LE_DrawList* drawlist = LE_CreateDrawList();
+    SDL_RenderSetIntegerScale(renderer, true);
     while (true) {
         if (handle_sdl_events()) break;
-        frame_begin();
+        Uint64 frame = frame_begin();
         adjust_display(WIDTH, HEIGHT);
         SDL_SetRenderDrawColor(renderer, 127, 127, 127, 255);
         SDL_RenderClear(renderer);
@@ -88,7 +87,7 @@ int main() {
             LE_ClearDrawList(drawlist);
         }
         SDL_RenderPresent(renderer);
-        frame_end();
+        frame_end(frame, FPS);
     }
     audio_deinit();
     SDL_DestroyRenderer(renderer);

@@ -53,13 +53,14 @@ void CONCAT(LE_RunCollision, AXIS)(LE_Entity* entity) {                         
     int tfy = fy - 1;                                                                                                         \
     int ttx = tx + 1;                                                                                                         \
     int tty = ty + 1;                                                                                                         \
+    bool collided = false;                                                                                                    \
     if (RUN(IS_Y, AXIS)) entity->flags &= ~LE_EntityFlags_OnGround;                                                           \
     for (int y = tfy; y <= tty; y++) {                                                                                        \
         for (int x = tfx; x <= ttx; x++) {                                                                                    \
             if (x < 0 || y < 0 || x >= w || y >= h) continue;                                                                 \
             LE_TileData* tile = LE_TilemapGetTileData(tilemap, x, y);                                                         \
             bool solid = LE_TileIsSolid(tile);                                                                                \
-            bool side = RUN(entity->pos, AXIS) - RUN(CENTER, AXIS)(entity) >= RUN(COORD, AXIS) + .5f;                         \
+            bool side = RUN(entity->vel, AXIS) < 0;                                                                           \
             if (!LE_RectIntersectsRect(fx, fy, tx, ty, x, y, x + 1, y + 1)) continue;                                         \
             if (side) {                                                                                                       \
                 LE_TileCollisionEvent(tile, entity, x, y, RUN(DIR_DR, AXIS));                                                 \
@@ -72,7 +73,7 @@ void CONCAT(LE_RunCollision, AXIS)(LE_Entity* entity) {                         
                     if (RUN(IS_Y, AXIS)) entity->flags |= LE_EntityFlags_OnGround;                                            \
                 }                                                                                                             \
             }                                                                                                                 \
-            if (solid) RUN(entity->vel, AXIS) = 0;                                                                            \
+            if (solid) collided = true;                                                                                       \
         }                                                                                                                     \
     }                                                                                                                         \
     LE_EntitySetPlatform(entity, NULL);                                                                                       \
@@ -91,7 +92,7 @@ void CONCAT(LE_RunCollision, AXIS)(LE_Entity* entity) {                         
             continue;                                                                                                         \
         }                                                                                                                     \
         bool solid = !(curr->flags & LE_EntityFlags_SolidHitbox) || LE_EntityGetPlatform(curr) == entity;                     \
-        bool side = RUN(entity->pos, AXIS) - RUN(CENTER, AXIS)(entity) >= RUN(curr->pos, AXIS) - RUN(CENTER, AXIS)(curr);     \
+        bool side = RUN(entity->vel, AXIS) < 0;                                                                               \
         LE_EntityCollision(curr, entity);                                                                                     \
         if (solid) {                                                                                                          \
             if (side) {                                                                                                       \
@@ -102,10 +103,11 @@ void CONCAT(LE_RunCollision, AXIS)(LE_Entity* entity) {                         
                 }                                                                                                             \
             }                                                                                                                 \
             else RUN(entity->pos, AXIS) = RUN(CORRECT_ENTITY_UL, AXIS);                                                       \
-            RUN(entity->vel, AXIS) = 0;                                                                                       \
+            collided = true;                                                                                                  \
         }                                                                                                                     \
         iter = LE_EntityListNext(iter);                                                                                       \
     }                                                                                                                         \
+    if (collided) RUN(entity->vel, AXIS) = 0;                                                                                 \
 }
 
 COLLISION(X)

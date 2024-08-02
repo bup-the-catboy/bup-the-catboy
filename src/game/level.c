@@ -56,6 +56,8 @@ void load_level_impl(const unsigned char* data) {
     if (current_level) destroy_level(current_level);
     struct Level* level = malloc(sizeof(struct Level));
     struct BinaryStream* stream = binary_stream_create(data);
+    LE_EntityList* entity_list;
+    LE_Tilemap* tilemap_ptr;
 
     stream = binary_stream_goto(stream);
     unsigned int theme, music, cambound;
@@ -143,7 +145,7 @@ void load_level_impl(const unsigned char* data) {
             BINARY_STREAM_READ(stream, w);
             BINARY_STREAM_READ(stream, h);
             w *= 24; h *= 16;
-            LE_Tilemap* tilemap = LE_CreateTilemap(w, h);
+            LE_Tilemap* tilemap = tilemap_ptr = LE_CreateTilemap(w, h);
             for (unsigned int y = 0; y < h; y++) {
                 for (unsigned int x = 0; x < w; x++) {
                     unsigned char tile;
@@ -157,7 +159,7 @@ void load_level_impl(const unsigned char* data) {
             layer = LE_AddTilemapLayer(level->layers, tilemap);
         } break;
         case LE_LayerType_Entity: {
-            LE_EntityList* el = LE_CreateEntityList();
+            LE_EntityList* el = entity_list = LE_CreateEntityList();
             unsigned int tilemap, num_entities;
             BINARY_STREAM_READ(stream, tilemap);
             BINARY_STREAM_READ(stream, num_entities);
@@ -197,11 +199,24 @@ void load_level_impl(const unsigned char* data) {
     }
     stream = binary_stream_close(stream);
 
+    LE_LayerListIter* iter = LE_LayerListGetIter(level->layers);
+    while (iter) {
+        LE_Layer* layer = LE_LayerListGet(iter);
+        enum LE_LayerType type = LE_LayerGetType(layer);
+        if (type == LE_LayerType_Entity) {
+            LE_EntityList* entitylist = LE_LayerGetDataPointer(layer);
+            /*void* tilemap_index = LE_EntityGetTilemap(entitylist);
+            LE_Layer* tilemap = LE_LayerGetByIndex(level->layers, (int)(uintptr_t)tilemap_index);
+            LE_EntityAssignTilemap(entitylist, LE_LayerGetDataPointer(tilemap));*/
+            LE_EntityAssignTilemap(entitylist, tilemap_ptr);
+        }
+        iter = LE_LayerListNext(iter);
+    }
+
+    LE_CreateEntity(entity_list, get_entity_builder_by_id(player), 0, 0);
+
     if (cambound >= 0 && cambound < level->num_cambounds) camera_set_bounds(level->cambounds[cambound]);
     change_level_music(music);
-
-    camera_set_focus(12, 8);
-
     current_level = level;
 }
 
@@ -218,13 +233,4 @@ void update_level() {
     camera_update();
     camera_get(&x, &y);
     LE_ScrollCamera(current_level->layers, x, y);
-    if (is_button_pressed(BUTTON_MOUSE_LEFT)) {
-        audio_play_oneshot(GET_ASSET(struct Audio, "audio/test.wav"));
-    }
-    if (is_button_pressed(BUTTON_MOUSE_RIGHT)) {
-        audio_play_oneshot(GET_ASSET(struct Audio, "audio/pingas.wav"));
-    }
-    if (is_button_pressed(BUTTON_MOUSE_MIDDLE)) {
-        audio_play_oneshot(GET_ASSET(struct Audio, "audio/luigi.wav"));
-    }
 }

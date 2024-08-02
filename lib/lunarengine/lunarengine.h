@@ -83,6 +83,7 @@ LE_LayerList* LE_CreateLayerList();
 LE_Layer* LE_AddTilemapLayer(LE_LayerList* layers, LE_Tilemap* tilemap);
 LE_Layer* LE_AddEntityLayer(LE_LayerList* layers, LE_EntityList* entities);
 LE_Layer* LE_AddCustomLayer(LE_LayerList* layers, CustomLayer callback);
+LE_Layer* LE_LayerGetByIndex(LE_LayerList* layers, int index);
 void LE_MoveLayer(LE_Layer* layer, int index);
 int  LE_IndexOfLayer(LE_Layer* layer);
 void LE_ScrollCamera(LE_LayerList* layers, float camX, float camY);

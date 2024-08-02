@@ -13,7 +13,7 @@ LE_Tileset* tilesets[256];
 
 #define NO_VSCODE
 
-#define TILE(id, data) if (tiledata == tile_data[TILE_DATA_##id]) data
+#define TILE(id, data) if (tiledata == tile_data[TILE_DATA_##id]) { data }
 #define COLLISION(func)
 #define TEXTURE(  func)
 #define SOLID(        )
@@ -71,7 +71,7 @@ void init_data() {
 #define COLLISION(func) LE_TileAddCollisionCallback(tile, func);
 #define TEXTURE(  func) LE_TileAddTextureCallback  (tile, func);
 #define SOLID(        ) LE_TileSetSolid            (tile, true);
-#define SIMPLE_ANIMATED_TEXTURE(num, ...) TEXTURE(simple_tile_texture_provider)
+#define SIMPLE_ANIMATED_TEXTURE(num, delay, ...) TEXTURE(simple_tile_texture_provider)
 #include "game/data/tiles.h"
 #undef COLLISION
 #undef TEXTURE

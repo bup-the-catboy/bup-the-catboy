@@ -49,6 +49,16 @@ LE_Layer* LE_AddCustomLayer(LE_LayerList* layers, CustomLayer callback) {
     return LE_MakeLayer(layers, callback, LE_LayerType_Custom);
 }
 
+LE_Layer* LE_LayerGetByIndex(LE_LayerList* layers, int index) {
+    if (index < 0) return NULL;
+    _LE_LayerList* ll = (_LE_LayerList*)layers;
+    for (int i = 0; i < index; i++) {
+        ll = ll->next;
+        if (!ll) return NULL;
+    }
+    return (LE_Layer*)ll->next;
+}
+
 void LE_MoveLayer(LE_Layer* layer, int index) {
     _LE_Layer* l = (_LE_Layer*)layer;
     _LE_LayerList* ll = (_LE_LayerList*)l->parent;

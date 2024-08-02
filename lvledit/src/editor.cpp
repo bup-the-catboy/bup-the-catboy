@@ -369,6 +369,7 @@ void save_file(bool force_select) {
 
         int width, height;
         char* tilemap_data;
+        int tilemap_index = -1;
         switch (layer.type) {
             case LAYERTYPE_TILEMAP:
             tilemap_data = create_tilemap_data(&layer, &width, &height);
@@ -383,7 +384,16 @@ void save_file(bool force_select) {
             break;
 
             case LAYERTYPE_ENTITY:
-            writer_make_null_offset(stream);
+            for (int i = 0; i < layers.size(); i++) {
+                if (&layers[i] == layer.entity_tilemap_layer) {
+                    tilemap_index = i;
+                    break;
+                }
+            }
+            writer_make_offset(stream, 8);
+            writer_write<int32_t>(stream, tilemap_index);
+            writer_write<int32_t>(stream, 0);
+            writer_pop_block(stream);
             break;
         }
 
@@ -610,11 +620,11 @@ void editor_run(SDL_Renderer* renderer) {
 #define TEXTURE(_1)
 #define COLLISION(_1)
 #define SOLID()
-#define SIMPLE_STATIONARY_TEXTURE(_1) SIMPLE_ANIMATED_TEXTURE(1, _1)
+#define SIMPLE_STATIONARY_TEXTURE(_1) SIMPLE_ANIMATED_TEXTURE(1, 1, _1)
 #define LVLEDIT_HIDE hide = true;
-#define SIMPLE_ANIMATED_TEXTURE(_1, ...) if (!hide) {                                                                   \
+#define SIMPLE_ANIMATED_TEXTURE(_1, delay, ...) if (!hide) {                                                            \
             int frames[] = { __VA_ARGS__ };                                                                              \
-            int curr_frame = frames[frames_drawn % (sizeof(frames) / sizeof(int))];                                       \
+            int curr_frame = frames[(frames_drawn / delay) % (sizeof(frames) / sizeof(int))];                             \
             int width, height;                                                                                             \
             SDL_Texture* tex = get_texture(theme_data[curr_theme].texture_path);                                            \
             SDL_QueryTexture(tex, NULL, NULL, &width, &height);                                                              \

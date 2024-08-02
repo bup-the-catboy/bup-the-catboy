@@ -1,7 +1,6 @@
 #include "defines.h"
 
 TILE(air,
-    SIMPLE_STATIONARY_TEXTURE(0)
 )
 
 TILE(ground,
@@ -11,4 +10,5 @@ TILE(ground,
 
 TILE(dirt,
     SIMPLE_STATIONARY_TEXTURE(2)
+    SOLID()
 )
