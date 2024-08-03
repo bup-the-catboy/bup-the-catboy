@@ -34,8 +34,15 @@ CFLAGS += -DNO_VSCODE
 .PHONY: all clean compile-libs compile-tools run-tools tools compile
 
 all:
+	@$(MAKE) clean --silent
+	@$(MAKE) compile-tools --silent
+	@$(MAKE) run-tools --silent
 	@$(MAKE) compile-libs --silent
 	@$(MAKE) compile --silent
+
+tools:
+	@$(MAKE) compile-tools --silent
+	@$(MAKE) run-tools --silent
 
 compile-libs: $(LIBS_BIN)
 
@@ -56,10 +63,6 @@ run-tools:
 		printf "\033[1m\033[32mRunning tool \033[36m$$tool\033[0m\n"; \
 		$$tool; \
 	done
-
-tools:
-	@$(MAKE) compile-tools --silent
-	@$(MAKE) run-tools --silent
 
 compile: $(EXECUTABLE)
 
