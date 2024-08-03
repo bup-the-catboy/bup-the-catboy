@@ -56,7 +56,7 @@ LE_Layer* LE_LayerGetByIndex(LE_LayerList* layers, int index) {
         ll = ll->next;
         if (!ll) return NULL;
     }
-    return (LE_Layer*)ll->next;
+    return (LE_Layer*)ll->next->value;
 }
 
 void LE_MoveLayer(LE_Layer* layer, int index) {

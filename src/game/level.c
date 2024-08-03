@@ -57,7 +57,6 @@ void load_level_impl(const unsigned char* data) {
     struct Level* level = malloc(sizeof(struct Level));
     struct BinaryStream* stream = binary_stream_create(data);
     LE_EntityList* entity_list;
-    LE_Tilemap* tilemap_ptr;
 
     stream = binary_stream_goto(stream);
     unsigned int theme, music, cambound;
@@ -145,7 +144,7 @@ void load_level_impl(const unsigned char* data) {
             BINARY_STREAM_READ(stream, w);
             BINARY_STREAM_READ(stream, h);
             w *= 24; h *= 16;
-            LE_Tilemap* tilemap = tilemap_ptr = LE_CreateTilemap(w, h);
+            LE_Tilemap* tilemap = LE_CreateTilemap(w, h);
             for (unsigned int y = 0; y < h; y++) {
                 for (unsigned int x = 0; x < w; x++) {
                     unsigned char tile;
@@ -205,10 +204,9 @@ void load_level_impl(const unsigned char* data) {
         enum LE_LayerType type = LE_LayerGetType(layer);
         if (type == LE_LayerType_Entity) {
             LE_EntityList* entitylist = LE_LayerGetDataPointer(layer);
-            /*void* tilemap_index = LE_EntityGetTilemap(entitylist);
+            void* tilemap_index = LE_EntityGetTilemap(entitylist);
             LE_Layer* tilemap = LE_LayerGetByIndex(level->layers, (int)(uintptr_t)tilemap_index);
-            LE_EntityAssignTilemap(entitylist, LE_LayerGetDataPointer(tilemap));*/
-            LE_EntityAssignTilemap(entitylist, tilemap_ptr);
+            LE_EntityAssignTilemap(entitylist, LE_LayerGetDataPointer(tilemap));
         }
         iter = LE_LayerListNext(iter);
     }
