@@ -71,7 +71,7 @@ int main() {
     audio_init();
     load_assets(renderer);
     init_data();
-    load_level(GET_ASSET(struct Binary, "levels/test.lvl"));
+    load_level(GET_ASSET(struct Binary, "levels/test1.lvl"));
     LE_DrawList* drawlist = LE_CreateDrawList();
     SDL_RenderSetIntegerScale(renderer, true);
     while (true) {
