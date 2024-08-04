@@ -44,10 +44,10 @@ void LE_TileAddCollisionCallback(LE_TileData* tile, TileCollisionCallback coll) 
     LE_LL_Add(((_LE_TileData*)tile)->collisionCallbacks, coll);
 }
 
-void LE_TileCollisionEvent(LE_TileData* tile, LE_Entity* entity, int tileX, int tileY, enum LE_Direction direction) {
+void LE_TileCollisionEvent(LE_TileData* tile, LE_Tilemap* tilemap, LE_Entity* entity, int tileX, int tileY, enum LE_Direction direction) {
     CollCallbackList* curr = ((_LE_TileData*)tile)->collisionCallbacks->next;
     while (curr) {
-        ((TileCollisionCallback)curr->value)(tile, entity, tileX, tileY, direction);
+        ((TileCollisionCallback)curr->value)(tile, tilemap, entity, tileX, tileY, direction);
         curr = curr->next;
     }
 }

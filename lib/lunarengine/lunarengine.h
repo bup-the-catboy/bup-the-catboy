@@ -70,7 +70,7 @@ typedef void(*EntityUpdateCallback)(LE_Entity* entity);
 typedef void(*EntityCollisionCallback)(LE_Entity* entity, LE_Entity* collider);
 typedef int(*TileTextureCallback)(LE_TileData* tile);
 typedef void(*TileCollisionCallback)(
-    LE_TileData* tile, LE_Entity* entity,
+    LE_TileData* tile, LE_Tilemap* tilemap, LE_Entity* entity,
     int tileX, int tileY,
     enum LE_Direction direction
 );
@@ -141,7 +141,7 @@ LE_Entity* LE_EntityListGet(LE_EntityListIter* iter);
 LE_TileData* LE_CreateTileData();
 void LE_TileAddTextureCallback(LE_TileData* tile, TileTextureCallback callback);
 void LE_TileAddCollisionCallback(LE_TileData* tile, TileCollisionCallback callback);
-void LE_TileCollisionEvent(LE_TileData* tile, LE_Entity* entity, int tileX, int tileY, enum LE_Direction direction);
+void LE_TileCollisionEvent(LE_TileData* tile, LE_Tilemap* tilemap, LE_Entity* entity, int tileX, int tileY, enum LE_Direction direction);
 void LE_TileSetSolid(LE_TileData* tile, bool solid);
 void LE_DrawTileAt(LE_TileData* tile, LE_Tileset* tileset, float x, float y, float scaleW, float scaleH, LE_DrawList* dl);
 bool LE_TileIsSolid(LE_TileData* tile);
