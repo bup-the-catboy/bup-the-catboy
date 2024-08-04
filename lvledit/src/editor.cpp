@@ -10,13 +10,6 @@
 #include "imgui/imgui.h"
 #include "writer.h"
 
-bool inited = false;
-bool init() {
-    if (inited) return true;
-    inited = true;
-    return false;
-}
-
 float camx = 0;
 float camy = 0;
 int windoww = 1280;
@@ -90,6 +83,33 @@ struct ThemeData {
 struct ThemeData theme_data[] = {
 #include "../../src/game/data/tilesets.h"
 };
+
+#define TILE(id, _1) ,     TILE_##id
+#define ENUM(value) = value
+enum TileIDs {
+    __TILE = -1
+#include "../../src/game/data/tiles.h"
+};
+
+#undef TEXTURE
+#undef TILE
+#define TILE(id, data) curr = TILE_##id; data
+#define TEXTURE(_1)
+#define COLLISION(_1)
+#define SOLID()
+#define SIMPLE_STATIONARY_TEXTURE(_1) SIMPLE_ANIMATED_TEXTURE(1, 1, _1)
+#define LVLEDIT_HIDE()
+#define SIMPLE_ANIMATED_TEXTURE(frames, delay, ...) tile_frame_data[curr] = { true, delay, { __VA_ARGS__ } };
+struct {
+    bool textured;
+    int delay;
+    std::vector<int> frames;
+} tile_frame_data[256];
+
+void init_tile_frame_data() {
+    int curr = 0;
+#include "../../src/game/data/tiles.h"
+}
 
 extern SDL_Renderer* renderer;
 extern SDL_Window* window;
@@ -178,9 +198,11 @@ void draw_tilemap(struct Layer* layer) {
     for (int y = fromY; y <= toY; y++) {
         for (int x = fromX; x <= toX; x++) {
             int tile = get_tile(x, y);
+            if (!tile_frame_data[tile].textured) continue;
+            int anim = tile_frame_data[tile].frames[(frames_drawn / tile_frame_data[tile].delay) % tile_frame_data[tile].frames.size()];
             SDL_Rect src = (SDL_Rect){
-                .x = (tile % theme_data[curr_theme].tiles_in_row) * theme_data[curr_theme].width,
-                .y = (tile / theme_data[curr_theme].tiles_in_row) * theme_data[curr_theme].height,
+                .x = (anim % theme_data[curr_theme].tiles_in_row) * theme_data[curr_theme].width,
+                .y = (anim / theme_data[curr_theme].tiles_in_row) * theme_data[curr_theme].height,
                 .w = theme_data[curr_theme].width,
                 .h = theme_data[curr_theme].height
             };
@@ -483,7 +505,16 @@ bool should_quit() {
     run;                                        \
 }))
 
+bool inited = false;
+bool init() {
+    if (inited) return true;
+    inited = true;
+    init_tile_frame_data();
+    return false;
+}
+
 void editor_run(SDL_Renderer* renderer) {
+    init();
     SDL_GetWindowSize(window, &windoww, &windowh);
 
     if (ImGui::BeginMainMenuBar()) {
@@ -555,11 +586,11 @@ void editor_run(SDL_Renderer* renderer) {
     }
 
 #undef TILESET
-#define MUSIC(  _1, _2) #_1 "\0"
 #define TILESET(_1, _2) #_1 "\0"
+#define EOL "\0"
 
     const char* str_music =
-#include "../../src/game/data/music.h"
+        "grass" EOL
     ;
     const char* str_theme =
 #include "../../src/game/data/tilesets.h"
@@ -613,15 +644,15 @@ void editor_run(SDL_Renderer* renderer) {
 
     WINDOW(WINDOWFLAG_TILE_PALETTE, "Tile Palette") {
         int i = 0;
+        int curr_tile_id = 0;
         const char* name = "";
         bool hide = false;
 #undef TEXTURE
-#define TILE(_1, _2) if (i % 5 != 0) ImGui::SameLine(); name = #_1; hide = false; _2 i++;
-#define TEXTURE(_1)
-#define COLLISION(_1)
-#define SOLID()
-#define SIMPLE_STATIONARY_TEXTURE(_1) SIMPLE_ANIMATED_TEXTURE(1, 1, _1)
-#define LVLEDIT_HIDE hide = true;
+#undef TILE
+#undef LVLEDIT_HIDE
+#undef SIMPLE_ANIMATED_TEXTURE
+#define TILE(_1, _2) if (i % 5 != 0) ImGui::SameLine(); name = #_1; curr_tile_id = TILE_##_1; hide = false; _2 if (!hide) i++;
+#define LVLEDIT_HIDE() hide = true;
 #define SIMPLE_ANIMATED_TEXTURE(_1, delay, ...) if (!hide) {                                                            \
             int frames[] = { __VA_ARGS__ };                                                                              \
             int curr_frame = frames[(frames_drawn / delay) % (sizeof(frames) / sizeof(int))];                             \
@@ -632,7 +663,7 @@ void editor_run(SDL_Renderer* renderer) {
             float v1 = (curr_frame / theme_data[curr_theme].tiles_in_row) / ((float)height / theme_data[curr_theme].height);   \
             float u2 = (curr_frame % theme_data[curr_theme].tiles_in_row + 1) / ((float)width  / theme_data[curr_theme].width); \
             float v2 = (curr_frame / theme_data[curr_theme].tiles_in_row + 1) / ((float)height / theme_data[curr_theme].height); \
-            ImGui::BeginDisabled(selected_tile == i);                                                                             \
+            ImGui::BeginDisabled(selected_tile == curr_tile_id);                                                                  \
             if (ImGui::ImageButton(                                                                                                \
                 ("tile" + std::to_string(i)).c_str(),                                                                               \
                 tex,                                                                                                                 \
@@ -641,7 +672,7 @@ void editor_run(SDL_Renderer* renderer) {
                     theme_data[curr_theme].height * 2                                                                                   \
                 ), ImVec2(u1, v1), ImVec2(u2, v2)                                                                                        \
             )) {                                                                                                                          \
-                selected_tile = i;                                                                                                         \
+                selected_tile = curr_tile_id;                                                                                              \
             }                                                                                                                               \
             ImGui::SetItemTooltip("%s", name);                                                                                               \
             ImGui::EndDisabled();                                                                                                             \
