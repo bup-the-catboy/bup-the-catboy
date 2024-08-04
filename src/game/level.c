@@ -207,6 +207,8 @@ void load_level_impl(const unsigned char* data) {
             void* tilemap_index = LE_EntityGetTilemap(entitylist);
             LE_Layer* tilemap = LE_LayerGetByIndex(level->layers, (int)(uintptr_t)tilemap_index);
             LE_EntityAssignTilemap(entitylist, LE_LayerGetDataPointer(tilemap));
+            layer->scaleW *= tilemap->scaleW;
+            layer->scaleH *= tilemap->scaleH;
         }
         iter = LE_LayerListNext(iter);
     }
