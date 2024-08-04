@@ -9,21 +9,12 @@ TILE(ground,
     SOLID()
 )
 
-TILE(dirt,
-    SIMPLE_STATIONARY_TEXTURE(2)
-    SOLID()
-)
-
-TILE(coin,
-    SIMPLE_ANIMATED_TEXTURE(4, 10, 28, 13, 29, 14)
-)
-
 TILE(question_block,
-    SIMPLE_ANIMATED_TEXTURE(4, 10, 19, 20, 21, 22)
+    SIMPLE_ANIMATED_TEXTURE(8, 10, 7, 11, 12, 13, 7, 8, 9, 10, )
     SOLID()
 )
 
 TILE(brick,
-    SIMPLE_ANIMATED_TEXTURE(8, 10, 6, 6, 6, 6, 6, 3, 4, 5)
+    SIMPLE_ANIMATED_TEXTURE(8, 10, 2, 2, 2, 2, 3, 4, 5, 6)
     SOLID()
 )
