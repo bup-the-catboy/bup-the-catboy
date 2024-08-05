@@ -218,6 +218,9 @@ void load_level_impl(const unsigned char* data) {
     if (cambound >= 0 && cambound < level->num_cambounds) camera_set_bounds(level->cambounds[cambound]);
     change_level_music(music);
     current_level = level;
+
+    camera_set_focus(12, 8);
+    camera_snap();
 }
 
 void update_level() {

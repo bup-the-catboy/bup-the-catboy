@@ -39,5 +39,4 @@ entity_update(player) {
     }
     entity->velY += 0.03f;
     if ((entity->flags & LE_EntityFlags_OnGround) && is_button_pressed(BUTTON_JUMP)) entity->velY = -0.55f;
-    camera_set_focus(entity->posX, entity->posY);
 }
