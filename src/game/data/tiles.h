@@ -17,10 +17,16 @@ TILE(question_block,
 
 TILE(brick,
     SIMPLE_ANIMATED_TEXTURE(8, 10, 2, 2, 2, 2, 3, 4, 5, 6)
+    COLLISION(tilecol_brick)
     SOLID()
 )
 
 TILE(empty_block,
     SIMPLE_STATIONARY_TEXTURE(14)
     SOLID()
+)
+
+TILE(coin,
+    SIMPLE_ANIMATED_TEXTURE(4, 10, 16, 17, 18, 19)
+    COLLISION(tilecol_coin)
 )
