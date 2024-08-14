@@ -13,6 +13,7 @@
 struct AudioInstance* music_instance;
 struct Level* current_level = NULL;
 uint64_t global_timer = 0;
+uint32_t unique_entity_id = 0;
 
 void change_level_music(int track) {
     struct Audio* nsf = GET_ASSET(struct Audio, "audio/music.nsf");
@@ -48,15 +49,16 @@ void destroy_level(struct Level* level) {
     free(level);
 }
 
-void load_level(struct Binary* binary) {
-    load_level_impl(binary->ptr);
+uint32_t get_unique_entity_id() {
+    return unique_entity_id++;
 }
 
-void load_level_impl(const unsigned char* data) {
-    if (current_level) destroy_level(current_level);
+struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned int* pmusic, unsigned int* pcambound, int datalen) {
     struct Level* level = malloc(sizeof(struct Level));
     struct BinaryStream* stream = binary_stream_create(data);
-    LE_EntityList* entity_list;
+
+    level->raw = data;
+    level->raw_length = datalen;
 
     stream = binary_stream_goto(stream);
     unsigned int theme, music, cambound;
@@ -158,7 +160,7 @@ void load_level_impl(const unsigned char* data) {
             layer = LE_AddTilemapLayer(level->layers, tilemap);
         } break;
         case LE_LayerType_Entity: {
-            LE_EntityList* el = entity_list = LE_CreateEntityList();
+            LE_EntityList* el = LE_CreateEntityList();
             unsigned int tilemap, num_entities;
             BINARY_STREAM_READ(stream, tilemap);
             BINARY_STREAM_READ(stream, num_entities);
@@ -172,6 +174,8 @@ void load_level_impl(const unsigned char* data) {
                 BINARY_STREAM_READ(stream, x);
                 BINARY_STREAM_READ(stream, y);
                 LE_Entity* entity = LE_CreateEntity(el, get_entity_builder(entityID), x, y);
+                // theres a super low chance that entities will have the same unique id but SHHHHH
+                LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = get_unique_entity_id() }, "unique_id");
                 unsigned int num_properties;
                 BINARY_STREAM_READ(stream, num_properties);
                 for (unsigned int i = 0; i < num_properties; i++) {
@@ -213,14 +217,43 @@ void load_level_impl(const unsigned char* data) {
         iter = LE_LayerListNext(iter);
     }
 
-    LE_CreateEntity(entity_list, get_entity_builder_by_id(player), 0, 0);
+    if (ptheme) *ptheme = theme;
+    if (pmusic) *pmusic = music;
+    if (pcambound) *pcambound = cambound;
 
-    if (cambound >= 0 && cambound < level->num_cambounds) camera_set_bounds(level->cambounds[cambound]);
+    return level;
+}
+
+void load_level(struct Binary* binary) {
+    load_level_impl(binary->ptr, binary->length);
+}
+
+void load_level_impl(unsigned char* data, int datalen) {
+    if (current_level) destroy_level(current_level);
+
+    unique_entity_id = 0;
+
+    unsigned int theme, music, cambound;
+    current_level = parse_level(data, &theme, &music, &cambound, datalen);
+
+    LE_EntityList* list = LE_LayerGetDataPointer(LE_LayerGetByIndex(current_level->layers, 1));
+    LE_Entity*  player = LE_CreateEntity(list, get_entity_builder_by_id(        player), 0, 0);
+    LE_Entity* nplayer = LE_CreateEntity(list, get_entity_builder_by_id(network_player), 0, 0.5);
+    LE_EntitySetProperty( player, (LE_EntityProperty){ .asInt = get_unique_entity_id() }, "unique_id");
+    LE_EntitySetProperty(nplayer, (LE_EntityProperty){ .asInt = get_unique_entity_id() }, "unique_id");
+
+    if (cambound >= 0 && cambound < current_level->num_cambounds) camera_set_bounds(current_level->cambounds[cambound]);
     change_level_music(music);
-    current_level = level;
 
     camera_set_focus(12, 8);
     camera_snap();
+}
+
+void reload_level() {
+    unsigned char* leveldata = malloc(current_level->raw_length);
+    memcpy(leveldata, current_level->raw, current_level->raw_length);
+    load_level_impl(leveldata, current_level->raw_length);
+    free(leveldata);
 }
 
 void update_level() {

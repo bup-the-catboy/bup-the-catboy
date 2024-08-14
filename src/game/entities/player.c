@@ -5,6 +5,8 @@
 #include "assets/assets.h"
 #include "game/input.h"
 #include "game/camera.h"
+#include "game/network/common.h"
+#include "game/network/packet.h"
 
 entity_texture(player) {
     SDL_Texture* tex = GET_ASSET(SDL_Texture, "images/entities/player.png");
@@ -39,4 +41,9 @@ entity_update(player) {
     }
     entity->velY += 0.03f;
     if ((entity->flags & LE_EntityFlags_OnGround) && is_button_pressed(BUTTON_JUMP)) entity->velY = -0.5f;
+    send_packet(packet_entity(entity));
+}
+
+entity_update(network_player) {
+
 }

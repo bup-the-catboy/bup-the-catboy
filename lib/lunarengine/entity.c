@@ -157,11 +157,19 @@ bool LE_EntityGetProperty(LE_Entity* entity, LE_EntityProperty* property, const 
     while (prop->next) {
         prop = prop->next;
         if (strcmp(prop->value->name, name) == 0) {
-            memcpy(property, prop->value, sizeof(LE_EntityProperty));
+            memcpy(property, &prop->value->value, sizeof(LE_EntityProperty));
             return true;
         }
     }
     return false;
+}
+
+int LE_EntityNumProperties(LE_Entity* entity) {
+    return LE_LL_Size(((_LE_Entity*)entity)->properties);
+}
+
+const char* LE_EntityGetPropertyKey(LE_Entity* entity, int index) {
+    return((_LE_EntityProperty*)LE_LL_Get(((_LE_Entity*)entity)->properties, index))->name;
 }
 
 void LE_EntityChangeLists(LE_Entity* entity, LE_EntityList* destlist) {
@@ -172,6 +180,7 @@ void LE_EntityChangeLists(LE_Entity* entity, LE_EntityList* destlist) {
 
 void LE_EntityCollision(LE_Entity* entity, LE_Entity* collider) {
     _LE_CollisionCallbackList* collision = ((_LE_Entity*)entity)->collisionCallbacks;
+    if (!collision) return;
     while (collision->next) {
         collision = collision->next;
         ((EntityCollisionCallback)collision->value)(entity, collider);
@@ -223,7 +232,7 @@ void LE_DeleteEntity(LE_Entity* entity) {
 }
 
 void LE_DestroyEntityList(LE_EntityList* list) {
-    LE_LL_DeepFree(list, (void(*)(void*))LE_DeleteEntity);
+    LE_LL_DeepFree(list, free);
 }
 
 int LE_NumEntities(LE_EntityList* list) {

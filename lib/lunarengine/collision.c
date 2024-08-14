@@ -91,7 +91,7 @@ void CONCAT(LE_RunCollision, AXIS)(LE_Entity* entity) {                         
             iter = LE_EntityListNext(iter);                                                                                   \
             continue;                                                                                                         \
         }                                                                                                                     \
-        bool solid = !(curr->flags & LE_EntityFlags_SolidHitbox) || LE_EntityGetPlatform(curr) == entity;                     \
+        bool solid = curr->flags & LE_EntityFlags_SolidHitbox && LE_EntityGetPlatform(curr) != entity;                        \
         bool side = RUN(entity->vel, AXIS) < 0;                                                                               \
         LE_EntityCollision(curr, entity);                                                                                     \
         if (solid) {                                                                                                          \

@@ -5,4 +5,5 @@
 #define entity_collision(name) void name##_collision(LE_Entity* entity, LE_Entity* collider)
 
 entity_update(player);
+entity_update(network_player);
 entity_texture(player);

@@ -3,6 +3,8 @@
 #include "game/data.h"
 #include "game/level.h"
 #include "game/input.h"
+#include "game/network/packet.h"
+#include "game/network/common.h"
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
@@ -62,7 +64,15 @@ void adjust_display(int width, int height, int* new_w, int* new_h) {
     translate_y = (h - *new_h) / 2.f;
 }
 
-int main() {
+int main(int argc, char** argv) {
+    bool is_client = false;
+    if (argc >= 2) {
+        if (strcmp(argv[1], "--server") == 0) start_server();
+        if (strcmp(argv[1], "--client") == 0) {
+            is_client = true;
+            start_client(argv[2]);
+        }
+    }
     srand(time(NULL));
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
     if (SDL_NumJoysticks() >= 1) joystick = SDL_JoystickOpen(0);
@@ -72,7 +82,8 @@ int main() {
     audio_init();
     load_assets(renderer);
     init_data();
-    load_level(GET_ASSET(struct Binary, "levels/test1.lvl"));
+    libserial_init();
+    if (!is_client) load_level(GET_ASSET(struct Binary, "levels/test1.lvl"));
     LE_DrawList* drawlist = LE_CreateDrawList();
     SDL_RenderSetIntegerScale(renderer, true);
     while (true) {
@@ -100,8 +111,10 @@ int main() {
         rect.x = 0; rect.y = height - translate_y; rect.w = width, rect.h = translate_y;
         SDL_RenderFillRect(renderer, &rect);
         SDL_RenderPresent(renderer);
+        process_packets();
         frame_end(frame, FPS);
     }
+    disconnect();
     audio_deinit();
     if (joystick) SDL_JoystickClose(joystick);
     SDL_DestroyRenderer(renderer);

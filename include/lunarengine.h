@@ -123,6 +123,8 @@ void LE_EntityAssignTilemap(LE_EntityList* list, LE_Tilemap* tilemap);
 void LE_EntitySetProperty(LE_Entity* entity, LE_EntityProperty property, const char* name);
 void LE_EntityDelProperty(LE_Entity* entity, const char* name);
 bool LE_EntityGetProperty(LE_Entity* entity, LE_EntityProperty* property, const char* name);
+int  LE_EntityNumProperties(LE_Entity* entity);
+const char* LE_EntityGetPropertyKey(LE_Entity* entity, int index);
 void LE_EntityChangeLists(LE_Entity* entity, LE_EntityList* destlist);
 void LE_EntityCollision(LE_Entity* entity, LE_Entity* collider);
 void LE_UpdateEntities(LE_EntityList* list);
