@@ -31,7 +31,7 @@ void client_connect(const char* hostname, PacketCallback callback) {
     client = socket(AF_INET, SOCK_STREAM, 0);
     address.sin_family = AF_INET;
     address.sin_port = htons(PORT);
-    if (inet_pton(AF_INET, "127.0.0.1", &address.sin_addr) < 0) {
+    if (inet_pton(AF_INET, hostname, &address.sin_addr) < 0) {
         printf("invalid hostname\n");
         return;
     }
