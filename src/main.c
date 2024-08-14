@@ -64,7 +64,8 @@ void adjust_display(int width, int height, int* new_w, int* new_h) {
 
 int main() {
     srand(time(NULL));
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
+    if (SDL_NumJoysticks() >= 1) joystick = SDL_JoystickOpen(0);
     window = SDL_CreateWindow("Super Mario Bros. Reimagined", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH * 2, HEIGHT * 2, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
@@ -102,6 +103,7 @@ int main() {
         frame_end(frame, FPS);
     }
     audio_deinit();
+    if (joystick) SDL_JoystickClose(joystick);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

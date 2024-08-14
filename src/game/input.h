@@ -11,12 +11,18 @@
 #define INPUT(_) _ = (1 << (__COUNTER__)),
 #define MOUSEBTN(_)
 #define KEYMAP(_)
+#define CONTROLLER(_)
+#define JOYSTICK(_)
 enum ButtonIDs {
 #include "game/data/inputs.h"
 };
 #undef INPUT
 #undef MOUSEBTN
 #undef KEYMAP
+#undef CONTROLLER
+#undef JOYSTICK
+
+extern SDL_Joystick* joystick;
 
 bool is_button_down(int key);
 bool is_button_up(int key);
