@@ -7,3 +7,4 @@
 entity_update(player);
 entity_update(network_player);
 entity_texture(player);
+entity_texture(network_player);

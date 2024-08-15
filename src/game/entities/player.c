@@ -18,6 +18,11 @@ entity_texture(player) {
     return tex;
 }
 
+entity_texture(network_player) {
+    if (!is_socket_open()) return NULL;
+    return player_texture(entity, w, h, srcX, srcY, srcW, srcH);
+}
+
 entity_update(player) {
     bool l = is_button_down(BUTTON_MOVE_LEFT);
     bool r = is_button_down(BUTTON_MOVE_RIGHT);
@@ -44,6 +49,4 @@ entity_update(player) {
     send_packet(packet_entity(entity));
 }
 
-entity_update(network_player) {
-
-}
+entity_update(network_player) {}

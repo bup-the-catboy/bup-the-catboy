@@ -72,7 +72,6 @@ void receive_packet(void* packet) {
             if (current_level == NULL) break;
             LibSerialObj_UpdateEntity* entity = packet;
             entity->entity_id = entity->entity_id == 0 ? 1 : entity->entity_id;
-            printf("deserialized entity_id = %d\n", entity->entity_id);
             LE_EntityList* list = LE_LayerGetDataPointer(LE_LayerGetByIndex(current_level->layers, entity->layer_index));
             LE_EntityListIter* iter = LE_EntityListGetIter(list);
             LE_EntityProperty prop;
@@ -111,6 +110,7 @@ void init_packet_queue() {
 }
 
 void process_packets() {
+    if (!pending_packets) return;
     processing_packets = true;
     struct PendingPacket* curr = pending_packets;
     while (curr->next) {
@@ -149,7 +149,7 @@ void start_client(const char* hostname) {
 }
 
 void disconnect() {
-    if (curr_socket == -1) return;
+    if (!is_open) return;
     is_open = false;
     if (is_server) server_shutdown();
     else client_shutdown();

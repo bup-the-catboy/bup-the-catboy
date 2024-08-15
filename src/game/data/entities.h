@@ -8,6 +8,6 @@ ENTITY(player,
 
 ENTITY(network_player,
     UPDATE(network_player_update)
-    TEXTURE(player_texture)
+    TEXTURE(network_player_texture)
     SIZE(0.75f, 0.75f)
 )

@@ -25,7 +25,6 @@ LibSerialObj_UpdateEntity* packet_entity(LE_Entity* entity) {
     LE_EntityProperty prop;
     LE_EntityGetProperty(entity, &prop, "unique_id");
     packet->entity_id = prop.asInt;
-    printf("serialized entity_id = %d\n", prop.asInt);
     LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
     int index = 0;
     while (iter) {

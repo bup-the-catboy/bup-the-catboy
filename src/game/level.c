@@ -237,8 +237,8 @@ void load_level_impl(unsigned char* data, int datalen) {
     current_level = parse_level(data, &theme, &music, &cambound, datalen);
 
     LE_EntityList* list = LE_LayerGetDataPointer(LE_LayerGetByIndex(current_level->layers, 1));
-    LE_Entity*  player = LE_CreateEntity(list, get_entity_builder_by_id(        player), 0, 0);
-    LE_Entity* nplayer = LE_CreateEntity(list, get_entity_builder_by_id(network_player), 0, 0.5);
+    LE_Entity*  player = LE_CreateEntity(list, get_entity_builder_by_id(        player), 1.5, 14);
+    LE_Entity* nplayer = LE_CreateEntity(list, get_entity_builder_by_id(network_player), 1.5, 14);
     LE_EntitySetProperty( player, (LE_EntityProperty){ .asInt = get_unique_entity_id() }, "unique_id");
     LE_EntitySetProperty(nplayer, (LE_EntityProperty){ .asInt = get_unique_entity_id() }, "unique_id");
 
