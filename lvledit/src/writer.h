@@ -1,5 +1,5 @@
-#ifndef SMBR_LVLEDIT_WRITER_H
-#define SMBR_LVLEDIT_WRITER_H
+#ifndef BTCB_LVLEDIT_WRITER_H
+#define BTCB_LVLEDIT_WRITER_H
 
 typedef struct WriteStream WriteStream;
 

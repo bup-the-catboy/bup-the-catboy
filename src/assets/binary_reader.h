@@ -1,5 +1,5 @@
-#ifndef SMBR_BINARY_READER_H
-#define SMBR_BINARY_READER_H
+#ifndef BTCB_BINARY_READER_H
+#define BTCB_BINARY_READER_H
 
 #include "assets/assets.h"
 

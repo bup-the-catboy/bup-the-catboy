@@ -1,5 +1,5 @@
-#ifndef SMBR_NETWORK_CLIENT_H
-#define SMBR_NETWORK_CLIENT_H
+#ifndef BTCB_NETWORK_CLIENT_H
+#define BTCB_NETWORK_CLIENT_H
 
 #include "game/network/common.h"
 

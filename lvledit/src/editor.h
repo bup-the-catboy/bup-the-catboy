@@ -1,5 +1,5 @@
-#ifndef SMBR_LVLEDIT_EDITOR_H
-#define SMBR_LVLEDIT_EDITOR_H
+#ifndef BTCB_LVLEDIT_EDITOR_H
+#define BTCB_LVLEDIT_EDITOR_H
 
 #include <SDL2/SDL.h>
 

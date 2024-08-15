@@ -1,5 +1,5 @@
-#ifndef SMBR_LEVEL_H
-#define SMBR_LEVEL_H
+#ifndef BTCB_LEVEL_H
+#define BTCB_LEVEL_H
 
 #include <lunarengine.h>
 

@@ -2,3 +2,5 @@ build
 imgui.ini
 *.a
 asset_data.h
+assets/*
+!assets/.gitkeep

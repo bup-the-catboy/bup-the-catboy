@@ -1,5 +1,5 @@
-#ifndef SMBR_INPUT_H
-#define SMBR_INPUT_H
+#ifndef BTCB_INPUT_H
+#define BTCB_INPUT_H
 
 #include <stdbool.h>
 #include <SDL2/SDL.h>

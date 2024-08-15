@@ -4,7 +4,7 @@ OBJ_DIR := build/objs
 BIN_DIR := build
 TOOLS_SRCDIR := tools
 TOOLS_BINDIR := build/tools
-EXECUTABLE := $(BIN_DIR)/smbr
+EXECUTABLE := $(BIN_DIR)/btcb
 
 LIBS_DIR := lib
 LIBS_SRC := $(shell find $(LIBS_DIR)/* -maxdepth 0 -type d -name "*")

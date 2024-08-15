@@ -1,5 +1,5 @@
-#ifndef SMBR_AUDIO_H
-#define SMBR_AUDIO_H
+#ifndef BTCB_AUDIO_H
+#define BTCB_AUDIO_H
 
 #define AUDIO_SAMPLE_RATE 48000
 

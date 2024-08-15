@@ -1,5 +1,5 @@
-#ifndef SMBR_AUDIO_NSF_H
-#define SMBR_AUDIO_NSF_H
+#ifndef BTCB_AUDIO_NSF_H
+#define BTCB_AUDIO_NSF_H
 
 #include "audio.h"
 

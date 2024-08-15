@@ -1,5 +1,5 @@
-#ifndef SMBR_ASSETS_H
-#define SMBR_ASSETS_H
+#ifndef BTCB_ASSETS_H
+#define BTCB_ASSETS_H
 
 #include <SDL2/SDL.h>
 

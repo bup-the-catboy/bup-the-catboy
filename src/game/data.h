@@ -1,5 +1,5 @@
-#ifndef SMBR_DATA_H
-#define SMBR_DATA_H
+#ifndef BTCB_DATA_H
+#define BTCB_DATA_H
 
 #include <lunarengine.h>
 

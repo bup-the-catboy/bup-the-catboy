@@ -1,5 +1,5 @@
-#ifndef SMBR_NETWORK_COMMON_H
-#define SMBR_NETWORK_COMMON_H
+#ifndef BTCB_NETWORK_COMMON_H
+#define BTCB_NETWORK_COMMON_H
 
 #include "assets/assets.h"
 

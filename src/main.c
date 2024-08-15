@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
     srand(time(NULL));
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
     if (SDL_NumJoysticks() >= 1) joystick = SDL_JoystickOpen(0);
-    window = SDL_CreateWindow("Super Mario Bros. Reimagined", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH * 2, HEIGHT * 2, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Bup the Catboy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH * 2, HEIGHT * 2, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
     audio_init();

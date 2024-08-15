@@ -1,5 +1,5 @@
-#ifndef SMBR_NETWORK_SERVER_H
-#define SMBR_NETWORK_SERVER_H
+#ifndef BTCB_NETWORK_SERVER_H
+#define BTCB_NETWORK_SERVER_H
 
 #include "common.h"
 

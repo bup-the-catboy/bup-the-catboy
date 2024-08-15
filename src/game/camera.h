@@ -1,5 +1,5 @@
-#ifndef SMBR_CAMERA_H
-#define SMBR_CAMERA_H
+#ifndef BTCB_CAMERA_H
+#define BTCB_CAMERA_H
 
 #include <stdbool.h>
 
