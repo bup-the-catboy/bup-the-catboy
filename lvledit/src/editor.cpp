@@ -547,7 +547,6 @@ void get_tilemap_size(struct Layer* layer, int* tilemap_width, int* tilemap_heig
 char* create_tilemap_data(struct Layer* layer, int* width, int* height, int* offset_x, int* offset_y) {
     int w, h, ox, oy;
     get_tilemap_size(layer, &w, &h, &ox, &oy);
-    printf("%d %d %d %d\n", w, h, ox, oy);
     char* data = (char*)malloc(w * h);
     memset(data, 0, w * h);
     for (auto tile : layer->tilemap) {
