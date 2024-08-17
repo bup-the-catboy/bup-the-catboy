@@ -21,6 +21,12 @@
 #define TILES_IN_ROW(_1) (void)(_1);
 #define SOLID()
 #define LVLEDIT_HIDE()
+#define LVLEDIT_TEXTURE(_1) (void)(_1);
+#define LVLEDIT_PROPERTIES(...)
+
+#define INT   0
+#define BOOL  1
+#define FLOAT 2
 
 #define ENTITY( _1, _2) GAME_ELEMENT(_1, _2)
 #define TILESET(_1, _2) GAME_ELEMENT(_1, _2)

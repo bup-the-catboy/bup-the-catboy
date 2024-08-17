@@ -14,10 +14,12 @@ LE_Tileset* tilesets[256];
 #define NO_VSCODE
 
 #define TILE(id, data) if (tiledata == tile_data[TILE_DATA_##id]) { data }
-#define COLLISION(func)
-#define TEXTURE(  func)
-#define SOLID(        )
-#define LVLEDIT_HIDE( )
+#define COLLISION(        func)
+#define TEXTURE(          func)
+#define SOLID(                )
+#define LVLEDIT_HIDE(         )
+#define LVLEDIT_TEXTURE(    _ )
+#define LVLEDIT_PROPERTIES(...)
 #define SIMPLE_ANIMATED_TEXTURE(num, delay, ...) return ((int[]){__VA_ARGS__})[(global_timer / delay) % num];
 #define SIMPLE_STATIONARY_TEXTURE(_1) SIMPLE_ANIMATED_TEXTURE(1, 1, _1)
 

@@ -117,12 +117,12 @@ void LE_Draw(LE_LayerList* layers, int screenW, int screenH, LE_DrawList* dl) {
 void LE_DrawSingleLayer(LE_Layer* layer, int screenW, int screenH, LE_DrawList* dl) {
     _LE_Layer* l = (_LE_Layer*)layer;
     _LE_LayerList* ll = ((_LE_LayerList*)l->parent)->frst;
-    l->scrollOffsetX = ll->value->cameraData.camPosX * l->scrollSpeedX;
-    l->scrollOffsetY = ll->value->cameraData.camPosY * l->scrollSpeedY;
-    float tlx = screenW / -2.f / l->scaleW + l->scrollOffsetX;
-    float tly = screenH / -2.f / l->scaleH + l->scrollOffsetY;
-    float brx = screenW /  2.f / l->scaleW + l->scrollOffsetX;
-    float bry = screenH /  2.f / l->scaleH + l->scrollOffsetY;
+    float offsetX = ll->value->cameraData.camPosX * l->scrollSpeedX + l->scrollOffsetX;
+    float offsetY = ll->value->cameraData.camPosY * l->scrollSpeedY + l->scrollOffsetY;
+    float tlx = screenW / -2.f / l->scaleW + offsetX;
+    float tly = screenH / -2.f / l->scaleH + offsetY;
+    float brx = screenW /  2.f / l->scaleW + offsetX;
+    float bry = screenH /  2.f / l->scaleH + offsetY;
     switch (l->type) {
         case LE_LayerType_Tilemap:
             {
@@ -131,7 +131,7 @@ void LE_DrawSingleLayer(LE_Layer* layer, int screenW, int screenH, LE_DrawList* 
                 if (!tileset) return;
                 int w, h;
                 LE_TilesetGetTileSize(tileset, &w, &h);
-                LE_DrawPartialTilemap(l->ptr, -l->scrollOffsetX * l->scaleW + screenW / 2.f, -l->scrollOffsetY * l->scaleH + screenH / 2.f, tlx - 1, tly - 1, brx + 1, bry + 1, l->scaleW / w, l->scaleH / h, dl);
+                LE_DrawPartialTilemap(l->ptr, -offsetX * l->scaleW + screenW / 2.f, -offsetY * l->scaleH + screenH / 2.f, tlx - 1, tly - 1, brx + 1, bry + 1, l->scaleW / w, l->scaleH / h, dl);
             }
             break;
         case LE_LayerType_Entity:
@@ -139,13 +139,13 @@ void LE_DrawSingleLayer(LE_Layer* layer, int screenW, int screenH, LE_DrawList* 
                 LE_EntityListIter* iter = LE_EntityListGetIter(l->ptr);
                 while (iter) {
                     LE_Entity* entity = LE_EntityListGet(iter);
-                    LE_DrawEntity(entity, (entity->posX - l->scrollOffsetX) * l->scaleW + screenW / 2.f, (entity->posY - l->scrollOffsetY) * l->scaleH + screenH / 2.f, 1, 1, dl);
+                    LE_DrawEntity(entity, (entity->posX - offsetX) * l->scaleW + screenW / 2.f, (entity->posY - offsetY) * l->scaleH + screenH / 2.f, 1, 1, dl);
                     iter = LE_EntityListNext(iter);
                 }
             }
             break;
         case LE_LayerType_Custom:
-            ((CustomLayer)l->ptr)(l->scrollOffsetX, l->scrollOffsetY, l->scaleW, l->scaleH);
+            ((CustomLayer)l->ptr)(offsetX, offsetY, l->scaleW, l->scaleH);
             break;
     }
 }

@@ -43,6 +43,10 @@ void writer_write_ptr(WriteStream* stream, void* ptr, int size) {
     stream->curr_ptr += size;
 }
 
+void writer_skip(WriteStream* stream, int bytes) {
+    stream->curr_ptr += bytes;
+}
+
 char* writer_close(WriteStream* stream, int* size) {
     char* data = stream->data;
     if (size) *size = stream->total_size;

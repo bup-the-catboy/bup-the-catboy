@@ -8,6 +8,7 @@ void writer_make_offset(WriteStream* stream, int block_size);
 void writer_make_null_offset(WriteStream* stream);
 void writer_pop_block(WriteStream* stream);
 void writer_write_ptr(WriteStream* stream, void* ptr, int size);
+void writer_skip(WriteStream* stream, int bytes);
 char* writer_close(WriteStream* stream, int* size);
 template<typename T> void writer_write(WriteStream* stream, T value);
 

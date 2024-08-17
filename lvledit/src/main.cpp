@@ -11,7 +11,7 @@ SDL_Window* window;
 
 int main(int argc, char** argv) {
     SDL_Init(SDL_INIT_VIDEO);
-    window = SDL_CreateWindow("SMBR Level Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("BTCB Level Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     ImGui::CreateContext();
     ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
