@@ -30,3 +30,108 @@ TILE(coin,
     SIMPLE_ANIMATED_TEXTURE(4, 10, 16, 17, 18, 19)
     COLLISION(tilecol_coin)
 )
+
+TILE(block,
+    SIMPLE_STATIONARY_TEXTURE(15)
+    SOLID()
+)
+
+TILE(vert_pipe_top_left,
+    SIMPLE_STATIONARY_TEXTURE(32)
+    SOLID()
+)
+
+TILE(vert_pipe_top_right,
+    SIMPLE_STATIONARY_TEXTURE(33)
+    SOLID()
+)
+
+TILE(vert_pipe_left,
+    SIMPLE_STATIONARY_TEXTURE(48)
+    SOLID()
+)
+
+TILE(vert_pipe_right,
+    SIMPLE_STATIONARY_TEXTURE(49)
+    SOLID()
+)
+
+TILE(vert_pipe_bottom_left,
+    SIMPLE_STATIONARY_TEXTURE(64)
+    SOLID()
+)
+
+TILE(vert_pipe_bottom_right,
+    SIMPLE_STATIONARY_TEXTURE(65)
+    SOLID()
+)
+
+TILE(hor_pipe_top_left,
+    SIMPLE_STATIONARY_TEXTURE(34)
+    SOLID()
+)
+
+TILE(hor_pipe_top_right,
+    SIMPLE_STATIONARY_TEXTURE(36)
+    SOLID()
+)
+
+TILE(hor_pipe_top,
+    SIMPLE_STATIONARY_TEXTURE(35)
+    SOLID()
+)
+
+TILE(hor_pipe_bottom,
+    SIMPLE_STATIONARY_TEXTURE(51)
+    SOLID()
+)
+
+TILE(hor_pipe_bottom_left,
+    SIMPLE_STATIONARY_TEXTURE(50)
+    SOLID()
+)
+
+TILE(hor_pipe_bottom_right,
+    SIMPLE_STATIONARY_TEXTURE(52)
+    SOLID()
+)
+
+TILE(vert_pipe_conn_top_left,
+    SIMPLE_STATIONARY_TEXTURE(66)
+    SOLID()
+)
+
+TILE(vert_pipe_conn_top_right,
+    SIMPLE_STATIONARY_TEXTURE(67)
+    SOLID()
+)
+
+TILE(vert_pipe_conn_bottom_left,
+    SIMPLE_STATIONARY_TEXTURE(82)
+    SOLID()
+)
+
+TILE(vert_pipe_conn_bottom_right,
+    SIMPLE_STATIONARY_TEXTURE(83)
+    SOLID()
+)
+
+TILE(hor_pipe_conn_top_left,
+    SIMPLE_STATIONARY_TEXTURE(68)
+    SOLID()
+)
+
+TILE(hor_pipe_conn_top_right,
+    SIMPLE_STATIONARY_TEXTURE(69) // nice
+    SOLID()
+)
+
+TILE(hor_pipe_conn_bottom_left,
+    SIMPLE_STATIONARY_TEXTURE(84)
+    SOLID()
+)
+
+TILE(hor_pipe_conn_bottom_right,
+    SIMPLE_STATIONARY_TEXTURE(85)
+    SOLID()
+)
