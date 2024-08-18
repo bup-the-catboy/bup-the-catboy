@@ -53,7 +53,7 @@ sudo pacman -S git make gcc sdl2 libgme
 
 1. Setup `quasi-msys2` on your distro using the following command:
 ```
-curl  | sh
+curl https://raw.githubusercontent.com/Dominicentek/BupTheCatboy/main/quasi-msys2-setup.sh | sh
 ```
 2. After that, run `~/quasi-msys2/env/shell.sh`
 3. Install dependencies
