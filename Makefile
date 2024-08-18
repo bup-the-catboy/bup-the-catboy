@@ -1,10 +1,18 @@
+ifeq ($(OS),Windows_NT)
+	EXE := .exe
+	WINDOWS := 1
+else
+	EXE :=
+	WINDOWS := 0
+endif
+
 CC := gcc
 SRC_DIR := src
 OBJ_DIR := build/objs
 BIN_DIR := build
 TOOLS_SRCDIR := tools
 TOOLS_BINDIR := build/tools
-EXECUTABLE := $(BIN_DIR)/btcb
+EXECUTABLE := $(BIN_DIR)/btcb$(EXE)
 
 LIBS_DIR := lib
 LIBS_SRC := $(shell find $(LIBS_DIR)/* -maxdepth 0 -type d -name "*")
@@ -22,7 +30,7 @@ LIBS :=
 
 BUILD_FILES := $(BIN_DIR) $(LIBS_BIN) $(LIBS_BUILD) src/assets/asset_data.h
 
-ifeq ($(OS),Windows_NT)
+ifeq ($(WINDOWS),1)
 	CFLAGS += -DWINDOWS
 	LIBS += -static $(shell pkg-config --libs --static sdl2 libgme) -lm -lWs2_32 $(LIBS_FLAGS)
 else
@@ -61,7 +69,7 @@ $(TOOLS_BINDIR)/%: $(TOOLS_SRCDIR)/%.c
 run-tools:
 	@for tool in $(TOOLS_EXEC); do \
 		printf "\033[1m\033[32mRunning tool \033[36m$$tool\033[0m\n"; \
-		$$tool; \
+		$$tool$(EXE); \
 	done
 
 compile: $(EXECUTABLE)
