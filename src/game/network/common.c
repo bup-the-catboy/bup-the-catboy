@@ -6,7 +6,13 @@
 
 #include "game/level.h"
 
+#ifdef WINDOWS
+#include <winsock2.h>
+#define SOCK_NONBLOCK 0
+#else
 #include <sys/socket.h>
+#endif
+
 #include <unistd.h>
 
 struct PendingPacket {
@@ -37,6 +43,10 @@ void _send_packet(void* packet, bool blocking) {
     unsigned char* packet_data = malloc(size + 4);
     *(uint32_t*)packet_data = size;
     memcpy(packet_data + 4, data, size);
+#ifdef WINDOWS
+    u_long mode = !blocking;
+    ioctlsocket(curr_socket, FIONBIO, &mode);
+#endif
     send(curr_socket, packet_data, size + 4, blocking ? 0 : SOCK_NONBLOCK);
     free(packet_data);
     free(data);

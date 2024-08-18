@@ -2,10 +2,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include <linux/limits.h>
 #include <foreach.h>
-#include <vorbis/codec.h>
-#include <vorbis/vorbisfile.h>
+
+#ifndef WINDOWS
+#include <linux/limits.h>
+#endif
 
 #include "assets.h"
 #include "audio/audio.h"

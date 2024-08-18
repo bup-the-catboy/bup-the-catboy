@@ -7,6 +7,12 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
+#ifdef WINDOWS
+#define BINARY "b"
+#else
+#define BINARY
+#endif
+
 void write_file(FILE* f, const char* filename) {
     struct stat s;
     stat(filename, &s);
@@ -36,7 +42,7 @@ void write_file(FILE* f, const char* filename) {
 }
 
 int main() {
-    FILE* f = tmpfile();
+    FILE* f = fopen("assets_temp.bin", "w+" BINARY);
     chdir("assets");
     write_file(f, ".");
     uint8_t zero = 0;
@@ -52,4 +58,6 @@ int main() {
     }
     fclose(f);
     fclose(out);
+    unlink("assets_temp.bin");
+    return 0;
 }

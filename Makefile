@@ -24,7 +24,7 @@ BUILD_FILES := $(BIN_DIR) $(LIBS_BIN) $(LIBS_BUILD) src/assets/asset_data.h
 
 ifeq ($(OS),Windows_NT)
 	CFLAGS += -DWINDOWS
-	LIBS += -static $(shell pkg-config --libs --static sdl2) -lm $(LIBS_FLAGS)
+	LIBS += -static $(shell pkg-config --libs --static sdl2 libgme) -lm -lWs2_32 $(LIBS_FLAGS)
 else
 	LIBS += -lSDL2 -lSDL2main -lgme -lm $(LIBS_FLAGS)
 endif

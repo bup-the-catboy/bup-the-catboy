@@ -1,11 +1,18 @@
 #include "common.h"
 #include "packet.h"
 
+#ifdef WINDOWS
+#include <winsock2.h>
+#define SO_REUSEPORT 0
+typedef int socklen_t;
+#else
 #include <netinet/in.h>
+#include <sys/socket.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <stdbool.h>
@@ -40,7 +47,11 @@ void* server_thread(void* data) {
 }
 
 void server_init(PacketCallback callback) {
+#ifdef WINDOWS
+    char opt;
+#else
     int opt;
+#endif
     struct sockaddr_in* address = malloc(sizeof(struct sockaddr_in));
     server = socket(AF_INET, SOCK_STREAM, 0);
     setsockopt(server, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
