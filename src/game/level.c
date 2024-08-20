@@ -140,7 +140,6 @@ struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned in
         BINARY_STREAM_READ(stream, scy);
         LE_Layer* layer;
         stream = binary_stream_goto(stream);
-        int scale_x = 1, scale_y = 1;
         switch (type) {
         case LE_LayerType_Tilemap: {
             unsigned int w, h;
@@ -154,9 +153,7 @@ struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned in
                     LE_TilemapSetTile(tilemap, x, y, tile);
                 }
             }
-            LE_Tileset* tileset = get_tileset(theme);
-            LE_TilemapSetTileset(tilemap, tileset);
-            LE_TilesetGetTileSize(tileset, &scale_x, &scale_y);
+            LE_TilemapSetTileset(tilemap, get_tileset(theme));
             layer = LE_AddTilemapLayer(level->layers, tilemap);
         } break;
         case LE_LayerType_Entity: {
@@ -203,8 +200,8 @@ struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned in
         layer->scrollSpeedY = smy;
         layer->scrollOffsetX = sox;
         layer->scrollOffsetY = soy;
-        layer->scaleW = scx * scale_x;
-        layer->scaleH = scy * scale_y;
+        layer->scaleW = scx;
+        layer->scaleH = scy;
         stream = binary_stream_close(stream);
         stream = binary_stream_close(stream);
     }

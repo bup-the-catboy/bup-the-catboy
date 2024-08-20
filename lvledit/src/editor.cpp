@@ -13,8 +13,8 @@
 #include "imgui/imgui.h"
 #include "writer.h"
 
-float actual_camx = 0;
-float actual_camy = 0;
+float actual_camx = 12;
+float actual_camy = 8;
 float camx = 0;
 float camy = 0;
 int windoww = 1280;
@@ -241,15 +241,15 @@ void draw_grid(SDL_Renderer* renderer, float scalex, float scaley, float speedx,
     float camY = camy / scaley * speedy + offsety;
     int width = windoww / scalex / grid_width + 2;
     int height = windowh / scaley / grid_height + 2;
-    int fromX = camX - width / 2.f + 12 / scalex;
-    int fromY = camY - height / 2.f + 8 / scaley;
-    int toX = camX + width / 2.f + 12 / scalex;
-    int toY = camY + height / 2.f + 8 / scaley;
+    int fromX = camX - width / 2.f / scalex;
+    int fromY = camY - height / 2.f / scaley;
+    int toX = camX + width / 2.f / scalex;
+    int toY = camY + height / 2.f / scaley;
     for (int y = fromY; y <= toY; y++) {
         for (int x = fromX; x <= toX; x++) {
             SDL_Rect rect = (SDL_Rect){
-                .x = (int)((x - camX) * grid_width  * scalex + windoww / 2.f - 12 * grid_width),
-                .y = (int)((y - camY) * grid_height * scaley + windowh / 2.f - 8 * grid_height),
+                .x = (int)((x - camX) * grid_width  * scalex + windoww / 2.f * grid_width),
+                .y = (int)((y - camY) * grid_height * scaley + windowh / 2.f * grid_height),
                 .w = (int)(grid_width  * scalex) + 1,
                 .h = (int)(grid_height * scaley) + 1
             };
@@ -261,8 +261,8 @@ void draw_grid(SDL_Renderer* renderer, float scalex, float scaley, float speedx,
 void draw_tilemap(struct Layer* layer) {
     float grid_width  = theme_data[curr_theme].width  * 2.f;
     float grid_height = theme_data[curr_theme].height * 2.f;
-    float camX = (camx * layer->smx - windoww / 64.f + 12) / layer->scx + layer->sox;
-    float camY = (camy * layer->smy - windowh / 64.f +  8) / layer->scy + layer->soy;
+    float camX = (camx * layer->smx - windoww / 64.f) / layer->scx + layer->sox;
+    float camY = (camy * layer->smy - windowh / 64.f) / layer->scy + layer->soy;
     int fromX = camX - 1;
     int fromY = camY - 1;
     int toX = camX + windoww / layer->scx / grid_width + 1;
@@ -282,8 +282,8 @@ void draw_tilemap(struct Layer* layer) {
             SDL_Rect dst = (SDL_Rect){
                 .x = (int)((x - camX) * grid_width  * layer->scx),
                 .y = (int)((y - camY) * grid_height * layer->scy),
-                .w = (int)(grid_width  * layer->scx) + 1,
-                .h = (int)(grid_height * layer->scy) + 1
+                .w = (int)(grid_width  * layer->scx),
+                .h = (int)(grid_height * layer->scy)
             };
             Uint8 a;
             SDL_GetRenderDrawColor(renderer, NULL, NULL, NULL, &a);
@@ -298,8 +298,8 @@ void draw_entities(struct Layer* layer) {
     struct Layer* values = layer->entity_tilemap_layer ? layer->entity_tilemap_layer : layer;
     float grid_width  = theme_data[curr_theme].width  * 2.f;
     float grid_height = theme_data[curr_theme].height * 2.f;
-    float camX = (camx * values->smx - windoww / 64.f + 12) / values->scx + values->sox;
-    float camY = (camy * values->smy - windowh / 64.f +  8) / values->scy + values->soy;
+    float camX = (camx * values->smx - windoww / 64.f) / values->scx + values->sox;
+    float camY = (camy * values->smy - windowh / 64.f) / values->scy + values->soy;
     for (struct Entity* entity : layer->entities) {
         SDL_Texture* tex = get_texture(entity->meta->texture_path);
         int width, height;
@@ -384,8 +384,8 @@ void get_position_from_pixel(int inx, int iny, float* outx, float* outy) {
     struct Layer* values = curr_layer->entity_tilemap_layer ? curr_layer->entity_tilemap_layer : curr_layer;
     float grid_width  = theme_data[curr_theme].width  * 2.f * values->scx;
     float grid_height = theme_data[curr_theme].height * 2.f * values->scy;
-    if (outx) *outx = (inx / grid_width ) + ((camx * values->smx - windoww / 64.f + 12) / values->scx) + values->sox;
-    if (outy) *outy = (iny / grid_height) + ((camy * values->smy - windowh / 64.f +  8) / values->scy) + values->soy;
+    if (outx) *outx = (inx / grid_width ) + ((camx * values->smx - windoww / 64.f) / values->scx) + values->sox;
+    if (outy) *outy = (iny / grid_height) + ((camy * values->smy - windowh / 64.f) / values->scy) + values->soy;
 }
 
 void get_tile_position_from_pixel(int inx, int iny, int* outx, int* outy) {

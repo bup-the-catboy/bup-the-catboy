@@ -181,7 +181,7 @@ void LE_DrawPartialTilemap(LE_Tilemap* tilemap, float x, float y, int fromX, int
     for (int Y = fromY; Y <= toY; Y++) {
         for (int X = fromX; X <= toX; X++) {
             if (X < 0 || Y < 0 || X >= w || Y >= h) continue;
-            LE_DrawTileAt(LE_TilemapGetTileData(tilemap, X, Y), (LE_Tileset*)tileset, x + X * scaleW * tileset->tileWidth, y + Y * scaleH * tileset->tileHeight, scaleW, scaleH, dl);
+            LE_DrawTileAt(LE_TilemapGetTileData(tilemap, X, Y), (LE_Tileset*)tileset, (x + X) * scaleW * tileset->tileWidth, (y + Y) * scaleH * tileset->tileHeight, scaleW, scaleH, dl);
         }
     }
 }

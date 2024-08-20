@@ -107,31 +107,42 @@ void* LE_LayerGetDataPointer(LE_Layer* layer) {
 }
 
 void LE_Draw(LE_LayerList* layers, int screenW, int screenH, LE_DrawList* dl) {
-    _LE_LayerList* ll = (_LE_LayerList*)layers;
-    while (ll->next) {
-        ll = ll->next;
-        LE_DrawSingleLayer((LE_Layer*)ll->value, screenW, screenH, dl);
+    for (int i = LE_LL_Size(layers) - 1; i >= 0; i--) {
+        LE_DrawSingleLayer((LE_Layer*)LE_LL_Get(layers, i), screenW, screenH, dl);
     }
 }
 
 void LE_DrawSingleLayer(LE_Layer* layer, int screenW, int screenH, LE_DrawList* dl) {
     _LE_Layer* l = (_LE_Layer*)layer;
     _LE_LayerList* ll = ((_LE_LayerList*)l->parent)->frst;
-    float offsetX = ll->value->cameraData.camPosX * l->scrollSpeedX + l->scrollOffsetX;
-    float offsetY = ll->value->cameraData.camPosY * l->scrollSpeedY + l->scrollOffsetY;
-    float tlx = screenW / -2.f / l->scaleW + offsetX;
-    float tly = screenH / -2.f / l->scaleH + offsetY;
-    float brx = screenW /  2.f / l->scaleW + offsetX;
-    float bry = screenH /  2.f / l->scaleH + offsetY;
+
+    int tileW = 1, tileH = 1;
+    if (l->type == LE_LayerType_Tilemap) {
+        LE_Tilemap* tilemap = l->ptr;
+        LE_Tileset* tileset = LE_TilemapGetTileset(tilemap);
+        if (!tileset) return;
+        LE_TilesetGetTileSize(tileset, &tileW, &tileH);
+    }
+    if (l->type == LE_LayerType_Entity) {
+        LE_Tilemap* tilemap = LE_EntityGetTilemap(l->ptr);
+        if (tilemap) {
+            LE_Tileset* tileset = LE_TilemapGetTileset(tilemap);
+            if (tileset) {
+                LE_TilesetGetTileSize(tileset, &tileW, &tileH);
+            }
+        }
+    }
+
+    float offsetX = (ll->value->cameraData.camPosX * layer->scrollSpeedX - screenW / 2.f / tileW) / layer->scaleW + layer->scrollOffsetX;
+    float offsetY = (ll->value->cameraData.camPosY * layer->scrollSpeedY - screenH / 2.f / tileH) / layer->scaleH + layer->scrollOffsetY;
+    float tlx = offsetX - 1;
+    float tly = offsetY - 1;
+    float brx = offsetX + screenW / layer->scaleW / tileW + 1;
+    float bry = offsetY + screenH / layer->scaleH / tileH + 1;
     switch (l->type) {
         case LE_LayerType_Tilemap:
             {
-                LE_Tilemap* tilemap = l->ptr;
-                LE_Tileset* tileset = LE_TilemapGetTileset(tilemap);
-                if (!tileset) return;
-                int w, h;
-                LE_TilesetGetTileSize(tileset, &w, &h);
-                LE_DrawPartialTilemap(l->ptr, -offsetX * l->scaleW + screenW / 2.f, -offsetY * l->scaleH + screenH / 2.f, tlx - 1, tly - 1, brx + 1, bry + 1, l->scaleW / w, l->scaleH / h, dl);
+                LE_DrawPartialTilemap(l->ptr, -offsetX, -offsetY, tlx, tly, brx, bry, l->scaleW, l->scaleH, dl);
             }
             break;
         case LE_LayerType_Entity:
@@ -139,7 +150,7 @@ void LE_DrawSingleLayer(LE_Layer* layer, int screenW, int screenH, LE_DrawList* 
                 LE_EntityListIter* iter = LE_EntityListGetIter(l->ptr);
                 while (iter) {
                     LE_Entity* entity = LE_EntityListGet(iter);
-                    LE_DrawEntity(entity, (entity->posX - offsetX) * l->scaleW + screenW / 2.f, (entity->posY - offsetY) * l->scaleH + screenH / 2.f, 1, 1, dl);
+                    LE_DrawEntity(entity, (entity->posX - offsetX) * tileW * l->scaleW, (entity->posY - offsetY) * tileH * l->scaleH, l->scaleW, l->scaleH, dl);
                     iter = LE_EntityListNext(iter);
                 }
             }

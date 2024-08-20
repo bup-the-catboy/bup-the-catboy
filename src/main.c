@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
     load_assets(renderer);
     init_data();
     libserial_init();
-    if (!is_client) load_level(GET_ASSET(struct Binary, "levels/1-1.lvl"));
+    if (!is_client) load_level(GET_ASSET(struct Binary, "levels/layer-settings-test.lvl"));
     LE_DrawList* drawlist = LE_CreateDrawList();
     SDL_RenderSetIntegerScale(renderer, true);
     while (true) {
