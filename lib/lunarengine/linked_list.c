@@ -37,8 +37,10 @@ void LE_LL_DeepClear(void* list, void(*dispose)(void*)) {
     struct LinkedList_void* ll = list;
     while (ll) {
         struct LinkedList_void* next = ll->next;
-        if (ll->value) dispose(ll->value);
-        if (ll->prev) free(ll);
+        if (ll->prev) {
+            if (ll->value) dispose(ll->value);
+            free(ll);
+        }
         else ll->next = NULL;
         ll = next;
     }

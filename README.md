@@ -12,6 +12,7 @@ lvledit       - Source code for the level editor program
 src
   assets      - Reading & parsing assets
   audio       - Audio engine
+  font        - Text/font renderer
   game        - Core game source code
     data      - Game data (tile, tileset and entity metadata)
     entities  - Entity interaction and update code

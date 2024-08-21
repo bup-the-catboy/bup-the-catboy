@@ -60,7 +60,8 @@ typedef struct {
 
 typedef void(*DrawListRenderer)(void* texture, 
     float dstX, float dstY, float dstW, float dstH,
-    int   srcX, int   srcY, int   srcW, int   srcH
+    int   srcX, int   srcY, int   srcW, int   srcH,
+    unsigned int color
 );
 typedef void*(*EntityTextureCallback)(
     LE_Entity* entity, int* width, int* height,
@@ -103,8 +104,10 @@ LE_Layer* LE_LayerListGet(LE_LayerListIter* iter);
 LE_DrawList* LE_CreateDrawList();
 void LE_Render(LE_DrawList* dl, DrawListRenderer renderer);
 void LE_DrawListAppend(LE_DrawList* dl, void* texture, float dstX, float dstY, float dstW, float dstH, int srcX, int srcY, int srcW, int srcH);
+void LE_DrawSetColor(LE_DrawList* dl, unsigned int rgba);
 void LE_ClearDrawList(LE_DrawList* dl);
 void LE_DestroyDrawList(LE_DrawList* list);
+unsigned int LE_DrawGetColor(LE_DrawList* dl);
 
 LE_EntityBuilder* LE_CreateEntityBuilder();
 void LE_EntityBuilderAddTextureCallback(LE_EntityBuilder* builder, EntityTextureCallback callback);

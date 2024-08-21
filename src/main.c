@@ -5,6 +5,7 @@
 #include "game/input.h"
 #include "game/network/packet.h"
 #include "game/network/common.h"
+#include "font/font.h"
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
@@ -35,11 +36,13 @@ void frame_end(Uint64 start_ticks, int fps) {
     SDL_Delay(wait_time);
 }
 
-void drawlist_renderer(void* texture, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch) {
+void drawlist_renderer(void* texture, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
     SDL_FRect dst = { dstx * scale, dsty * scale, dstw * scale, dsth * scale };
     SDL_Rect  src = { srcx,         srcy,         srcw,         srch         };
     dst.x += translate_x;
     dst.y += translate_y;
+    SDL_SetTextureColorMod(texture, color >> 24, color >> 16, color >> 8);
+    SDL_SetTextureAlphaMod(texture, color >> 0);
     SDL_RenderCopyF(renderer, texture, &src, &dst);
 }
 
@@ -97,7 +100,12 @@ int main(int argc, char** argv) {
         SDL_RenderClear(renderer);
         if (current_level != NULL) {
             update_level();
-            LE_Draw(current_level->layers, WIDTH, HEIGHT, drawlist);
+            //LE_Draw(current_level->layers, WIDTH, HEIGHT, drawlist);
+            render_text(drawlist, 20, 20, "uh.. im ${~}${&}gay${!~&}...");
+            render_text(drawlist, 20, 32, "i am ${~}${&}gay${!~&}.");
+            render_text(drawlist, 20, 44, "i am so ${~}${&}gay${!~&}.");
+            render_text(drawlist, 20, 56, "i am a ${~}${&}homosexual${!~&}");
+            render_text(drawlist, 20, 68, "i like ${~}${&}boys${!~&}");
             LE_Render(drawlist, drawlist_renderer);
             LE_ClearDrawList(drawlist);
         }
