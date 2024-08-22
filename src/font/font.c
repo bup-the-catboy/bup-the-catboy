@@ -206,7 +206,7 @@ void render_text_graph(LE_DrawList* dl, float x, float y, struct TextGraph* text
                 color = ((int)(r * 255) << 24) | ((int)(g * 255) << 16) | ((int)(b * 255) << 8) | (alpha);
             }
             else color = (curr->color << 8) | (alpha);
-            int index = c - 32;
+            int index = (unsigned char)c - 32;
             int srcX = index % 12 * 10;
             int srcY = index / 12 * 10;
             LE_DrawSetColor(dl, color);

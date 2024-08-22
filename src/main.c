@@ -101,11 +101,8 @@ int main(int argc, char** argv) {
         if (current_level != NULL) {
             update_level();
             //LE_Draw(current_level->layers, WIDTH, HEIGHT, drawlist);
-            render_text(drawlist, 20, 20, "uh.. im ${~}${&}gay${!~&}...");
-            render_text(drawlist, 20, 32, "i am ${~}${&}gay${!~&}.");
-            render_text(drawlist, 20, 44, "i am so ${~}${&}gay${!~&}.");
-            render_text(drawlist, 20, 56, "i am a ${~}${&}homosexual${!~&}");
-            render_text(drawlist, 20, 68, "i like ${~}${&}boys${!~&}");
+            render_text(drawlist, 8, 8, LIVES "*03");
+            render_text(drawlist, 8, 20, "%c*00", COINS[(global_timer / 10) % 4]);
             LE_Render(drawlist, drawlist_renderer);
             LE_ClearDrawList(drawlist);
         }
