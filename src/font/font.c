@@ -2,6 +2,7 @@
 #include <lunarengine.h>
 #include <math.h>
 
+#include "main.h"
 #include "assets/assets.h"
 #include "game/level.h"
 
@@ -18,6 +19,7 @@ struct TextGraph {
     float wave_speed;
     float scale;
     float opacity;
+    int spacing;
     int textptr;
     char* text;
     struct TextGraph* next;
@@ -86,6 +88,7 @@ struct TextGraph* parse_text_graph(const char* string) {
     curr->color = 0xFFFFFF;
     curr->scale = 1;
     curr->opacity = 1;
+    curr->spacing = 8;
     int ptr = 0;
     char c;
     while ((c = string[ptr++])) {
@@ -100,6 +103,7 @@ struct TextGraph* parse_text_graph(const char* string) {
                     curr->next = NULL;
                     curr->text = NULL;
                     curr->textptr = 0;
+                    curr->spacing = 8;
                 }
                 nextchar;
                 if (c == '^') {
@@ -113,6 +117,11 @@ struct TextGraph* parse_text_graph(const char* string) {
                 else if (c == '#') {
                     curr->gay = false;
                     curr->color = read_color;
+                    nextchar;
+                }
+                else if (c == '_') {
+                    curr->spacing = read_number;
+                    append(' ');
                     nextchar;
                 }
                 else if (c == '&') {
@@ -211,7 +220,8 @@ void render_text_graph(LE_DrawList* dl, float x, float y, struct TextGraph* text
             int srcY = index / 12 * 10;
             LE_DrawSetColor(dl, color);
             LE_DrawListAppend(dl, texture, x, y + wave, curr->scale * 10, curr->scale * 10, srcX, srcY, 10, 10);
-            x += curr->scale * 8;
+            x += curr->scale * curr->spacing;
+            curr->spacing = 8;
             curr_glyph++;
         }
         curr = curr->next;

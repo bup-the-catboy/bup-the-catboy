@@ -8,11 +8,10 @@
 #include "audio/audio.h"
 #include "camera.h"
 #include "data.h"
-#include "input.h"
+#include "layers/layers.h"
 
 struct AudioInstance* music_instance;
 struct Level* current_level = NULL;
-uint64_t global_timer = 0;
 uint32_t unique_entity_id = 2;
 
 void change_level_music(int track) {
@@ -127,6 +126,7 @@ struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned in
     unsigned int num_layers;
     BINARY_STREAM_READ(stream, num_layers);
     level->layers = LE_CreateLayerList();
+    LE_AddCustomLayer(level->layers, layer_hud);
     for (int i = 0; i < num_layers; i++) {
         stream = binary_stream_goto(stream);
         unsigned int type;
@@ -214,7 +214,7 @@ struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned in
         if (type == LE_LayerType_Entity) {
             LE_EntityList* entitylist = LE_LayerGetDataPointer(layer);
             void* tilemap_index = LE_EntityGetTilemap(entitylist);
-            LE_Layer* tilemap = LE_LayerGetByIndex(level->layers, (int)(uintptr_t)tilemap_index);
+            LE_Layer* tilemap = LE_LayerGetByIndex(level->layers, (int)(uintptr_t)tilemap_index + 1);
             LE_EntityAssignTilemap(entitylist, LE_LayerGetDataPointer(tilemap));
             layer->scaleW *= tilemap->scaleW;
             layer->scaleH *= tilemap->scaleH;
@@ -256,7 +256,6 @@ void reload_level() {
 }
 
 void update_level() {
-    global_timer++;
     LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
     while (iter) {
         LE_Layer* layer = LE_LayerListGet(iter);

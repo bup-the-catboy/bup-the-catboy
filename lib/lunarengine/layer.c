@@ -156,7 +156,7 @@ void LE_DrawSingleLayer(LE_Layer* layer, int screenW, int screenH, LE_DrawList* 
             }
             break;
         case LE_LayerType_Custom:
-            ((CustomLayer)l->ptr)(offsetX, offsetY, l->scaleW, l->scaleH);
+            ((CustomLayer)l->ptr)(dl, offsetX, offsetY, l->scaleW, l->scaleH);
             break;
     }
 }

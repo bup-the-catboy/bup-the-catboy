@@ -135,3 +135,35 @@ TILE(hor_pipe_conn_bottom_right,
     SIMPLE_STATIONARY_TEXTURE(85)
     SOLID()
 )
+
+TILE(catcoin_top_left,
+    SIMPLE_ANIMATED_TEXTURE(4, 10, 24, 26, 28, 30)
+)
+
+TILE(catcoin_top_right,
+    SIMPLE_ANIMATED_TEXTURE(4, 10, 25, 27, 29, 31)
+)
+
+TILE(catcoin_bottom_left,
+    SIMPLE_ANIMATED_TEXTURE(4, 10, 40, 42, 44, 46)
+)
+
+TILE(catcoin_bottom_right,
+    SIMPLE_ANIMATED_TEXTURE(4, 10, 41, 43, 45, 47)
+)
+
+TILE(catcoin_top_left_outline,
+    SIMPLE_ANIMATED_TEXTURE(4, 10, 56, 58, 60, 62)
+)
+
+TILE(catcoin_top_right_outline,
+    SIMPLE_ANIMATED_TEXTURE(4, 10, 57, 59, 61, 63)
+)
+
+TILE(catcoin_bottom_left_outline,
+    SIMPLE_ANIMATED_TEXTURE(4, 10, 72, 74, 76, 78)
+)
+
+TILE(catcoin_bottom_right_outline,
+    SIMPLE_ANIMATED_TEXTURE(4, 10, 73, 75, 77, 79)
+)

@@ -1,3 +1,5 @@
+#include "main.h"
+
 #include "assets/assets.h"
 #include "audio/audio.h"
 #include "game/data.h"
@@ -17,8 +19,7 @@
 SDL_Window* window;
 SDL_Renderer* renderer;
 
-#define WIDTH  384
-#define HEIGHT 256
+uint64_t global_timer = 0;
 
 float scale = 1;
 float translate_x = 0;
@@ -86,7 +87,7 @@ int main(int argc, char** argv) {
     load_assets(renderer);
     init_data();
     libserial_init();
-    if (!is_client) load_level(GET_ASSET(struct Binary, "levels/layer-settings-test.lvl"));
+    if (!is_client) load_level(GET_ASSET(struct Binary, "levels/test2.lvl"));
     LE_DrawList* drawlist = LE_CreateDrawList();
     SDL_RenderSetIntegerScale(renderer, true);
     while (true) {
@@ -100,9 +101,7 @@ int main(int argc, char** argv) {
         SDL_RenderClear(renderer);
         if (current_level != NULL) {
             update_level();
-            //LE_Draw(current_level->layers, WIDTH, HEIGHT, drawlist);
-            render_text(drawlist, 8, 8, LIVES "*03");
-            render_text(drawlist, 8, 20, "%c*00", COINS[(global_timer / 10) % 4]);
+            LE_Draw(current_level->layers, WIDTH, HEIGHT, drawlist);
             LE_Render(drawlist, drawlist_renderer);
             LE_ClearDrawList(drawlist);
         }
@@ -118,6 +117,7 @@ int main(int argc, char** argv) {
         SDL_RenderPresent(renderer);
         process_packets();
         frame_end(frame, FPS);
+        global_timer++;
     }
     disconnect();
     audio_deinit();

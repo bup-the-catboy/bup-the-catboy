@@ -76,6 +76,7 @@ typedef void(*TileCollisionCallback)(
     enum LE_Direction direction
 );
 typedef void(*CustomLayer)(
+    LE_DrawList* dl,
     float scrollOffsetX, float scrollOffsetY,
     float scaleX, float scaleH
 );
