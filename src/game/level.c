@@ -12,6 +12,7 @@
 
 struct AudioInstance* music_instance;
 struct Level* current_level = NULL;
+uint8_t curr_level_id = 0;
 uint32_t unique_entity_id = 2;
 
 void change_level_music(int track) {

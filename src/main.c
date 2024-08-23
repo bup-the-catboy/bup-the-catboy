@@ -7,7 +7,7 @@
 #include "game/input.h"
 #include "game/network/packet.h"
 #include "game/network/common.h"
-#include "font/font.h"
+#include "game/savefile.h"
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
@@ -68,14 +68,20 @@ void adjust_display(int width, int height, int* new_w, int* new_h) {
     translate_y = (h - *new_h) / 2.f;
 }
 
+void init_game() {
+    audio_init();
+    load_assets(renderer);
+    init_data();
+    libserial_init();
+    savefile_load();
+    savefile_select(0);
+    load_level(GET_ASSET(struct Binary, "levels/hudtest.lvl"));
+}
+
 int main(int argc, char** argv) {
-    bool is_client = false;
     if (argc >= 2) {
         if (strcmp(argv[1], "--server") == 0) start_server();
-        if (strcmp(argv[1], "--client") == 0) {
-            is_client = true;
-            start_client(argv[2]);
-        }
+        if (strcmp(argv[1], "--client") == 0) start_client(argv[2]);
     }
     srand(time(NULL));
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
@@ -83,13 +89,8 @@ int main(int argc, char** argv) {
     window = SDL_CreateWindow("Bup the Catboy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH * 2, HEIGHT * 2, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
-    audio_init();
-    load_assets(renderer);
-    init_data();
-    libserial_init();
-    if (!is_client) load_level(GET_ASSET(struct Binary, "levels/test2.lvl"));
     LE_DrawList* drawlist = LE_CreateDrawList();
-    SDL_RenderSetIntegerScale(renderer, true);
+    init_game();
     while (true) {
         if (handle_sdl_events()) break;
         Uint64 frame = frame_begin();

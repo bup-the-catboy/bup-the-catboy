@@ -1,10 +1,12 @@
+#include "font.h"
+
 #include <SDL2/SDL.h>
 #include <lunarengine.h>
 #include <math.h>
 
 #include "main.h"
 #include "assets/assets.h"
-#include "game/level.h"
+#include "math_util.h"
 
 #define M_2PI 6.283185307179586
 
@@ -24,19 +26,6 @@ struct TextGraph {
     char* text;
     struct TextGraph* next;
 };
-
-int clamp(int x, int min, int max) {
-    if (x < min) return min;
-    if (x > max) return max;
-    return x;
-}
-
-float wrap(float x, float min, float max) {
-    float range = max - min;
-    while (x < min) x += range;
-    while (x > max) x -= range;
-    return x;
-}
 
 void _append(struct TextGraph* curr, char c) {
     if (!curr->text) {
@@ -182,10 +171,17 @@ void render_text_graph(LE_DrawList* dl, float x, float y, struct TextGraph* text
     char c;
     int ptr;
     int curr_glyph = 0;
+    float orig_x = x;
     while (curr) {
         ptr = 0;
         if (!curr->text) break;
         while ((c = curr->text[ptr++])) {
+            if (c == '\n') {
+                x = orig_x;
+                y += curr->scale * curr->spacing;
+                curr->spacing = 8;
+                continue;
+            }
             float wave = 0;
             int alpha = clamp((int)(curr->opacity * 255), 0, 255);
             unsigned int color;
@@ -231,6 +227,11 @@ void render_text_graph(LE_DrawList* dl, float x, float y, struct TextGraph* text
 void render_text(LE_DrawList* dl, float x, float y, const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
+    render_textv(dl, x, y, fmt, args);
+    va_end(args);
+}
+
+void render_textv(LE_DrawList* dl, float x, float y, const char* fmt, va_list args) {
     char formatted[8192];
     vsnprintf(formatted, 8192, fmt, args);
     va_end(args);

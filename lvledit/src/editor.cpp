@@ -241,15 +241,15 @@ void draw_grid(SDL_Renderer* renderer, float scalex, float scaley, float speedx,
     float camY = camy / scaley * speedy + offsety;
     int width = windoww / scalex / grid_width + 2;
     int height = windowh / scaley / grid_height + 2;
-    int fromX = camX - width / 2.f / scalex;
-    int fromY = camY - height / 2.f / scaley;
-    int toX = camX + width / 2.f / scalex;
-    int toY = camY + height / 2.f / scaley;
+    int fromX = camX - width / 2.f;
+    int fromY = camY - height / 2.f;
+    int toX = camX + width / 2.f;
+    int toY = camY + height / 2.f;
     for (int y = fromY; y <= toY; y++) {
         for (int x = fromX; x <= toX; x++) {
             SDL_Rect rect = (SDL_Rect){
-                .x = (int)((x - camX) * grid_width  * scalex + windoww / 2.f * grid_width),
-                .y = (int)((y - camY) * grid_height * scaley + windowh / 2.f * grid_height),
+                .x = (int)((x - camX) * grid_width  * scalex + windoww / 2.f),
+                .y = (int)((y - camY) * grid_height * scaley + windowh / 2.f),
                 .w = (int)(grid_width  * scalex) + 1,
                 .h = (int)(grid_height * scaley) + 1
             };

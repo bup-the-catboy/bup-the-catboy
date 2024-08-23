@@ -26,6 +26,7 @@ struct Level {
 };
 
 extern struct Level* current_level;
+extern uint8_t curr_level_id;
 
 void change_level_music(int track);
 void load_level(struct Binary* data);

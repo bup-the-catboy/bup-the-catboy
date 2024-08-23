@@ -2,6 +2,7 @@
 #define BTCB_FONT_H
 
 #include <lunarengine.h>
+#include <stdarg.h>
 
 #define CHAR_COIN1 "\x80"
 #define CHAR_COIN2 "\x81"
@@ -27,6 +28,7 @@
 #define CHAR_CATCOIN_O (CHAR_CATCOIN_TLO CHAR_CATCOIN_TRO CHAR_CATCOIN_BLO CHAR_CATCOIN_BRO)
 #define CHAR_CATCOIN_F (CHAR_CATCOIN_TLF CHAR_CATCOIN_TRF CHAR_CATCOIN_BLF CHAR_CATCOIN_BRF)
 
-void render_text(LE_DrawList* dl, float x, float y, const char* fmt, ...);
+void render_text (LE_DrawList* dl, float x, float y, const char* fmt, ...);
+void render_textv(LE_DrawList* dl, float x, float y, const char* fmt, va_list args);
 
 #endif

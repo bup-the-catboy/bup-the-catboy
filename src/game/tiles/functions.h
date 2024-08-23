@@ -6,3 +6,4 @@
 tile_collision(question_block);
 tile_collision(brick);
 tile_collision(coin);
+tile_collision(life_coin);
