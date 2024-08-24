@@ -214,11 +214,13 @@ struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned in
         enum LE_LayerType type = LE_LayerGetType(layer);
         if (type == LE_LayerType_Entity) {
             LE_EntityList* entitylist = LE_LayerGetDataPointer(layer);
-            void* tilemap_index = LE_EntityGetTilemap(entitylist);
-            LE_Layer* tilemap = LE_LayerGetByIndex(level->layers, (int)(uintptr_t)tilemap_index + 1);
-            LE_EntityAssignTilemap(entitylist, LE_LayerGetDataPointer(tilemap));
-            layer->scaleW *= tilemap->scaleW;
-            layer->scaleH *= tilemap->scaleH;
+            int tilemap_index = (int)(uintptr_t)LE_EntityGetTilemap(entitylist);
+            if (tilemap_index >= 0) {
+                LE_Layer* tilemap = LE_LayerGetByIndex(level->layers, tilemap_index + 1);
+                LE_EntityAssignTilemap(entitylist, LE_LayerGetDataPointer(tilemap));
+                layer->scaleW *= tilemap->scaleW;
+                layer->scaleH *= tilemap->scaleH;
+            }
         }
         iter = LE_LayerListNext(iter);
     }

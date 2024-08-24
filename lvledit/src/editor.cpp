@@ -6,12 +6,20 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "portable-file-dialogs.h"
 #include "imgui/imgui.h"
 #include "writer.h"
+#include "reader.h"
+
+#ifdef WINDOWS
+#define BINARY "b"
+#else
+#define BINARY
+#endif
 
 float actual_camx = 12;
 float actual_camy = 8;
@@ -560,12 +568,113 @@ char* create_tilemap_data(struct Layer* layer, int* width, int* height, int* off
     return data;
 }
 
+void parse_level(unsigned char* data) {
+    ReadStream* stream = reader_create(data);
+
+    reader_goto(stream);
+    curr_theme = reader_read<int32_t>(stream);
+    curr_music = reader_read<int32_t>(stream);
+    curr_cambound = reader_read<int32_t>(stream);
+    reader_pop_block(stream);
+
+    reader_skip(stream, 4); // todo
+    reader_skip(stream, 4); // todo
+
+    reader_goto(stream);
+    layers = {};
+    curr_layer = NULL;
+    layers_created = 0;
+    int num_layers = reader_read<int32_t>(stream);
+    struct EntityMeta* selected_entity_prev = selected_entity;
+    for (int i = 0; i < num_layers; i++) {
+        reader_goto(stream);
+        int type = reader_read<int32_t>(stream);
+        add_layer((enum LayerType)type);
+        curr_layer->smx = reader_read<float>(stream);
+        curr_layer->smy = reader_read<float>(stream);
+        curr_layer->sox = reader_read<float>(stream);
+        curr_layer->soy = reader_read<float>(stream);
+        curr_layer->scx = reader_read<float>(stream);
+        curr_layer->scy = reader_read<float>(stream);
+        reader_goto(stream);
+
+        switch ((enum LayerType)type) {
+        case LAYERTYPE_TILEMAP: {
+            int width = reader_read<int32_t>(stream);
+            int height = reader_read<int32_t>(stream);
+            for (int j = 0; j < width * height; j++) {
+                uint8_t tile = reader_read<uint8_t>(stream);
+                int x = j % width;
+                int y = j / width;
+                set_tile(x, y, tile);
+            }
+        } break;
+
+        case LAYERTYPE_ENTITY: {
+            int tilemap_index = reader_read<int32_t>(stream);
+            int num_entities = reader_read<int32_t>(stream);
+            curr_layer->entity_tilemap_layer = (Layer*)(uintptr_t)tilemap_index;
+            for (int j = 0; j < num_entities; j++) {
+                reader_goto(stream);
+                uint8_t id = reader_read<uint8_t>(stream);
+                reader_skip(stream, 3);
+                float x = reader_read<float>(stream);
+                float y = reader_read<float>(stream);
+                selected_entity = &entity_data[id];
+                struct Entity* entity = create_entity(x, y);
+                curr_layer->entities.push_back(entity);
+                reader_skip(stream, 4); // todo
+                reader_pop_block(stream);
+            }
+        } break;
+        }
+
+        reader_pop_block(stream);
+        reader_pop_block(stream);
+    }
+    std::reverse(layers.begin(), layers.end());
+    selected_entity = selected_entity_prev;
+    curr_layer = NULL;
+    actual_camx = 12;
+    actual_camy = 8;
+    reader_pop_block(stream);
+
+    reader_close(stream);
+
+    for (int i = 0; i < layers.size(); i++) {
+        if (layers[i].type != LAYERTYPE_ENTITY) continue;
+        layers[i].entity_tilemap_layer = &layers[(uintptr_t)layers[i].entity_tilemap_layer];
+    }
+}
+
+void new_level() {
+    parse_level((unsigned char[]){
+        0x10,0x00,0x00,0x00,0x1C,0x00,0x00,0x00,0x20,0x00,0x00,0x00,0x24,0x00,0x00,0x00,0x00,
+        0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+        0x00,0x00,0x00,0x00,0x00,0x00
+    });
+}
+
 std::string last_saved = "";
+
+void open_file() {
+    std::vector<std::string> file = pfd::open_file("Open Level", "", { "Level Files", "*.lvl", "All Files", "*" }, pfd::opt::none).result();
+    if (file.empty()) return;
+    last_saved = file[0];
+    struct stat s;
+    stat(file[0].c_str(), &s);
+    FILE* f = fopen(file[0].c_str(), "r" BINARY);
+    unsigned char* data = (unsigned char*)malloc(s.st_size);
+    fread(data, s.st_size, 1, f);
+    fclose(f);
+    parse_level(data);
+    free(data);
+}
 
 #define arrindex(arr, ptr) (((uintptr_t)(ptr) - (uintptr_t)(arr)) / sizeof(*(arr)))
 void save_file(bool force_select) {
     if (last_saved.empty() || force_select) {
-        last_saved = pfd::save_file("Save Level", "", { "Level Files", "*.lvl", "All Files", "*" }).result();
+        last_saved = pfd::save_file("Save Level", "", { "Level Files", "*.lvl", "All Files", "*" }, pfd::opt::none).result();
         if (last_saved.empty()) return;
     }
 
@@ -577,11 +686,11 @@ void save_file(bool force_select) {
     writer_pop_block(stream);
 
     writer_make_offset(stream, 4);
-    writer_write<int32_t>(stream, 0);
+    writer_write<int32_t>(stream, 0); // todo
     writer_pop_block(stream);
 
     writer_make_offset(stream, 4);
-    writer_write<int32_t>(stream, 0);
+    writer_write<int32_t>(stream, 0); // todo
     writer_pop_block(stream);
 
     writer_make_offset(stream, 4 + layers.size() * 4);
@@ -597,12 +706,12 @@ void save_file(bool force_select) {
         layer.soy -= offset_y;
         writer_make_offset(stream, 32);
         writer_write<int32_t>(stream, layer.type);
-        writer_write_ptr(stream, &layer.smx, sizeof(float));
-        writer_write_ptr(stream, &layer.smy, sizeof(float));
-        writer_write_ptr(stream, &layer.sox, sizeof(float));
-        writer_write_ptr(stream, &layer.soy, sizeof(float));
-        writer_write_ptr(stream, &layer.scx, sizeof(float));
-        writer_write_ptr(stream, &layer.scy, sizeof(float));
+        writer_write<float>(stream, layer.smx);
+        writer_write<float>(stream, layer.smy);
+        writer_write<float>(stream, layer.sox);
+        writer_write<float>(stream, layer.soy);
+        writer_write<float>(stream, layer.scx);
+        writer_write<float>(stream, layer.scy);
         layer.sox += offset_x;
         layer.soy += offset_y;
 
@@ -612,7 +721,7 @@ void save_file(bool force_select) {
             writer_write<int32_t>(stream, width);
             writer_write<int32_t>(stream, height);
             for (int i = 0; i < width * height; i++) {
-                writer_write_ptr(stream, tilemap_data + i, 1);
+                writer_write<uint8_t>(stream, tilemap_data[i]);
             }
             writer_pop_block(stream);
             break;
@@ -628,15 +737,12 @@ void save_file(bool force_select) {
             writer_write<int32_t>(stream, tilemap_index);
             writer_write<int32_t>(stream, layer.entities.size());
             for (int i = 0; i < layer.entities.size(); i++) {
-                uint8_t id = arrindex(entity_data, layer.entities[i]->meta);
                 writer_make_offset(stream, 16);
-                writer_write_ptr(stream, &id, 1);
+                writer_write<uint8_t>(stream, arrindex(entity_data, layer.entities[i]->meta));
                 writer_skip(stream, 3);
-                float x = layer.entities[i]->x - offset_x;
-                float y = layer.entities[i]->y - offset_y;
-                writer_write_ptr(stream, &x, sizeof(float));
-                writer_write_ptr(stream, &y, sizeof(float));
-                writer_write<int32_t>(stream, 0);
+                writer_write<float>(stream, layer.entities[i]->x - offset_x);
+                writer_write<float>(stream, layer.entities[i]->y - offset_y);
+                writer_write<int32_t>(stream, 0); // todo
                 writer_pop_block(stream);
             }
             writer_pop_block(stream);
@@ -650,7 +756,7 @@ void save_file(bool force_select) {
 
     int size;
     char* data = writer_close(stream, &size);
-    FILE* f = fopen(last_saved.c_str(), "w");
+    FILE* f = fopen(last_saved.c_str(), "w" BINARY);
     fwrite(data, size, 1, f);
     fclose(f);
     free(data);
@@ -659,8 +765,8 @@ void save_file(bool force_select) {
 void activate_shortcut(bool ctrl, bool shift, bool alt, char letter) {
     if (MODIF(CTRL)) {
         switch (letter) {
-            case 'N': break; // todo
-            case 'O': break; // todo
+            case 'N': new_level(); break;
+            case 'O': open_file(); break;
             case 'S': save_file(false); break;
             case 'Q': quit = true; break;
             case 'L': curr_mode = EDITMODE_LAYER; break;
@@ -672,7 +778,7 @@ void activate_shortcut(bool ctrl, bool shift, bool alt, char letter) {
             case 'D': break; // todo
             case 'T': add_layer(LAYERTYPE_TILEMAP); break;
             case 'E': add_layer(LAYERTYPE_ENTITY); break;
-            case 'R': actual_camx = 0; actual_camy = 0; break;
+            case 'R': actual_camx = 12; actual_camy = 8; break;
         }
     }
     if (MODIF(CTRL SHIFT)) {
