@@ -48,7 +48,7 @@ entity_update(player) {
     entity->velY += 0.03f;
     if ((entity->flags & LE_EntityFlags_OnGround) && is_button_pressed(BUTTON_JUMP)) entity->velY = -0.5f;
     send_packet(packet_entity(entity));
-    hud_update(entity->posX, entity->posY);
+    hud_update(entity);
 }
 
 entity_update(network_player) {}

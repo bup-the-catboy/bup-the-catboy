@@ -19,6 +19,7 @@
 #define FADE_SPEED 10
 #define FADE_DELAY 60
 #define SHOW_DELAY 300
+#define STANDING_DELAY 180
 #define NUM_CAT_COINS 3
 #define CAT_COIN_DISTANCE 8
 #define CAT_COIN_SPACING 20
@@ -45,6 +46,7 @@ struct HUDElement {
     int opacity;
 };
 
+int standing_timer = 0;
 int cat_coin_collect_timers[NUM_CAT_COINS] = { -2 };
 const char* cat_coin_glint[] = {
     "\x00\x00\n\x00\x00",
@@ -99,7 +101,7 @@ float suggest_y_pos(struct HUDElement* element) {
     int shown = 0;
     for (int i = 0; i < sizeof(hud_elements) / sizeof(*hud_elements); i++) {
         if (&hud_elements[i] == element) break;
-        if (hud_elements[i].show_timer >= SHOW_DELAY + 30) continue;
+        if (hud_elements[i].dst_x == hud_elements[i].hide_x && fabsf(hud_elements[i].dst_x - hud_elements[i].x) < 1) continue;
         shown++;
     }
     return DISTANCE_FROM_TOP + shown * SPACING;
@@ -108,6 +110,7 @@ float suggest_y_pos(struct HUDElement* element) {
 void _show_hud_element(struct HUDElement* element) {
     element->show_timer = 0;
     element->dst_x = SHOWN_POS;
+    element->dst_y = element->y = suggest_y_pos(element);
 }
 
 void hud_update_element(LE_Entity* player, struct HUDElement* element, int target_value) {
@@ -130,12 +133,22 @@ void hud_update_element(LE_Entity* player, struct HUDElement* element, int targe
         _show_hud_element(element);
         element->bump_timer = 0;
     }
-    if (element->show_timer == SHOW_DELAY) element->dst_x = element->hide_x;
+    if (element->show_timer == SHOW_DELAY && standing_timer < STANDING_DELAY) element->dst_x = element->hide_x;
     element->x += (element->dst_x - element->x) / 10;
     element->y += (element->dst_y - element->y) / 10;
 }
 
 void hud_update(LE_Entity* player) {
+    if (player->velX + player->velY < 0.05f) standing_timer++;
+    else standing_timer = 0;
+    for (int i = 0; i < sizeof(hud_elements) / sizeof(*hud_elements); i++) {
+        if (hud_elements[i].show_timer < SHOW_DELAY) continue;
+        if (standing_timer == 0) hud_elements[i].dst_x = hud_elements[i].hide_x;
+        if (standing_timer == STANDING_DELAY) {
+            hud_elements[i].dst_x = SHOWN_POS;
+            hud_elements[i].y = hud_elements[i].dst_y = suggest_y_pos(&hud_elements[i]);
+        }
+    } 
     if (is_button_pressed(BUTTON_MOUSE_LEFT))   savefile->level_flags[curr_level_id] |= (1 << 0);
     if (is_button_pressed(BUTTON_MOUSE_MIDDLE)) savefile->level_flags[curr_level_id] |= (1 << 1);
     if (is_button_pressed(BUTTON_MOUSE_RIGHT))  savefile->level_flags[curr_level_id] |= (1 << 2);
@@ -180,7 +193,6 @@ void render_cat_coins(LE_DrawList* drawlist) {
     for (int j = 0; j < NUM_CAT_COINS; j++) {
         int i = render_order[j];
         bool collected = cat_coin_collect_timers[i] >= 0;
-        int glint_index = clamp((float)(cat_coin_collect_timers[i] - CAT_COIN_POPOUT_DELAY) / 4.f, 1, 1);
         float scale = collected && cat_coin_collect_timers[i] < CAT_COIN_POPOUT_DELAY
             ? sin(cat_coin_collect_timers[i] / (float)CAT_COIN_POPOUT_DELAY * M_PI) * (CAT_COIN_POPOUT_SCALE - 1) + 1
             : 1.0f;
