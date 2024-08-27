@@ -8,7 +8,7 @@
 #include "audio/audio.h"
 #include "camera.h"
 #include "data.h"
-#include "layers/layers.h"
+#include "overlay/manager.h"
 
 struct AudioInstance* music_instance;
 struct Level* current_level = NULL;
@@ -127,7 +127,7 @@ struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned in
     unsigned int num_layers;
     BINARY_STREAM_READ(stream, num_layers);
     level->layers = LE_CreateLayerList();
-    LE_AddCustomLayer(level->layers, layer_hud);
+    LE_AddCustomLayer(level->layers, layer_overlay);
     for (int i = 0; i < num_layers; i++) {
         stream = binary_stream_goto(stream);
         unsigned int type;

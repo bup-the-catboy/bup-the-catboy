@@ -12,8 +12,7 @@ if exists sudo; then
 elif exists doas; then
     SUDO=doas
 else
-    echo "No sudo or doas detected"
-    return 1
+    echo "No sudo or doas detected, assuming root user"
 fi
 
 if exists apt; then

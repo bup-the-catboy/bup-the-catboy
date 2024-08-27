@@ -36,4 +36,9 @@ void savefile_copy(int from, int to);
 void savefile_save();
 struct SaveFile* savefile_get(int file);
 
+void menubtn_file_select(int selected_index);
+void menubtn_file_copy(int selected_index);
+void menubtn_file_erase(int selected_index);
+void menubtn_file_cancel(int selected_index);
+
 #endif

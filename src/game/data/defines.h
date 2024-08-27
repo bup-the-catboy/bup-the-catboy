@@ -1,10 +1,14 @@
 #ifndef NO_VSCODE
+#ifndef BTCB_DATA_DEFINES_H
+#define BTCB_DATA_DEFINES_H
 
 #include <lunarengine.h>
 #include <SDL2/SDL_keycode.h>
 
 #include "game/entities/functions.h"
 #include "game/tiles/functions.h"
+#include "game/overlay/menu_functions.h"
+#include "main.h"
 
 // we trick vscode into giving a specific syntax highlight color 
 
@@ -65,4 +69,27 @@
 #define SIMPLE_ANIMATED_TEXTURE(_1, _2, ...) (void)(_1); (void)(_2);
 #define SIMPLE_STATIONARY_TEXTURE(_1) SIMPLE_ANIMATED_TEXTURE(1, 1, _1)
 
+#define BUTTON(func)          (void)(func);
+#define SLIDER(ptr, min, max) (void)(ptr); (void)(min); (void)(max);
+#define INPUTBIND(id)         (void)(id);
+#define SEPARATOR()
+#define IMGSIZE(srcx, srcy, srcw, srch, dstx, dsty, dstw, dsth) \
+    (void)(srcx); (void)(srcy); (void)(srcw); (void)(srch);      \
+    (void)(dstx); (void)(dsty); (void)(dstw); (void)(dsth);
+
+#define POS_LEFT
+#define POS_TOP
+#define POS_CENTER
+#define POS_RIGHT
+#define POS_BOTTOM
+
+#define MENU(name, content) GAME_ELEMENT(name, content)
+#define ITEM(label, val) (void)(label); val
+#define POSITION(x, y) (void)(x); (void)(y);
+#define MENU_WIDTH(w) (void)(w);
+#define DYNAMIC(func) (void)(func);
+#define FOLLOW()
+#define IMAGE(path, srcx, srcy, srcw, srch, dstx, dsty, dstw, dsth) ITEM(path, IMGSIZE(srcx, srcy, srcw, srch, dstx, dsty, dstw, dsth))
+
+#endif
 #endif

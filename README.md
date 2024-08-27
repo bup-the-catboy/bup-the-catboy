@@ -17,11 +17,12 @@ src
     data      - Game data (tile, tileset and entity metadata)
     entities  - Entity interaction and update code
     network   - Server, client and packet handing for online multiplayer
+    overlay   - HUD, title screen
     tiles     - Tile interaction
 tools         - Programs used during compilation
   assetgen    - Generates an asset archive from the "assets"
                 directory that gets embedded into the
-                games executable
+                game's executable
 ```
 
 ## Building

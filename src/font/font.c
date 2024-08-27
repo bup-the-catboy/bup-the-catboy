@@ -14,11 +14,11 @@ struct TextGraph {
     bool wavy;
     bool gay;
     int color;
-    int wave_size;
     int wave_length;
     int gay_length;
     float gay_speed;
     float wave_speed;
+    float wave_size;
     float scale;
     float opacity;
     int spacing;
@@ -133,7 +133,7 @@ struct TextGraph* parse_text_graph(const char* string) {
                     curr->wave_speed = 1;
                     while ((c = string[ptr++])) {
                         if (c == '}') break;
-                        if (c == '^') curr->wave_size   = read_number;
+                        if (c == '^') curr->wave_size   = read_number / 100.f;
                         if (c == '-') curr->wave_length = read_number;
                         if (c == '=') curr->wave_speed  = read_number / 100.f;
                     }

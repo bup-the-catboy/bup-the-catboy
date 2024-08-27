@@ -157,7 +157,7 @@ void hud_update(LE_Entity* player) {
     hud_update_element(player, &hud_elements[2], 0);
 }
 
-void render_hud(LE_DrawList* drawlist, struct HUDElement* element, const char* fmt, ...) {
+void render_hud_element(LE_DrawList* drawlist, struct HUDElement* element, const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
     char formatted[1024];
@@ -203,9 +203,9 @@ void render_cat_coins(LE_DrawList* drawlist) {
     }
 }
 
-void layer_hud(LE_DrawList* drawlist, float camx, float camy, float scx, float scy) {
-    render_hud(drawlist, &hud_elements[0], HUD_OPAC CHAR_LIVES HUD_COLOR_MOD "*%02d",                                      savefile->lives);
-    render_hud(drawlist, &hud_elements[1], HUD_OPAC "%c"       HUD_COLOR_MOD "*%02d", CHAR_COINS[(global_timer / 10) % 4], savefile->coins);
+void render_hud(LE_DrawList* drawlist) {
+    render_hud_element(drawlist, &hud_elements[0], HUD_OPAC CHAR_LIVES HUD_COLOR_MOD "*%02d",                                      savefile->lives);
+    render_hud_element(drawlist, &hud_elements[1], HUD_OPAC "%c"       HUD_COLOR_MOD "*%02d", CHAR_COINS[(global_timer / 10) % 4], savefile->coins);
     render_cat_coins(drawlist);
 }
 

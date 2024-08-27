@@ -8,8 +8,10 @@
 #include "game/network/packet.h"
 #include "game/network/common.h"
 #include "game/savefile.h"
+#include "game/overlay/menu.h"
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_blendmode.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
@@ -42,9 +44,15 @@ void drawlist_renderer(void* texture, float dstx, float dsty, float dstw, float 
     SDL_Rect  src = { srcx,         srcy,         srcw,         srch         };
     dst.x += translate_x;
     dst.y += translate_y;
-    SDL_SetTextureColorMod(texture, color >> 24, color >> 16, color >> 8);
-    SDL_SetTextureAlphaMod(texture, color >> 0);
-    SDL_RenderCopyF(renderer, texture, &src, &dst);
+    if (texture) {
+        SDL_SetTextureColorMod(texture, color >> 24, color >> 16, color >> 8);
+        SDL_SetTextureAlphaMod(texture, color >> 0);
+        SDL_RenderCopyF(renderer, texture, &src, &dst);
+    }
+    else {
+        SDL_SetRenderDrawColor(renderer, color >> 24, color >> 16, color >> 8, color >> 0);
+        SDL_RenderFillRectF(renderer, &dst);
+    }
 }
 
 void adjust_display(int width, int height, int* new_w, int* new_h) {
@@ -72,10 +80,12 @@ void init_game() {
     audio_init();
     load_assets(renderer);
     init_data();
+    menu_init();
     libserial_init();
     savefile_load();
     savefile_select(0);
-    load_level(GET_ASSET(struct Binary, "levels/hudtest.lvl"));
+    load_level(GET_ASSET(struct Binary, "levels/test2.lvl"));
+    load_menu(title_screen);
 }
 
 int main(int argc, char** argv) {
@@ -91,6 +101,7 @@ int main(int argc, char** argv) {
     SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
     LE_DrawList* drawlist = LE_CreateDrawList();
     init_game();
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     while (true) {
         if (handle_sdl_events()) break;
         Uint64 frame = frame_begin();

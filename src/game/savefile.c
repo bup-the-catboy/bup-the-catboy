@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 
+#include "game/overlay/menu.h"
+
 #ifdef WINDOWS
 #define BINARY "b"
 #else
@@ -15,6 +17,15 @@
 
 struct SaveFile savefiles[NUM_SAVEFILES];
 struct SaveFile* savefile = NULL;
+
+enum FileSelectContext {
+    Context_Select,
+    Context_Erase,
+    Context_CopyWhat,
+    Context_CopyTo
+};
+enum FileSelectContext curr_context;
+int copy_what = -1;
 
 void savefile_load() {
     FILE* f = fopen(SAVEFILE_FILENAME, "r" BINARY);
@@ -50,4 +61,43 @@ void savefile_save() {
 
 struct SaveFile* savefile_get(int file) {
     return &savefiles[file];
+}
+
+void menubtn_file_select(int selected_index) {
+    int file = selected_index - 1;
+    switch (curr_context) {
+        case Context_Select:
+            savefile_select(file);
+            pop_menu();
+            break;
+        case Context_CopyWhat:
+            curr_context = Context_CopyTo;
+            copy_what = file;
+            push_menu(file_to);
+            break;
+        case Context_CopyTo:
+            savefile_copy(copy_what, file);
+            pop_menu_multi(2);
+            break;
+        case Context_Erase:
+            savefile_erase(file);
+            pop_menu();
+            break;
+    }
+}
+
+void menubtn_file_copy(int selected_index) {
+    curr_context = Context_CopyWhat;
+    push_menu(file_what);
+}
+
+void menubtn_file_erase(int selected_index) {
+    curr_context = Context_Erase;
+    push_menu(file_what);
+}
+
+void menubtn_file_cancel(int selected_index) {
+    if (curr_context == Context_CopyTo) pop_menu_multi(2);
+    else pop_menu();
+    curr_context = Context_Select;
 }

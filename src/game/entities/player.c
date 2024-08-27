@@ -7,7 +7,7 @@
 #include "game/camera.h"
 #include "game/network/common.h"
 #include "game/network/packet.h"
-#include "game/layers/layers.h"
+#include "game/overlay/hud.h"
 
 entity_texture(player) {
     SDL_Texture* tex = GET_ASSET(SDL_Texture, "images/entities/player.png");
