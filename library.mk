@@ -1,5 +1,12 @@
-CC := gcc
-AR := ar
+MACOS_CROSS ?= 0
+ifeq ($(MACOS_CROSS),1)
+	CC := o64-gcc
+	AR := $(shell uname -m)-apple-$(OSXCROSS_TARGET)-ar
+else
+	CC := gcc
+	AR := ar
+endif
+
 SRC_DIR := .
 OBJ_DIR := build/objs
 BIN_DIR := build

@@ -13,6 +13,10 @@
 #define BINARY
 #endif
 
+#ifndef PATH_MAX
+#define PATH_MAX 256
+#endif
+
 void write_file(FILE* f, const char* filename) {
     struct stat s;
     stat(filename, &s);

@@ -32,7 +32,7 @@ tools         - Programs used during compilation
 1. Install the [MSYS2 Toolchain](https://msys2.org)
 2. Launch the **MINGW64** shell
 3. Install dependencies
-```
+```sh
 pacman -S git make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-libgme
 ```
 4. Follow the [General compile steps](#general-compile-steps)
@@ -42,11 +42,11 @@ pacman -S git make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-l
 1. Install dependencies
 
 **Debian**
-```
+```sh
 sudo apt install git make gcc libsdl2-dev libgme-dev
 ```
 **Arch**
-```
+```sh
 sudo pacman -S git make gcc sdl2 libgme
 ```
 2. Follow the [General compile steps](#general-compile-steps)
@@ -55,7 +55,7 @@ sudo pacman -S git make gcc sdl2 libgme
 
 1. Install [Homebrew](https://brew.sh/)
 2. Install dependencies
-```
+```sh
 brew install gcc make sdl2 game-music-emu
 ```
 3. Follow the [General compile steps](#general-compile-steps)
@@ -68,15 +68,34 @@ curl https://raw.githubusercontent.com/Dominicentek/BupTheCatboy/main/quasi-msys
 ```
 2. After that, run `~/quasi-msys2/env/shell.sh`
 3. Install dependencies
-```
+```sh
 pacmake install _gcc _SDL2 _libgme
 ```
 4. Follow the [General compile steps](#general-compile-steps)
 
+### Cross compiling for macOS on Linux
+
+1. Download Xcode from [Apple's website](https://developer.apple.com/download/all/?q=xcode)
+2. Setup `osxcross` on your distro using the following command:
+```sh
+curl https://raw.githubusercontent.com/Dominicentek/BupTheCatboy/main/osxcross-setup.sh | XCODE_PATH=<path to xcode xip> sh
+```
+3. Install dependencies
+```sh
+omp install libsdl2
+curl https://raw.githubusercontent.com/Dominicentek/BupTheCatboy/main/osxcross-libgme.sh | sh
+```
+4. Turn on macOS cross compile mode for the `Makefile`
+```sh
+export MACOS_CROSS=1
+export MACOS_ARCH=x86_64 # optional
+```
+5. Follow the [General compile steps](#general-compile-steps)
+
 ### General compile steps
 
 1. Clone the repository
-```
+```sh
 git clone https://github.com/Dominicentek/BupTheCatboy && cd BupTheCatboy
 ```
 2. [Acquire assets](#acquiring-assets)

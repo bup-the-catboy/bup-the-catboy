@@ -2,8 +2,7 @@
 #define BTCB_SAVEFILE_H
 
 #include <stdint.h>
-typedef          _BitInt(256) int256_t;
-typedef unsigned _BitInt(256) uint256_t;
+#include <stdbool.h>
 
 #define LEVEL_FLAG_CATCOIN1   (1 << 0)
 #define LEVEL_FLAG_CATCOIN2   (1 << 1)
@@ -14,6 +13,8 @@ typedef unsigned _BitInt(256) uint256_t;
 #define LEVEL_FLAG_EXIT_RIGHT (1 << 6)
 
 #define NUM_SAVEFILES 4
+
+typedef uint8_t uint256_t[32];
 
 struct SaveFile {
     uint8_t levels_completed;
@@ -35,6 +36,10 @@ void savefile_erase(int file);
 void savefile_copy(int from, int to);
 void savefile_save();
 struct SaveFile* savefile_get(int file);
+
+bool savefile_map_event(int index);
+void savefile_map_event_set(int index);
+void savefile_map_event_clear(int index);
 
 void menubtn_file_select(int selected_index);
 void menubtn_file_copy(int selected_index);

@@ -67,6 +67,7 @@ struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned in
     BINARY_STREAM_READ(stream, music);
     BINARY_STREAM_READ(stream, cambound);
     stream = binary_stream_close(stream);
+    music = 4;
 
     stream = binary_stream_goto(stream);
     BINARY_STREAM_READ(stream, level->num_cambounds);

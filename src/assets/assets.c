@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <foreach.h>
 
-#ifndef WINDOWS
+#ifdef LINUX
 #include <linux/limits.h>
 #endif
 

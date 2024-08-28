@@ -8,9 +8,13 @@
 
 #ifdef WINDOWS
 #include <winsock2.h>
-#define SOCK_NONBLOCK 0
 #else
+#include <fcntl.h>
 #include <sys/socket.h>
+#endif
+
+#ifndef SOCK_NONBLOCK
+#define SOCK_NONBLOCK 0
 #endif
 
 #include <unistd.h>
@@ -43,9 +47,14 @@ void _send_packet(void* packet, bool blocking) {
     unsigned char* packet_data = malloc(size + 4);
     *(uint32_t*)packet_data = size;
     memcpy(packet_data + 4, data, size);
-#ifdef WINDOWS
+#if defined(WINDOWS)
     u_long mode = !blocking;
     ioctlsocket(curr_socket, FIONBIO, &mode);
+#elif defined(MACOS)
+    int flags = fcntl(curr_socket, F_GETFL, 0);
+    if (blocking) flags &= ~O_NONBLOCK;
+    else flags |= O_NONBLOCK;
+    fcntl(curr_socket, F_SETFL, flags);
 #endif
     send(curr_socket, packet_data, size + 4, blocking ? 0 : SOCK_NONBLOCK);
     free(packet_data);
