@@ -51,6 +51,15 @@ sudo pacman -S git make gcc sdl2 libgme
 ```
 2. Follow the [General compile steps](#general-compile-steps)
 
+### macOS (not tested)
+
+1. Install [Homebrew](https://brew.sh/)
+2. Install dependencies
+```
+brew install gcc make sdl2 game-music-emu
+```
+3. Follow the [General compile steps](#general-compile-steps)
+
 ### Cross compiling for Windows on Linux
 
 1. Setup `quasi-msys2` on your distro using the following command:
