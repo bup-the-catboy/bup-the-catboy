@@ -28,7 +28,7 @@ void write_file(FILE* f, const char* filename) {
         closedir(d);
     }
     else {
-        FILE* file = fopen(filename, "r");
+        FILE* file = fopen(filename, "r" BINARY);
         uint32_t filesize = s.st_size;
         const char* name = filename + 2;
         fwrite(name, strlen(name) + 1, 1, f);
