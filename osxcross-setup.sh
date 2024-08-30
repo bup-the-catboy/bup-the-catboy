@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 
 set -e
 
@@ -33,8 +33,9 @@ done
 
 SDK_VERSION=$SDK_VER UNATTENDED=1 ./build.sh
 ./build_gcc.sh
+PWD=$(pwd)
 echo "
-export PATH=\$PATH:$(pwd)/target/bin
+export PATH=\$PATH:$PWD/target/bin
 export MACOSX_DEPLOYMENT_TARGET=10.7
 \$(osxcross-conf)
 " >> ~/.bashrc
