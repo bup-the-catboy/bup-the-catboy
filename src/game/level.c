@@ -261,19 +261,9 @@ void reload_level() {
     free(leveldata);
 }
 
-bool colonthree = false;
-
 void transition_test() {
-    colonthree ^= 1;
-    LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
-    while (iter) {
-        LE_Layer* layer = LE_LayerListGet(iter);
-        if (LE_LayerGetType(layer) == LE_LayerType_Tilemap) LE_TilemapSetTileset(LE_LayerGetDataPointer(layer), colonthree ? get_tileset_by_id(colonthree) : get_tileset_by_id(grass));
-        iter = LE_LayerListNext(iter);
-    }
+    SDL_Delay(500);
 }
-
-void transition_nop() {}
 
 void update_level() {
     LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
