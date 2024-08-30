@@ -8,7 +8,9 @@
 #include "audio/audio.h"
 #include "camera.h"
 #include "data.h"
+#include "input.h"
 #include "overlay/manager.h"
+#include "overlay/transition.h"
 
 struct AudioInstance* music_instance;
 struct Level* current_level = NULL;
@@ -259,6 +261,20 @@ void reload_level() {
     free(leveldata);
 }
 
+bool colonthree = false;
+
+void transition_test() {
+    colonthree ^= 1;
+    LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
+    while (iter) {
+        LE_Layer* layer = LE_LayerListGet(iter);
+        if (LE_LayerGetType(layer) == LE_LayerType_Tilemap) LE_TilemapSetTileset(LE_LayerGetDataPointer(layer), colonthree ? get_tileset_by_id(colonthree) : get_tileset_by_id(grass));
+        iter = LE_LayerListNext(iter);
+    }
+}
+
+void transition_nop() {}
+
 void update_level() {
     LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
     while (iter) {
@@ -271,4 +287,8 @@ void update_level() {
     camera_update();
     camera_get(&x, &y);
     LE_ScrollCamera(current_level->layers, x, y);
+    if (is_button_pressed(BUTTON_MOVE_UP)) start_transition(transition_test, 30, LE_Direction_Up, quad_in_out);
+    if (is_button_pressed(BUTTON_MOVE_LEFT)) start_transition(transition_test, 30, LE_Direction_Left, quad_in_out);
+    if (is_button_pressed(BUTTON_MOVE_DOWN)) start_transition(transition_test, 30, LE_Direction_Down, quad_in_out);
+    if (is_button_pressed(BUTTON_MOVE_RIGHT)) start_transition(transition_test, 30, LE_Direction_Right, quad_in_out);
 }

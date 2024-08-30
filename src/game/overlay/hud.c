@@ -148,10 +148,7 @@ void hud_update(LE_Entity* player) {
             hud_elements[i].dst_x = SHOWN_POS;
             hud_elements[i].y = hud_elements[i].dst_y = suggest_y_pos(&hud_elements[i]);
         }
-    } 
-    if (is_button_pressed(BUTTON_MOUSE_LEFT))   savefile->level_flags[curr_level_id] |= (1 << 0);
-    if (is_button_pressed(BUTTON_MOUSE_MIDDLE)) savefile->level_flags[curr_level_id] |= (1 << 1);
-    if (is_button_pressed(BUTTON_MOUSE_RIGHT))  savefile->level_flags[curr_level_id] |= (1 << 2);
+    }
     hud_update_element(player, &hud_elements[0], savefile->lives);
     hud_update_element(player, &hud_elements[1], savefile->coins);
     hud_update_element(player, &hud_elements[2], 0);

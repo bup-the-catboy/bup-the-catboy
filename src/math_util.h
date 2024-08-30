@@ -5,6 +5,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+typedef float(*Easing)(float);
+
 #define _( ...)
 #define __(...) __VA_ARGS__
 
@@ -21,6 +23,18 @@ MATHFUNC(clamp, x, min, max)
 MATHFUNC(wrap,  x, min, max)
 MATHFUNC(min, a, b)
 MATHFUNC(max, a, b)
+MATHFUNC(lerp, x, f, t)
+
+float linear(float x);
+float sin_in(float x);
+float sin_out(float x);
+float sin_in_out(float x);
+float quad_in(float x);
+float quad_out(float x);
+float quad_in_out(float x);
+float cubic_in(float x);
+float cubic_out(float x);
+float cubic_in_out(float x);
 
 #undef _
 #undef __

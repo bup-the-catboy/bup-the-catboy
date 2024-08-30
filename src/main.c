@@ -7,6 +7,7 @@
 #include "game/input.h"
 #include "game/network/packet.h"
 #include "game/network/common.h"
+#include "game/overlay/transition.h"
 #include "game/savefile.h"
 #include "game/overlay/menu.h"
 
@@ -112,6 +113,7 @@ int main(int argc, char** argv) {
         SDL_SetRenderDrawColor(renderer, 127, 127, 127, 255);
         SDL_RenderClear(renderer);
         if (current_level != NULL) {
+            update_transition();
             update_level();
             LE_Draw(current_level->layers, WIDTH, HEIGHT, drawlist);
             LE_Render(drawlist, drawlist_renderer);

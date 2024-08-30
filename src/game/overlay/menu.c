@@ -8,6 +8,7 @@
 #include "main.h"
 #include "assets/assets.h"
 #include "font/font.h"
+#include "math_util.h"
 
 typedef void(*ButtonAction)(int selected_index);
 
@@ -277,15 +278,13 @@ void _load_menu(int index) {
     print_stack();
 }
 
-float quad_in (float x, float from, float to) { return (to - from) * (         x  *      x ) + from; }
-float quad_out(float x, float from, float to) { return (to - from) * (1 - (1 - x) * (1 - x)) + from; }
-
 float update_animation() {
     float translation = 0;
-    if (anim_state == AnimState_Pop1)  translation = quad_in (anim_timer / (float)MENU_ANIM_DELAY,  0,  WIDTH);
-    if (anim_state == AnimState_Pop2)  translation = quad_out(anim_timer / (float)MENU_ANIM_DELAY, -WIDTH,  0);
-    if (anim_state == AnimState_Push1) translation = quad_in (anim_timer / (float)MENU_ANIM_DELAY,  0, -WIDTH);
-    if (anim_state == AnimState_Push2) translation = quad_out(anim_timer / (float)MENU_ANIM_DELAY,  WIDTH,  0);
+    float x = anim_timer / (float)MENU_ANIM_DELAY;
+    if (anim_state == AnimState_Pop1)  translation = lerp(quad_in (x),  0,  WIDTH);
+    if (anim_state == AnimState_Pop2)  translation = lerp(quad_out(x), -WIDTH,  0);
+    if (anim_state == AnimState_Push1) translation = lerp(quad_in (x),  0, -WIDTH);
+    if (anim_state == AnimState_Push2) translation = lerp(quad_out(x),  WIDTH,  0);
     if (anim_state != AnimState_Idle)  anim_timer++;
     if (anim_timer == MENU_ANIM_DELAY) {
         anim_timer = 0;
