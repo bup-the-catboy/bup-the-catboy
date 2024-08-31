@@ -64,7 +64,7 @@ brew install gcc make sdl2 game-music-emu
 
 1. Setup `quasi-msys2` on your distro using the following command:
 ```
-curl https://raw.githubusercontent.com/Dominicentek/BupTheCatboy/main/quasi-msys2-setup.sh | sh
+curl https://raw.githubusercontent.com/bup-the-catboy/bup-the-catboy/main/quasi-msys2-setup.sh | sh
 ```
 2. After that, run `~/quasi-msys2/env/shell.sh`
 3. Install dependencies
@@ -78,12 +78,12 @@ pacmake install _gcc _SDL2 _libgme
 1. Download Xcode from [Apple's website](https://developer.apple.com/download/all/?q=xcode)
 2. Setup `osxcross` on your distro using the following command:
 ```sh
-curl https://raw.githubusercontent.com/Dominicentek/BupTheCatboy/main/osxcross-setup.sh | XCODE_PATH=<path to xcode xip> sh
+curl https://raw.githubusercontent.com/bup-the-catboy/bup-the-catboy/main/osxcross-setup.sh | XCODE_PATH=<path to xcode xip> sh
 ```
 3. Install dependencies
 ```sh
 omp install libsdl2
-curl https://raw.githubusercontent.com/Dominicentek/BupTheCatboy/main/osxcross-libgme.sh | sh
+curl https://raw.githubusercontent.com/bup-the-catboy/bup-the-catboy/main/osxcross-libgme.sh | sh
 ```
 4. Turn on macOS cross compile mode for the `Makefile`
 ```sh
@@ -96,7 +96,7 @@ export MACOS_ARCH=x86_64 # optional
 
 1. Clone the repository
 ```sh
-git clone https://github.com/Dominicentek/BupTheCatboy && cd BupTheCatboy
+git clone --recursive https://github.com/bup-the-catboy/bup-the-catboy && cd bup-the-catboy
 ```
 2. [Acquire assets](#acquiring-assets)
 3. Compile the game using the `make -j$(nproc)` command
