@@ -1,2 +1,2 @@
-lvledit/*   linguist-vendored=false
-include/*   linguist-vendored=false
+lvledit/**   linguist-vendored
+include/**   linguist-vendored
