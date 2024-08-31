@@ -8,14 +8,35 @@
 #include "game/network/common.h"
 #include "game/network/packet.h"
 #include "game/overlay/hud.h"
+#include "main.h"
+
+#define arrsize(x) (sizeof(x) / sizeof(*(x)))
 
 entity_texture(player) {
+    int sprite = 0;
+    LE_EntityProperty facing_left;
+    facing_left.asBool = false;
+    LE_EntityGetProperty(entity, &facing_left, "facing_left");
+    if (fabs(entity->velX) > 0) {
+        if (entity->velX < 0) facing_left.asBool = true;
+        if (entity->velX > 0) facing_left.asBool = false;
+        sprite = (int)(entity->posX) % 2 + 1;
+    }
+    if (
+        (facing_left.asBool && is_button_down(BUTTON_MOVE_RIGHT)) ||
+        (!facing_left.asBool && is_button_down(BUTTON_MOVE_LEFT))
+    ) sprite = 5;
+    if (entity->velY > 0) sprite = 4;
+    if (entity->velY < 0) sprite = 3;
+    LE_EntitySetProperty(entity, facing_left, "facing_left");
     SDL_Texture* tex = GET_ASSET(SDL_Texture, "images/entities/player.png");
     SDL_QueryTexture(tex, NULL, NULL, w, h);
-    *srcX = 0;
+    *srcX = sprite * 16;
     *srcY = 0;
-    *srcW = *w;
-    *srcH = *h;
+    *srcW = 16;
+    *srcH = 16;
+    *w = facing_left.asBool ? -16 : 16;
+    *h = 16;
     return tex;
 }
 

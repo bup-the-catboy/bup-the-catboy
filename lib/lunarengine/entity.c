@@ -213,13 +213,16 @@ void LE_DrawEntity(LE_Entity* entity, float x, float y, float scaleW, float scal
     _LE_TexCallbackList* tex = e->textureCallbacks;
     void* texture = NULL;
     int width, height, srcX, srcY, srcW, srcH;
+    int absw, absh;
     while (tex->next) {
         tex = tex->next;
         texture = ((EntityTextureCallback)tex->value)(entity, &width, &height, &srcX, &srcY, &srcW, &srcH);
         if (texture) break;
     }
     if (!texture) return;
-    LE_DrawListAppend(dl, texture, x - (width * scaleW) / 2, y - (height * scaleH), width * scaleW, height * scaleH, srcX, srcY, srcW, srcH);
+    absw = width  * (width  < 0 ? -1 : 1);
+    absh = height * (height < 0 ? -1 : 1);
+    LE_DrawListAppend(dl, texture, x - (absw * scaleW) / 2, y - (absh * scaleH), width * scaleW, height * scaleH, srcX, srcY, srcW, srcH);
 }
 
 void LE_DeleteEntity(LE_Entity* entity) {

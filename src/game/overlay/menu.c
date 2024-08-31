@@ -235,15 +235,6 @@ const char* menu_names[] = {
 #include "game/data/menus.h"
 };
 
-void print_stack() {
-    struct MenuStack* curr = menu_stack;
-    while (curr) {
-        int index = curr->menu ? (int)(((uintptr_t)curr->menu - (uintptr_t)menus) / sizeof(struct MenuList)) : -1;
-        printf("  %d (%s)\n", index, menu_names[index + 1]);
-        curr = curr->parent;
-    }
-}
-
 void _push_menu(int index) {
     anim_state = AnimState_Push1;
     anim_arg = index;
@@ -264,8 +255,6 @@ void pop_menu_impl() {
     free(menu_stack);
     menu_stack = prev;
     if (menu_visible()) reset_cursor();
-    printf("pop, curr stack:\n");
-    print_stack();
 }
 
 void _load_menu(int index) {
@@ -274,8 +263,6 @@ void _load_menu(int index) {
     stack->parent = menu_stack;
     menu_stack = stack;
     if (index != -1) reset_cursor();
-    printf("push, curr stack:\n");
-    print_stack();
 }
 
 float update_animation() {

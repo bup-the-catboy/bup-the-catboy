@@ -41,6 +41,10 @@ void frame_end(Uint64 start_ticks, int fps) {
 }
 
 void drawlist_renderer(void* texture, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
+    bool flipx = dstw < 0;
+    bool flipy = dsth < 0;
+    if (flipx) dstw *= -1;
+    if (flipy) dsth *= -1;
     SDL_FRect dst = { dstx * scale, dsty * scale, dstw * scale, dsth * scale };
     SDL_Rect  src = { srcx,         srcy,         srcw,         srch         };
     dst.x += translate_x;
@@ -48,7 +52,7 @@ void drawlist_renderer(void* texture, float dstx, float dsty, float dstw, float 
     if (texture) {
         SDL_SetTextureColorMod(texture, color >> 24, color >> 16, color >> 8);
         SDL_SetTextureAlphaMod(texture, color >> 0);
-        SDL_RenderCopyF(renderer, texture, &src, &dst);
+        SDL_RenderCopyExF(renderer, texture, &src, &dst, 0, NULL, flipy * 2 + flipx);
     }
     else {
         SDL_SetRenderDrawColor(renderer, color >> 24, color >> 16, color >> 8, color >> 0);

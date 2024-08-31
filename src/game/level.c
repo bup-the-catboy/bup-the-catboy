@@ -261,10 +261,6 @@ void reload_level() {
     free(leveldata);
 }
 
-void transition_test() {
-    SDL_Delay(500);
-}
-
 void update_level() {
     LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
     while (iter) {
@@ -277,8 +273,4 @@ void update_level() {
     camera_update();
     camera_get(&x, &y);
     LE_ScrollCamera(current_level->layers, x, y);
-    if (is_button_pressed(BUTTON_MOVE_UP)) start_transition(transition_test, 30, LE_Direction_Up, quad_in_out);
-    if (is_button_pressed(BUTTON_MOVE_LEFT)) start_transition(transition_test, 30, LE_Direction_Left, quad_in_out);
-    if (is_button_pressed(BUTTON_MOVE_DOWN)) start_transition(transition_test, 30, LE_Direction_Down, quad_in_out);
-    if (is_button_pressed(BUTTON_MOVE_RIGHT)) start_transition(transition_test, 30, LE_Direction_Right, quad_in_out);
 }
