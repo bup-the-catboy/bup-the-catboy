@@ -1,2 +1,2 @@
-lvledit   export-ignore
-include   export-ignore
+lvledit/*   linguist-vendored=false
+include/*   linguist-vendored=false
