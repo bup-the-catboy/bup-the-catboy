@@ -4,4 +4,4 @@ asset_data.h
 assets/*
 !assets/.gitkeep
 btcb.sav
-lvledit/*
+lvledit
