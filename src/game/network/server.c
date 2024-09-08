@@ -16,6 +16,7 @@ typedef int socklen_t;
 #include <unistd.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include <errno.h>
 
 int server;
 pthread_t server_thread_id;
@@ -31,7 +32,6 @@ void* server_thread(void* data) {
     set_socket(socket, true);
     while (is_socket_open()) {
         int len;
-        printf("waiting for packet\n");
         read(socket, &len, 4);
         unsigned char packet[len];
         read(socket, packet, len);
@@ -59,7 +59,7 @@ void server_init(PacketCallback callback) {
     address->sin_addr.s_addr = INADDR_ANY;
     address->sin_port = htons(PORT);
     if (bind(server, (struct sockaddr*)address, sizeof(struct sockaddr_in)) < 0) {
-        printf("server failed to open\n");
+        printf("server failed to open: (%d) %s\n", errno, strerror(errno));
         return;
     }
     void** ptrs = malloc(sizeof(void*) * 2);
@@ -69,6 +69,6 @@ void server_init(PacketCallback callback) {
 }
 
 void server_shutdown() {
-    send_packet(packet_disconnect());
+    send_packet(packet_disconnect(0));
     pthread_join(server_thread_id, NULL);
 }

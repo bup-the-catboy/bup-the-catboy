@@ -1,10 +1,15 @@
 #include "defines.h"
 
+ENTITY(player_spawner,
+    UPDATE(player_spawner_update)
+    LVLEDIT_TEXTURE("images/entities/player.png")
+)
+
 ENTITY(player,
     UPDATE(player_update)
     TEXTURE(player_texture)
     SIZE(0.75f, 0.75f)
-    LVLEDIT_TEXTURE("images/entities/player.png")
+    LVLEDIT_HIDE()
 )
 
 ENTITY(network_player,

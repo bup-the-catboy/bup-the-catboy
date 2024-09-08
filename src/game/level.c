@@ -11,11 +11,14 @@
 #include "input.h"
 #include "overlay/manager.h"
 #include "overlay/transition.h"
+#include "main.h"
 
 struct AudioInstance* music_instance;
 struct Level* current_level = NULL;
 uint8_t curr_level_id = 0;
 uint32_t unique_entity_id = 2;
+
+struct PlayerInfo players[MAX_PLAYERS];
 
 void change_level_music(int track) {
     struct Audio* nsf = GET_ASSET(struct Audio, "audio/music.nsf");
@@ -24,6 +27,18 @@ void change_level_music(int track) {
     }
     audio_nsf_select_track(nsf, track);
     music_instance = audio_play(nsf);
+}
+
+int create_player(int cambound) {
+    for (int i = 0; i < MAX_PLAYERS; i++) {
+        if (players[i].camera) continue;
+        Camera* cam = camera_create();
+        if (cambound >= 0 && cambound < current_level->num_cambounds) camera_set_bounds(cam, current_level->cambounds[cambound]);
+        players[i].camera = cam;
+        players[i].entity = NULL;
+        return i;
+    }
+    return -1;
 }
 
 void destroy_level(struct Level* level) {
@@ -55,21 +70,18 @@ uint32_t get_unique_entity_id() {
     return unique_entity_id++;
 }
 
-struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned int* pmusic, unsigned int* pcambound, int datalen) {
+struct Level* parse_level(unsigned char* data, int datalen) {
     struct Level* level = malloc(sizeof(struct Level));
     struct BinaryStream* stream = binary_stream_create(data);
 
-    bool player_spawned = false;
     level->raw = data;
     level->raw_length = datalen;
 
     stream = binary_stream_goto(stream);
-    unsigned int theme, music, cambound;
-    BINARY_STREAM_READ(stream, theme);
-    BINARY_STREAM_READ(stream, music);
-    BINARY_STREAM_READ(stream, cambound);
+    BINARY_STREAM_READ(stream, level->default_theme);
+    BINARY_STREAM_READ(stream, level->default_music);
+    BINARY_STREAM_READ(stream, level->default_cambound);
     stream = binary_stream_close(stream);
-    music = 4;
 
     stream = binary_stream_goto(stream);
     BINARY_STREAM_READ(stream, level->num_cambounds);
@@ -157,7 +169,7 @@ struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned in
                     LE_TilemapSetTile(tilemap, x, y, tile);
                 }
             }
-            LE_TilemapSetTileset(tilemap, get_tileset(theme));
+            LE_TilemapSetTileset(tilemap, get_tileset(level->default_theme));
             layer = LE_AddTilemapLayer(level->layers, tilemap);
         } break;
         case LE_LayerType_Entity: {
@@ -174,16 +186,7 @@ struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned in
                 float x, y;
                 BINARY_STREAM_READ(stream, x);
                 BINARY_STREAM_READ(stream, y);
-                bool is_player = entityID == 0;
                 LE_Entity* entity = LE_CreateEntity(el, get_entity_builder(entityID), x, y);
-                LE_Entity* network = NULL;
-                if (is_player && !player_spawned) {
-                    player_spawned = true;
-                    network = LE_CreateEntity(el, get_entity_builder_by_id(network_player), x, y);
-                    LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = 0 }, "unique_id"); // force player to be ID 0
-                    LE_EntitySetProperty(network, (LE_EntityProperty){ .asInt = 1 }, "unique_id"); // force network player to be ID 1
-                }
-                else LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = get_unique_entity_id() }, "unique_id");
                 unsigned int num_properties;
                 BINARY_STREAM_READ(stream, num_properties);
                 for (unsigned int i = 0; i < num_properties; i++) {
@@ -194,7 +197,6 @@ struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned in
                     LE_EntityProperty property;
                     property.asInt = value;
                     LE_EntitySetProperty(entity, property, name);
-                    if (network) LE_EntitySetProperty(entity, property, name);
                 }
                 stream = binary_stream_close(stream);
             }
@@ -228,10 +230,6 @@ struct Level* parse_level(unsigned char* data, unsigned int* ptheme, unsigned in
         iter = LE_LayerListNext(iter);
     }
 
-    if (ptheme) *ptheme = theme;
-    if (pmusic) *pmusic = music;
-    if (pcambound) *pcambound = cambound;
-
     return level;
 }
 
@@ -241,17 +239,9 @@ void load_level(struct Binary* binary) {
 
 void load_level_impl(unsigned char* data, int datalen) {
     if (current_level) destroy_level(current_level);
-
     unique_entity_id = 0;
-
-    unsigned int theme, music, cambound;
-    current_level = parse_level(data, &theme, &music, &cambound, datalen);
-
-    if (cambound >= 0 && cambound < current_level->num_cambounds) camera_set_bounds(current_level->cambounds[cambound]);
-    change_level_music(music);
-
-    camera_set_focus(12, 8);
-    camera_snap();
+    current_level = parse_level(data, datalen);
+    change_level_music(current_level->default_music);
 }
 
 void reload_level() {
@@ -269,8 +259,12 @@ void update_level() {
         if (type == LE_LayerType_Entity) LE_UpdateEntities(LE_LayerGetDataPointer(layer));
         iter = LE_LayerListNext(iter);
     }
+}
+
+void render_level(Camera* camera, LE_DrawList* drawlist, int width, int height) {
     float x, y;
-    camera_update();
-    camera_get(&x, &y);
+    camera_update(camera);
+    camera_get(camera, &x, &y);
     LE_ScrollCamera(current_level->layers, x, y);
+    LE_Draw(current_level->layers, width, height, drawlist);
 }

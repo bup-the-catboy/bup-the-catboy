@@ -38,17 +38,18 @@ int inet_pton(int _, const char* src, void* dst) {
 
 #include "common.h"
 #include "packet.h"
+#include "main.h"
 
-int client;
+int client_sock;
 pthread_t client_thread_id;
 
 void* client_thread(void* data) {
     PacketCallback callback = data;
     while (is_socket_open()) {
         int len;
-        read(client, &len, 4);
+        read(client_sock, &len, 4);
         unsigned char packet[len];
-        read(client, packet, len);
+        read(client_sock, packet, len);
         struct Binary binary;
         binary.ptr = packet;
         binary.length = len;
@@ -59,7 +60,7 @@ void* client_thread(void* data) {
 
 void client_connect(const char* hostname, PacketCallback callback) {
     struct sockaddr_in address;
-    client = socket(AF_INET, SOCK_STREAM, 0);
+    client_sock = socket(AF_INET, SOCK_STREAM, 0);
     address.sin_family = AF_INET;
     address.sin_port = htons(PORT);
     if (inet_pton(AF_INET, hostname, &address.sin_addr) < 0) {
@@ -67,17 +68,17 @@ void client_connect(const char* hostname, PacketCallback callback) {
         return;
     }
     printf("connecting\n");
-    if (connect(client, (struct sockaddr*)&address, sizeof(struct sockaddr_in)) < 0) {
+    if (connect(client_sock, (struct sockaddr*)&address, sizeof(struct sockaddr_in)) < 0) {
         printf("connection failed\n");
         return;
     }
     printf("connected\n");
-    set_socket(client, false);
+    set_socket(client_sock, false);
     pthread_create(&client_thread_id, NULL, client_thread, callback);
     send_packet(packet_connect());
 }
 
 void client_shutdown() {
-    send_packet(packet_disconnect());
+    send_packet(packet_disconnect(client_player_id));
     pthread_join(client_thread_id, NULL);
 }

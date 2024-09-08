@@ -2,6 +2,7 @@
 
 #include "assets/assets.h"
 #include "audio/audio.h"
+#include "game/camera.h"
 #include "game/data.h"
 #include "game/level.h"
 #include "game/input.h"
@@ -27,6 +28,9 @@ uint64_t global_timer = 0;
 float scale = 1;
 float translate_x = 0;
 float translate_y = 0;
+LE_DrawList* client_drawlist = NULL;
+int client_player_id = 0;
+bool client = false;
 
 Uint64 frame_begin() {
     return SDL_GetTicks64();
@@ -89,14 +93,20 @@ void init_game() {
     libserial_init();
     savefile_load();
     savefile_select(0);
-    load_level(GET_ASSET(struct Binary, "levels/test2.lvl"));
-    load_menu(title_screen);
+    if (!client) {
+        load_level(GET_ASSET(struct Binary, "levels/test2.lvl"));
+        create_player(current_level->default_cambound);
+        load_menu(title_screen);
+    }
 }
 
 int main(int argc, char** argv) {
     if (argc >= 2) {
         if (strcmp(argv[1], "--server") == 0) start_server();
-        if (strcmp(argv[1], "--client") == 0) start_client(argv[2]);
+        if (strcmp(argv[1], "--client") == 0) {
+            client = true;
+            start_client(argv[2]);
+        }
     }
     srand(time(NULL));
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
@@ -108,18 +118,31 @@ int main(int argc, char** argv) {
     init_game();
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     while (true) {
-        if (handle_sdl_events()) break;
+        if (handle_sdl_events(client_player_id)) break;
         Uint64 frame = frame_begin();
         int frame_w, frame_h;
         int width, height;
         SDL_GetWindowSize(window, &width, &height);
         adjust_display(WIDTH, HEIGHT, &frame_w, &frame_h);
         SDL_SetRenderDrawColor(renderer, 127, 127, 127, 255);
-        SDL_RenderClear(renderer);
-        if (current_level != NULL) {
+        if (client && client_drawlist && LE_DrawListSize(client_drawlist)) {
+            SDL_RenderClear(renderer);
+            LE_Render(client_drawlist, drawlist_renderer);
+            LE_DestroyDrawList(client_drawlist);
+            client_drawlist = NULL;
+        }
+        else if (current_level != NULL) {
+            SDL_RenderClear(renderer);
             update_transition();
             update_level();
-            LE_Draw(current_level->layers, WIDTH, HEIGHT, drawlist);
+            render_level(players[0].camera, drawlist, WIDTH, HEIGHT);
+            for (int i = 1; i < MAX_PLAYERS; i++) {
+                if (!players[i].camera) continue;
+                LE_DrawList* dl = LE_CreateDrawList();
+                render_level(players[i].camera, dl, WIDTH, HEIGHT);
+                send_packet(packet_rendered_screen(dl));
+                LE_DestroyDrawList(dl);
+            }
             LE_Render(drawlist, drawlist_renderer);
             LE_ClearDrawList(drawlist);
         }

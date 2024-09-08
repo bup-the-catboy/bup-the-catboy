@@ -1,10 +1,13 @@
 #include "functions.h"
 
+#include <lunarengine.h>
 #include <SDL2/SDL.h>
 
 #include "assets/assets.h"
+#include "game/data.h"
 #include "game/input.h"
 #include "game/camera.h"
+#include "game/level.h"
 #include "game/network/common.h"
 #include "game/network/packet.h"
 #include "game/overlay/hud.h"
@@ -13,6 +16,9 @@
 #define arrsize(x) (sizeof(x) / sizeof(*(x)))
 
 entity_texture(player) {
+    LE_EntityProperty property;
+    LE_EntityGetProperty(entity, &property, "player_id");
+    int player_id = property.asInt;
     int sprite = 0;
     LE_EntityProperty facing_left;
     facing_left.asBool = false;
@@ -23,8 +29,8 @@ entity_texture(player) {
         sprite = (int)(entity->posX) % 2 + 1;
     }
     if (
-        (facing_left.asBool && is_button_down(BUTTON_MOVE_RIGHT)) ||
-        (!facing_left.asBool && is_button_down(BUTTON_MOVE_LEFT))
+        (facing_left.asBool && is_button_down(player_id, BUTTON_MOVE_RIGHT)) ||
+        (!facing_left.asBool && is_button_down(player_id, BUTTON_MOVE_LEFT))
     ) sprite = 5;
     if (entity->velY > 0) sprite = 4;
     if (entity->velY < 0) sprite = 3;
@@ -45,9 +51,20 @@ entity_texture(network_player) {
     return player_texture(entity, w, h, srcX, srcY, srcW, srcH);
 }
 
+entity_update(player_spawner) {
+    for (int i = 0; i < MAX_PLAYERS; i++) {
+        if (!players[i].camera || players[i].entity) continue;
+        players[i].entity = LE_CreateEntity(LE_EntityGetList(entity), get_entity_builder_by_id(player), entity->posX, entity->posY);
+        LE_EntitySetProperty(players[i].entity, (LE_EntityProperty){ .asInt = i }, "player_id");
+    }
+}
+
 entity_update(player) {
-    bool l = is_button_down(BUTTON_MOVE_LEFT);
-    bool r = is_button_down(BUTTON_MOVE_RIGHT);
+    LE_EntityProperty property;
+    LE_EntityGetProperty(entity, &property, "player_id");
+    int player_id = property.asInt;
+    bool l = is_button_down(player_id, BUTTON_MOVE_LEFT);
+    bool r = is_button_down(player_id, BUTTON_MOVE_RIGHT);
     if (l && !r) {
         entity->velX -= 0.02f;
         if (entity->velX < -0.2f) entity->velX = -0.2f;
@@ -67,9 +84,9 @@ entity_update(player) {
         }
     }
     entity->velY += 0.03f;
-    if ((entity->flags & LE_EntityFlags_OnGround) && is_button_pressed(BUTTON_JUMP)) entity->velY = -0.5f;
-    send_packet(packet_entity(entity));
+    if ((entity->flags & LE_EntityFlags_OnGround) && is_button_pressed(player_id, BUTTON_JUMP)) entity->velY = -0.5f;
     hud_update(entity);
+    camera_set_focus(players[player_id].camera, entity->posX, entity->posY);
 }
 
 entity_update(network_player) {}

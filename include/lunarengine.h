@@ -108,6 +108,7 @@ void LE_DrawListAppend(LE_DrawList* dl, void* texture, float dstX, float dstY, f
 void LE_DrawSetColor(LE_DrawList* dl, unsigned int rgba);
 void LE_ClearDrawList(LE_DrawList* dl);
 void LE_DestroyDrawList(LE_DrawList* list);
+int LE_DrawListSize(LE_DrawList* list);
 unsigned int LE_DrawGetColor(LE_DrawList* dl);
 
 LE_EntityBuilder* LE_CreateEntityBuilder();

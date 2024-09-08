@@ -12,5 +12,6 @@ struct Binary {
 
 void load_assets(SDL_Renderer* renderer);
 void* get_asset(const char* name);
+const char* get_asset_name(void* asset);
 
 #endif

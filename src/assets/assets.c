@@ -146,11 +146,19 @@ void load_assets(SDL_Renderer* renderer) {
 void* get_asset(const char* name) {
     struct Asset* curr = asset_list->next;
     while (curr) {
-        if (strcmp(curr->name, name) == 0) {
-            return curr->data;
-        }
+        if (strcmp(curr->name, name) == 0) return curr->data;
         curr = curr->next;
     }
     printf("asset %s not found\n", name);
+    return NULL;
+}
+
+const char* get_asset_name(void* asset) {
+    struct Asset* curr = asset_list->next;
+    while (curr) {
+        if (curr->data == asset) return curr->name;
+        curr = curr->next;
+    }
+    printf("asset %p not found\n", asset);
     return NULL;
 }

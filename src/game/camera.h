@@ -12,11 +12,14 @@ struct CameraBounds {
     struct CameraBounds* right;
 };
 
-void camera_set_bounds(struct CameraBounds* bounds);
-void camera_set_focus(float x, float y);
-void camera_get(float* x, float* y);
-void camera_screenshake(int duration, float x, float y);
-void camera_update();
-void camera_snap();
+typedef struct {} Camera;
+
+Camera* camera_create();
+void camera_set_bounds(Camera* camera, struct CameraBounds* bounds);
+void camera_set_focus(Camera* camera, float x, float y);
+void camera_get(Camera* camera, float* x, float* y);
+void camera_screenshake(Camera* camera, int duration, float x, float y);
+void camera_update(Camera* camera);
+void camera_snap(Camera* camera);
 
 #endif

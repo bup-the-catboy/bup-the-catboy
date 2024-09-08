@@ -3,6 +3,7 @@
 #include <lunarengine.h>
 
 LibSerialObj_Connect* packet_connect();
-LibSerialObj_Disconnect* packet_disconnect();
-LibSerialObj_SwitchLevel* packet_switch_level();
-LibSerialObj_UpdateEntity* packet_entity(LE_Entity* entity);
+LibSerialObj_Disconnect* packet_disconnect(int id);
+LibSerialObj_PlayerID* packet_player_id(int id);
+LibSerialObj_Input* packet_input(int id);
+LibSerialObj_RenderedScreen* packet_rendered_screen(LE_DrawList* drawlist);

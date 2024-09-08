@@ -1,8 +1,10 @@
 #include "common.h"
 
+#include "game/input.h"
 #include "server.h"
 #include "client.h"
 #include "packet.h"
+#include "main.h"
 
 #include "game/level.h"
 
@@ -41,7 +43,6 @@ void _send_packet(void* packet, bool blocking) {
         libserial_objfree(packet);
         return;
     }
-    printf("sending packet\n");
     size_t size;
     unsigned char* data = libserial_serialize(packet, &size);
     unsigned char* packet_data = malloc(size + 4);
@@ -73,47 +74,40 @@ void send_packet_blocking(void* packet) {
 void receive_packet(void* packet) {
     switch (libserial_objtype(packet)) {
         case LibSerial_ObjType_Connect: {
-            printf("connect received\n");
-            send_packet_blocking(packet_switch_level());
+            int player = create_player(0);
+            if (player == -1) send_packet(packet_disconnect(0));
+            else send_packet(packet_player_id(player));
         } break;
         case LibSerial_ObjType_Disconnect: {
-            printf("disconnect received\n");
-            is_open = false;
-            close(curr_socket);
+            LibSerialObj_Disconnect* pkt = packet;
+            if (*pkt) send_packet(packet_disconnect(0));
+            else if (is_server) {
+                printf("client disconnected\n");
+                free(players[*pkt].camera);
+                LE_DeleteEntity(players[*pkt].entity);
+                players[*pkt].camera = NULL;
+                players[*pkt].entity = NULL;
+            }
+            else exit(0);
         } break;
-        case LibSerial_ObjType_SwitchLevel: {
-            printf("switch level received\n");
-            LibSerialObj_SwitchLevel* level = packet;
-            load_level_impl(*level, libserial_arrsize(*level));
+        case LibSerial_ObjType_PlayerID: {
+            client_player_id = *(LibSerialObj_PlayerID*)packet;
         } break;
-        case LibSerial_ObjType_UpdateEntity: {
-            printf("update entity received\n");
-            if (current_level == NULL) break;
-            LibSerialObj_UpdateEntity* entity = packet;
-            entity->entity_id = entity->entity_id == 0 ? 1 : entity->entity_id;
-            LE_EntityList* list = LE_LayerGetDataPointer(LE_LayerGetByIndex(current_level->layers, entity->layer_index));
-            LE_EntityListIter* iter = LE_EntityListGetIter(list);
-            LE_EntityProperty prop;
-            while (iter) {
-                LE_Entity* e = LE_EntityListGet(iter);
-                if (!LE_EntityGetProperty(e, &prop, "unique_id")) {
-                    iter = LE_EntityListNext(iter);
-                    continue;
-                }
-                if (prop.asInt == entity->entity_id) {
-                    e->posX = entity->pos_x;
-                    e->posY = entity->pos_y;
-                    e->velX = entity->vel_x;
-                    e->velY = entity->vel_y;
-                    e->flags = entity->flags;
-                    e->width = entity->width;
-                    e->height = entity->height;
-                    for (int i = 0; i < libserial_arrsize(entity->properties); i++) {
-                        if (strcmp(entity->properties[i].name, "unique_id") == 0) continue;
-                        LE_EntitySetProperty(e, (LE_EntityProperty){ .asInt = entity->properties[i].value }, entity->properties[i].name);
-                    }
-                }
-                iter = LE_EntityListNext(iter);
+        case LibSerial_ObjType_Input: {
+            get_input_from_packet(packet);
+        } break;
+        case LibSerial_ObjType_RenderedScreen: {
+            if (client_drawlist) break;
+            LibSerialObj_RenderedScreen* dl = packet;
+            client_drawlist = LE_CreateDrawList();
+            for (int i = 0; i < libserial_arrsize(*dl); i++) {
+                SDL_Texture* tex = NULL;
+                if ((*dl)[i].texture[0]) tex = GET_ASSET(SDL_Texture, (*dl)[i].texture);
+                LE_DrawSetColor(client_drawlist, (*dl)[i].color);
+                LE_DrawListAppend(client_drawlist, tex,
+                    (*dl)[i].dstx, (*dl)[i].dsty, (*dl)[i].dstw, (*dl)[i].dsth,
+                    (*dl)[i].srcx, (*dl)[i].srcy, (*dl)[i].srcw, (*dl)[i].srch
+                );
             }
         } break;
         default: break;
@@ -149,6 +143,10 @@ void receive_packet_callback(struct Binary* binary) {
     while (processing_packets) usleep(100);
     unsigned char* data = malloc(binary->length);
     memcpy(data, binary->ptr, binary->length);
+    if (*(uint32_t*)data >= LibSerialNumObjects) {
+        free(data);
+        return;
+    }
     struct PendingPacket* curr = pending_packets;
     while (curr->next) curr = curr->next;
     curr->data = data;

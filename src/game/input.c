@@ -3,31 +3,38 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
 
-unsigned int      button_down;
-unsigned int prev_button_down;
-int mouse_x, mouse_y;
+#include "game/network/common.h"
+#include "game/network/packet.h"
+#include "main.h"
+
+struct {
+    unsigned int      button_down;
+    unsigned int prev_button_down;
+    int mouse_x, mouse_y;
+} inputs[MAX_PLAYERS];
+
 
 SDL_Joystick* joystick = NULL;
 
-bool is_button_down(int key) {
-    return !!(button_down & key);
+bool is_button_down(int id, int key) {
+    return !!(inputs[id].button_down & key);
 }
 
-bool is_button_up(int key) {
-    return  !(button_down & key);
+bool is_button_up(int id, int key) {
+    return  !(inputs[id].button_down & key);
 }
 
-bool is_button_pressed(int key) {
-    return !!((button_down & ~prev_button_down) & key);
+bool is_button_pressed(int id, int key) {
+    return !!((inputs[id].button_down & ~inputs[id].prev_button_down) & key);
 }
 
-bool is_button_released(int key) {
-    return !!((prev_button_down & ~button_down) & key);
+bool is_button_released(int id, int key) {
+    return !!((inputs[id].prev_button_down & ~inputs[id].button_down) & key);
 }
 
-void get_mouse_position(int* x, int* y) {
-    if (x) *x = mouse_x;
-    if (y) *y = mouse_y;
+void get_mouse_position(int id, int* x, int* y) {
+    if (x) *x = inputs[id].mouse_x;
+    if (y) *y = inputs[id].mouse_y;
 }
 
 #define A       1
@@ -52,12 +59,18 @@ void get_mouse_position(int* x, int* y) {
 
 #define DEADZONE 16384
 
-bool handle_sdl_events() {
+void get_input_from_packet(LibSerialObj_Input* input) {
+    int id = input->player;
+    inputs[id].prev_button_down = inputs[id].button_down;
+    inputs[id].button_down = input->input;
+}
+
+bool handle_sdl_events(int id) {
     bool exit = false;
     SDL_Event event;
     int curr;
-    prev_button_down = button_down;
-#define SET_BUTTON(is_released) button_down = event.type == is_released ? (button_down & ~curr) : (button_down | curr)
+    inputs[id].prev_button_down = inputs[id].button_down;
+#define SET_BUTTON(is_released) inputs[id].button_down = event.type == is_released ? (inputs[id].button_down & ~curr) : (inputs[id].button_down | curr)
 #define INPUT(_) curr = _;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) exit = true;
@@ -107,7 +120,7 @@ bool handle_sdl_events() {
             (event.caxis.value < 0 && (_) % 2 == 0) ||                  \
             (event.caxis.value > 0 && (_) % 2 == 1)                      \
         )) held = false;                                                  \
-        button_down = held ? (button_down | curr) : (button_down & ~curr); \
+        inputs[id].button_down = held ? (inputs[id].button_down | curr) : (inputs[id].button_down & ~curr); \
     }
 #include "game/data/inputs.h"
 #undef KEYMAP
@@ -116,5 +129,6 @@ bool handle_sdl_events() {
 #undef JOYSTICK
         }
     }
+    if (id != 0) send_packet(packet_input(id));
     return exit;
 }
