@@ -108,6 +108,10 @@ int main(int argc, char** argv) {
             client = true;
             start_client(argv[2]);
         }
+        if (strcmp(argv[1], "--extract") == 0) {
+            extract_assets();
+            return 0;
+        }
     }
     srand(time(NULL));
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);

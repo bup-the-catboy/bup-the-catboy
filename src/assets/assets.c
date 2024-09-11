@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <foreach.h>
+#include <sys/stat.h>
 
 #ifdef LINUX
 #include <linux/limits.h>
@@ -16,6 +17,12 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
+#ifdef WINDOWS
+#define BINARY "b"
+#else
+#define BINARY
+#endif
 
 struct Asset {
     char name[PATH_MAX];
@@ -118,22 +125,27 @@ void load_assets(SDL_Renderer* renderer) {
         curr->next = asset;
         curr = asset;
         get_extension(ext, buf);
-        _ EXT(png) {
-            int w, h;
-            unsigned char* image = stbi_load_from_memory(data, datasize, &w, &h, NULL, STBI_rgb_alpha);
-            SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(image, w, h, 32, 4 * w, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-            asset->data = SDL_CreateTextureFromSurface(renderer, surface);
-            SDL_FreeSurface(surface);
-            stbi_image_free(image);
-            free(data);
+        bool binary_fallback = false;
+        if (renderer) {
+            _ EXT(png) {
+                int w, h;
+                unsigned char* image = stbi_load_from_memory(data, datasize, &w, &h, NULL, STBI_rgb_alpha);
+                SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(image, w, h, 32, 4 * w, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+                asset->data = SDL_CreateTextureFromSurface(renderer, surface);
+                SDL_FreeSurface(surface);
+                stbi_image_free(image);
+                free(data);
+            }
+            EXT(wav) {
+                asset->data = audio_load_wav(data, datasize);
+            }
+            EXT(nsf) {
+                asset->data = audio_load_nsf(data, datasize);
+            }
+            else binary_fallback = true;
         }
-        EXT(wav) {
-            asset->data = audio_load_wav(data, datasize);
-        }
-        EXT(nsf) {
-            asset->data = audio_load_nsf(data, datasize);
-        }
-        else {
+        else binary_fallback = true;
+        if (binary_fallback) {
             struct Binary* bin = malloc(sizeof(struct Binary));
             bin->length = datasize;
             bin->ptr = data;
@@ -161,4 +173,41 @@ const char* get_asset_name(void* asset) {
     }
     printf("asset %p not found\n", asset);
     return NULL;
+}
+
+void mkdir_recursive(const char* path, mode_t mode) {
+    char* dup = strdup(path);
+    for (int i = 0; i < strlen(dup); i++) {
+        if (dup[i] == '/') {
+            dup[i] = 0;
+            mkdir(dup, mode);
+            dup[i] = '/';
+        }
+    }
+    mkdir(dup, mode);
+    free(dup);
+}
+
+void extract_assets() {
+    load_assets(NULL);
+    struct Asset* curr = asset_list->next;
+    while (curr) {
+        printf("extracting %s\n", curr->name);
+        char path[PATH_MAX + 10];
+        snprintf(path, PATH_MAX + 10, "assets/%s", curr->name);
+        char* folder = strdup(path);
+        for (int i = strlen(folder) - 1; i >= 0; i--) {
+            if (folder[i] == '/') {
+                folder[i] = 0;
+                break;
+            }
+        }
+        mkdir_recursive(folder, 0777);
+        free(folder);
+        struct Binary* data = (struct Binary*)curr->data;
+        FILE* f = fopen(path, "w" BINARY);
+        fwrite(data->ptr, data->length, 1, f);
+        fclose(f);
+        curr = curr->next;
+    }
 }
