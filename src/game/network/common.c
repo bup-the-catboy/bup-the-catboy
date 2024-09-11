@@ -24,25 +24,25 @@
 struct PendingPacket {
     unsigned char* data;
     struct PendingPacket* next;
+    int origin;
 };
 
-int curr_socket = -1;
+int sockets[MAX_PLAYERS];
 bool is_server = false;
 bool is_open = false;
 struct PendingPacket* pending_packets = NULL;
 bool processing_packets = false;
 
-void set_socket(int socket, bool server) {
-    curr_socket = socket;
+void open_network(bool server) {
     is_server = server;
     is_open = true;
 }
 
-void _send_packet(void* packet, bool blocking) {
-    if (curr_socket == -1) {
-        libserial_objfree(packet);
-        return;
-    }
+void set_client_socket(int socket) {
+    sockets[0] = socket;
+}
+
+void _send_packet(void* packet, int socket, bool blocking) {
     size_t size;
     unsigned char* data = libserial_serialize(packet, &size);
     unsigned char* packet_data = malloc(size + 4);
@@ -50,53 +50,86 @@ void _send_packet(void* packet, bool blocking) {
     memcpy(packet_data + 4, data, size);
 #if defined(WINDOWS)
     u_long mode = !blocking;
-    ioctlsocket(curr_socket, FIONBIO, &mode);
+    ioctlsocket(socket, FIONBIO, &mode);
 #elif defined(MACOS)
-    int flags = fcntl(curr_socket, F_GETFL, 0);
+    int flags = fcntl(socket, F_GETFL, 0);
     if (blocking) flags &= ~O_NONBLOCK;
     else flags |= O_NONBLOCK;
-    fcntl(curr_socket, F_SETFL, flags);
+    fcntl(socket, F_SETFL, flags);
 #endif
-    send(curr_socket, packet_data, size + 4, blocking ? 0 : SOCK_NONBLOCK);
+    printf("sending to %d\n", socket);
+    send(socket, packet_data, size + 4, blocking ? 0 : SOCK_NONBLOCK);
     free(packet_data);
     free(data);
     libserial_objfree(packet);
 }
 
 void send_packet(void* packet) {
-    _send_packet(packet, false);
+    _send_packet(packet, sockets[0], false);
 }
 
 void send_packet_blocking(void* packet) {
-    _send_packet(packet, true);
+    _send_packet(packet, sockets[0], true);
 }
 
-void receive_packet(void* packet) {
+void send_packet_to(int connection, void* packet) {
+    _send_packet(packet, sockets[connection], false);
+}
+
+void send_packet_to_blocking(int connection, void* packet) {
+    _send_packet(packet, sockets[connection], true);
+}
+
+void send_packet_to_socket(int socket, void* packet) {
+    _send_packet(packet, socket, false);
+}
+
+void send_packet_to_socket_blocking(int socket, void* packet) {
+    _send_packet(packet, socket, true);
+}
+
+bool connection_established(int connection) {
+    return !!sockets[connection];
+}
+
+void receive_packet(int origin, void* packet) {
     switch (libserial_objtype(packet)) {
         case LibSerial_ObjType_Connect: {
+            printf("received connect\n");
             int player = create_player(0);
-            if (player == -1) send_packet(packet_disconnect(0));
-            else send_packet(packet_player_id(player));
+            if (player == -1) send_packet_to_socket(origin, packet_disconnect(0));
+            else {
+                sockets[player] = origin;
+                send_packet_to(player, packet_player_id(player));
+            }
         } break;
         case LibSerial_ObjType_Disconnect: {
+            printf("received disconnect\n");
             LibSerialObj_Disconnect* pkt = packet;
-            if (*pkt) send_packet(packet_disconnect(0));
-            else if (is_server) {
+            if (is_server) {
                 printf("client disconnected\n");
+                send_packet_to_socket(sockets[*pkt], packet_disconnect(0));
                 free(players[*pkt].camera);
                 LE_DeleteEntity(players[*pkt].entity);
                 players[*pkt].camera = NULL;
                 players[*pkt].entity = NULL;
+                sockets[*pkt] = 0;
             }
-            else exit(0);
+            else {
+                close(sockets[0]);
+                sockets[0] = 0;
+            }
         } break;
         case LibSerial_ObjType_PlayerID: {
+            printf("received playerid\n");
             client_player_id = *(LibSerialObj_PlayerID*)packet;
         } break;
         case LibSerial_ObjType_Input: {
+            printf("received input\n");
             get_input_from_packet(packet);
         } break;
         case LibSerial_ObjType_RenderedScreen: {
+            printf("received renderedscreen\n");
             if (client_drawlist) break;
             LibSerialObj_RenderedScreen* dl = packet;
             client_drawlist = LE_CreateDrawList();
@@ -128,7 +161,11 @@ void process_packets() {
     struct PendingPacket* curr = pending_packets;
     while (curr->next) {
         struct PendingPacket* next = curr->next;
-        if (is_open) receive_packet(libserial_deserialize(curr->data));
+        if (!curr->data) {
+            curr = next;
+            continue;
+        }
+        if (is_open) receive_packet(curr->origin, libserial_deserialize(curr->data));
         free(curr->data);
         free(curr);
         curr = next;
@@ -139,7 +176,7 @@ void process_packets() {
     processing_packets = false;
 }
 
-void receive_packet_callback(struct Binary* binary) {
+void receive_packet_callback(int origin, struct Binary* binary) {
     while (processing_packets) usleep(100);
     unsigned char* data = malloc(binary->length);
     memcpy(data, binary->ptr, binary->length);
@@ -153,6 +190,7 @@ void receive_packet_callback(struct Binary* binary) {
     curr->next = malloc(sizeof(struct PendingPacket));
     curr->next->data = NULL;
     curr->next->next = NULL;
+    curr->origin = origin;
 }
 
 void start_server() {
@@ -170,9 +208,8 @@ void disconnect() {
     is_open = false;
     if (is_server) server_shutdown();
     else client_shutdown();
-    close(curr_socket);
-}
-
-bool is_socket_open() {
-    return is_open;
+    for (int i = 0; i < MAX_PLAYERS; i++) {
+        if (sockets[i]) close(sockets[i]);
+        sockets[i] = 0;
+    }
 }

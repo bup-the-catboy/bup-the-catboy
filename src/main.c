@@ -11,6 +11,7 @@
 #include "game/overlay/transition.h"
 #include "game/savefile.h"
 #include "game/overlay/menu.h"
+#include "font/font.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_blendmode.h>
@@ -140,9 +141,10 @@ int main(int argc, char** argv) {
                 if (!players[i].camera) continue;
                 LE_DrawList* dl = LE_CreateDrawList();
                 render_level(players[i].camera, dl, WIDTH, HEIGHT);
-                send_packet(packet_rendered_screen(dl));
+                send_packet_to(i, packet_rendered_screen(dl));
                 LE_DestroyDrawList(dl);
             }
+            render_text(drawlist, 8, 8, "true...");
             LE_Render(drawlist, drawlist_renderer);
             LE_ClearDrawList(drawlist);
         }

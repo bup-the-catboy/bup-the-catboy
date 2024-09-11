@@ -45,15 +45,16 @@ pthread_t client_thread_id;
 
 void* client_thread(void* data) {
     PacketCallback callback = data;
-    while (is_socket_open()) {
+    while (connection_established(0)) {
         int len;
         read(client_sock, &len, 4);
         unsigned char packet[len];
         read(client_sock, packet, len);
+        if (packet[0] == 1) break; // hardcoded disconnect packet handler
         struct Binary binary;
         binary.ptr = packet;
         binary.length = len;
-        callback(&binary);
+        callback(client_sock, &binary);
     }
     return NULL;
 }
@@ -69,11 +70,12 @@ void client_connect(const char* hostname, PacketCallback callback) {
     }
     printf("connecting\n");
     if (connect(client_sock, (struct sockaddr*)&address, sizeof(struct sockaddr_in)) < 0) {
-        printf("connection failed\n");
+        printf("connection failed: (\n");
         return;
     }
     printf("connected\n");
-    set_socket(client_sock, false);
+    open_network(false);
+    set_client_socket(client_sock);
     pthread_create(&client_thread_id, NULL, client_thread, callback);
     send_packet(packet_connect());
 }

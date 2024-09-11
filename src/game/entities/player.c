@@ -46,11 +46,6 @@ entity_texture(player) {
     return tex;
 }
 
-entity_texture(network_player) {
-    if (!is_socket_open()) return NULL;
-    return player_texture(entity, w, h, srcX, srcY, srcW, srcH);
-}
-
 entity_update(player_spawner) {
     for (int i = 0; i < MAX_PLAYERS; i++) {
         if (!players[i].camera || players[i].entity) continue;
@@ -88,5 +83,3 @@ entity_update(player) {
     hud_update(entity);
     camera_set_focus(players[player_id].camera, entity->posX, entity->posY);
 }
-
-entity_update(network_player) {}

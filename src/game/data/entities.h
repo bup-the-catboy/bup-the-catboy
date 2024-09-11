@@ -13,8 +13,7 @@ ENTITY(player,
 )
 
 ENTITY(network_player,
-    UPDATE(network_player_update)
-    TEXTURE(network_player_texture)
+    TEXTURE(player_texture)
     SIZE(0.75f, 0.75f)
     LVLEDIT_HIDE()
 )

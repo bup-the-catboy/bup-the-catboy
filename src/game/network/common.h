@@ -7,16 +7,20 @@
 
 #define PORT 42069 // funny
 
-typedef void(*PacketCallback)(struct Binary*);
+typedef void(*PacketCallback)(int origin, struct Binary*);
 
-void set_socket(int socket, bool server);
+void open_network(bool server);
+void set_client_socket(int socket);
 void send_packet(void* packet);
 void send_packet_blocking(void* packet);
-void receive_packet(void* packet);
+void send_packet_to(int connection, void* packet);
+void send_packet_to_blocking(int connection, void* packet);
+void send_packet_to_socket(int connection, void* packet);
+void send_packet_to_socket_blocking(int connection, void* packet);
+bool connection_established(int connection);
 void process_packets();
 void start_server();
 void start_client(const char* hostname);
 void disconnect();
-bool is_socket_open();
 
 #endif
