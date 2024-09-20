@@ -1,3 +1,7 @@
 [submodule "lib/lunarengine"]
 	path = lib/lunarengine
 	url = https://github.com/bup-the-catboy/lunar-engine
+
+[submodule "lib/bupscript"]
+	path = lib/bupscript
+	url = https://github.com/bup-the-catboy/bupscript
