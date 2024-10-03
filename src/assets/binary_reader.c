@@ -1,5 +1,8 @@
 #include "binary_reader.h"
 
+#include <string.h>
+#include <stdlib.h>
+
 struct BinaryStream* binary_stream_create(const unsigned char* binary) {
     struct BinaryStream* stream = malloc(sizeof(struct BinaryStream));
     stream->ptr = 0;

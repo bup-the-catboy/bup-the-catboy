@@ -14,7 +14,7 @@
 #include "font/font.h"
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_blendmode.h>
+#include <GL/gl.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
@@ -22,22 +22,27 @@
 #define FPS 60
 
 SDL_Window* window;
-SDL_Renderer* renderer;
+SDL_GLContext gl_context;
 
 uint64_t global_timer = 0;
 
-float scale = 1;
-float translate_x = 0;
-float translate_y = 0;
+int windoww, windowh;
+float viewx, viewy, vieww, viewh;
 LE_DrawList* client_drawlist = NULL;
 int client_player_id = 0;
 bool client = false;
 
 Uint64 frame_begin() {
+    glClearColor(.5f, .5f, .5f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     return SDL_GetTicks64();
 }
 
 void frame_end(Uint64 start_ticks, int fps) {
+    glFlush();
+    SDL_GL_SwapWindow(window);
     Uint64 end_ticks = SDL_GetTicks64();
     Uint64 frame_time = end_ticks - start_ticks;
     Sint64 wait_time = (1000 / fps) - frame_time;
@@ -46,49 +51,66 @@ void frame_end(Uint64 start_ticks, int fps) {
 }
 
 void drawlist_renderer(void* texture, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
-    bool flipx = dstw < 0;
-    bool flipy = dsth < 0;
-    if (flipx) dstw *= -1;
-    if (flipy) dsth *= -1;
-    SDL_FRect dst = { dstx * scale, dsty * scale, dstw * scale, dsth * scale };
-    SDL_Rect  src = { srcx,         srcy,         srcw,         srch         };
-    dst.x += translate_x;
-    dst.y += translate_y;
+    struct Texture* tex = texture;
+    float texX1 = 0, texX2 = 0, texY1 = 0, texY2 = 0;
+    float dstX1 = dstx;
+    float dstY1 = dsty;
+    float dstX2 = dstx + dstw;
+    float dstY2 = dsty + dsth;
     if (texture) {
-        SDL_SetTextureColorMod(texture, color >> 24, color >> 16, color >> 8);
-        SDL_SetTextureAlphaMod(texture, color >> 0);
-        SDL_RenderCopyExF(renderer, texture, &src, &dst, 0, NULL, flipy * 2 + flipx);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, tex->gl_texture);
+        texX1 = (float)(srcx       ) / tex->width;
+        texY1 = (float)(srcy       ) / tex->height;
+        texX2 = (float)(srcx + srcw) / tex->width;
+        texY2 = (float)(srcy + srch) / tex->height;
     }
-    else {
-        SDL_SetRenderDrawColor(renderer, color >> 24, color >> 16, color >> 8, color >> 0);
-        SDL_RenderFillRectF(renderer, &dst);
-    }
+    else glDisable(GL_TEXTURE_2D);
+    glColor4ub(color >> 24, color >> 16, color >> 8, color >> 0);
+    glBegin(GL_QUADS);
+    glTexCoord2f(texX1, texY1);
+    glVertex2f(dstX1, dstY1);
+    glTexCoord2f(texX2, texY1);
+    glVertex2f(dstX2, dstY1);
+    glTexCoord2f(texX2, texY2);
+    glVertex2f(dstX2, dstY2);
+    glTexCoord2f(texX1, texY2);
+    glVertex2f(dstX1, dstY2);
+    glEnd();
 }
 
-void adjust_display(int width, int height, int* new_w, int* new_h) {
-    float aspect_ratio = width / (float)height;
-    int w, h;
-    SDL_GetWindowSize(window, &w, &h);
-    if (w == 0) w = 1; // prevent division by 0
-    if (h == 0) h = 1;
-    float scr_aspect_ratio = w / (float)h;
-    if (aspect_ratio > scr_aspect_ratio) {
-        *new_w = w;
-        *new_h = w / aspect_ratio;
-         scale = w / (float)width;
-    }
-    else {
-        *new_h = h;
-        *new_w = h * aspect_ratio;
-         scale = h / (float)height;
-    }
-    translate_x = (w - *new_w) / 2.f;
-    translate_y = (h - *new_h) / 2.f;
+void update_viewport() {
+    if (windoww == 0) windoww = 1; // prevent division by 0
+    if (windowh == 0) windowh = 1;
+    float vieww = WIDTH, viewh = HEIGHT;
+    float aspect_ratio = WIDTH / (float)HEIGHT;
+    float scr_aspect_ratio = windoww / (float)windowh;
+    if (aspect_ratio > scr_aspect_ratio) viewh = windowh / (windoww / vieww);
+    else vieww = windoww / (windowh / viewh);
+    viewx = (vieww - WIDTH)  / 2;
+    viewy = (viewh - HEIGHT) / 2;
+    glViewport(0, 0, windoww, windowh);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-viewx, vieww - viewx, viewh - viewy, -viewy, -1.0, 1.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
+void render_border(float x1, float y1, float x2, float y2) {
+    glDisable(GL_TEXTURE_2D);
+    glColor4ub(0, 0, 0, 255);
+    glBegin(GL_QUADS);
+    glVertex2f(x1, y1);
+    glVertex2f(x2, y1);
+    glVertex2f(x2, y2);
+    glVertex2f(x1, y2);
+    glEnd();
 }
 
 void init_game() {
     audio_init();
-    load_assets(renderer);
+    load_assets();
     init_data();
     menu_init();
     libserial_init();
@@ -116,28 +138,23 @@ int main(int argc, char** argv) {
     srand(time(NULL));
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
     if (SDL_NumJoysticks() >= 1) joystick = SDL_JoystickOpen(0);
-    window = SDL_CreateWindow("Bup the Catboy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH * 2, HEIGHT * 2, SDL_WINDOW_RESIZABLE);
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    window = SDL_CreateWindow("Bup the Catboy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH * 2, HEIGHT * 2, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
+    gl_context = SDL_GL_CreateContext(window);
     SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
     LE_DrawList* drawlist = LE_CreateDrawList();
     init_game();
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     while (true) {
         if (handle_sdl_events(client_player_id)) break;
+        SDL_GetWindowSize(window, &windoww, &windowh);
+        update_viewport();
         Uint64 frame = frame_begin();
-        int frame_w, frame_h;
-        int width, height;
-        SDL_GetWindowSize(window, &width, &height);
-        adjust_display(WIDTH, HEIGHT, &frame_w, &frame_h);
-        SDL_SetRenderDrawColor(renderer, 127, 127, 127, 255);
         if (client && client_drawlist && LE_DrawListSize(client_drawlist)) {
-            SDL_RenderClear(renderer);
             LE_Render(client_drawlist, drawlist_renderer);
             LE_DestroyDrawList(client_drawlist);
             client_drawlist = NULL;
         }
         else if (current_level != NULL) {
-            SDL_RenderClear(renderer);
             update_transition();
             update_level();
             render_level(players[0].camera, drawlist, WIDTH, HEIGHT);
@@ -148,20 +165,13 @@ int main(int argc, char** argv) {
                 send_packet_to(i, packet_rendered_screen(dl));
                 LE_DestroyDrawList(dl);
             }
-            render_text(drawlist, 8, 8, "true...");
             LE_Render(drawlist, drawlist_renderer);
             LE_ClearDrawList(drawlist);
         }
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_Rect rect = { 0, 0, translate_x, height };
-        SDL_RenderFillRect(renderer, &rect);
-        rect.x = 0; rect.y = 0; rect.w = width, rect.h = translate_y;
-        SDL_RenderFillRect(renderer, &rect);
-        rect.x = width - translate_x; rect.y = 0; rect.w = translate_x, rect.h = height;
-        SDL_RenderFillRect(renderer, &rect);
-        rect.x = 0; rect.y = height - translate_y; rect.w = width, rect.h = translate_y;
-        SDL_RenderFillRect(renderer, &rect);
-        SDL_RenderPresent(renderer);
+        render_border(-viewx, -viewy, WIDTH + viewx, 0);
+        render_border(-viewx, -viewy, 0, HEIGHT + viewy);
+        render_border(-viewx, HEIGHT, WIDTH + viewx, HEIGHT + viewy);
+        render_border(WIDTH, -viewy, WIDTH + viewx, HEIGHT + viewy);
         process_packets();
         frame_end(frame, FPS);
         global_timer++;
@@ -169,7 +179,7 @@ int main(int argc, char** argv) {
     disconnect();
     audio_deinit();
     if (joystick) SDL_JoystickClose(joystick);
-    SDL_DestroyRenderer(renderer);
+    SDL_GL_DeleteContext(gl_context);
     SDL_DestroyWindow(window);
     SDL_Quit();
     return 0;

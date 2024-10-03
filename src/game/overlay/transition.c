@@ -34,7 +34,7 @@ void render_transition(LE_DrawList* drawlist) {
     if (!curr_transition.active) return;
     int w = TRANSITION_PADDING * 2 + WIDTH;
     int h = TRANSITION_PADDING * 2 + HEIGHT;
-    LE_DrawListAppend(drawlist, GET_ASSET(SDL_Texture, "images/transition.png"), curr_transition.x, curr_transition.y, w, h, 0, 0, w, h);
+    LE_DrawListAppend(drawlist, GET_ASSET(struct Texture, "images/transition.png"), curr_transition.x, curr_transition.y, w, h, 0, 0, w, h);
 }
 
 void update_transition() {

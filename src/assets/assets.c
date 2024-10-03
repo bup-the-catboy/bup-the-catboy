@@ -1,3 +1,4 @@
+#include <GL/gl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -31,6 +32,7 @@ struct Asset {
 };
 
 struct Asset* asset_list;
+bool force_binary = false;
 
 unsigned char asset_data[] = {
 #ifdef NO_VSCODE // so it doesnt destroy the intellisense
@@ -103,7 +105,7 @@ bool starts_with(const char* a, const char* b) {
 #define MK_COND(comp) || strcmp(ext, #comp) == 0 
 #define EXT(...) else if (false FOR_EACH(MK_COND, __VA_ARGS__))
 #define _ if (false) (void)0;
-void load_assets(SDL_Renderer* renderer) {
+void load_assets() {
     asset_list = malloc(sizeof(struct Asset));
     asset_list->name[0] = 0;
     asset_list->data = NULL;
@@ -126,15 +128,21 @@ void load_assets(SDL_Renderer* renderer) {
         curr = asset;
         get_extension(ext, buf);
         bool binary_fallback = false;
-        if (renderer) {
+        if (!force_binary) {
             _ EXT(png) {
-                int w, h;
-                unsigned char* image = stbi_load_from_memory(data, datasize, &w, &h, NULL, STBI_rgb_alpha);
-                SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(image, w, h, 32, 4 * w, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-                asset->data = SDL_CreateTextureFromSurface(renderer, surface);
-                SDL_FreeSurface(surface);
+                struct Texture* texture = malloc(sizeof(struct Texture));
+                unsigned char* image = stbi_load_from_memory(data, datasize, &texture->width, &texture->height, NULL, STBI_rgb_alpha);
+                glGenTextures(1, &texture->gl_texture);
+                glBindTexture(GL_TEXTURE_2D, texture->gl_texture);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+                glBindTexture(GL_TEXTURE_2D, 0);
                 stbi_image_free(image);
                 free(data);
+                asset->data = texture;
             }
             EXT(wav) {
                 asset->data = audio_load_wav(data, datasize);
@@ -189,7 +197,8 @@ void mkdir_recursive(const char* path, mode_t mode) {
 }
 
 void extract_assets() {
-    load_assets(NULL);
+    force_binary = true;
+    load_assets();
     struct Asset* curr = asset_list->next;
     while (curr) {
         printf("extracting %s\n", curr->name);

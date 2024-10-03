@@ -35,15 +35,13 @@ entity_texture(player) {
     if (entity->velY > 0) sprite = 4;
     if (entity->velY < 0) sprite = 3;
     LE_EntitySetProperty(entity, facing_left, "facing_left");
-    SDL_Texture* tex = GET_ASSET(SDL_Texture, "images/entities/player.png");
-    SDL_QueryTexture(tex, NULL, NULL, w, h);
     *srcX = sprite * 16;
     *srcY = 0;
     *srcW = 16;
     *srcH = 16;
     *w = facing_left.asBool ? -16 : 16;
     *h = 16;
-    return tex;
+    return GET_ASSET(struct Texture, "images/entities/player.png");
 }
 
 entity_update(player_spawner) {

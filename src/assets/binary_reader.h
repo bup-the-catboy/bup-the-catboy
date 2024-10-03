@@ -3,6 +3,8 @@
 
 #include "assets/assets.h"
 
+#include <stddef.h>
+
 struct BinaryStream {
     int ptr;
     const unsigned char* data;

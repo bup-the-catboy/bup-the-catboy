@@ -166,7 +166,7 @@ void free_text_graph(struct TextGraph* text) {
 }
 
 void render_text_graph(LE_DrawList* dl, float x, float y, struct TextGraph* text) {
-    SDL_Texture* texture = GET_ASSET(SDL_Texture, "images/font.png");
+    struct Texture* texture = GET_ASSET(struct Texture, "images/font.png");
     struct TextGraph* curr = text;
     char c;
     int ptr;

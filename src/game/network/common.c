@@ -134,8 +134,8 @@ void receive_packet(int origin, void* packet) {
             LibSerialObj_RenderedScreen* dl = packet;
             client_drawlist = LE_CreateDrawList();
             for (int i = 0; i < libserial_arrsize(*dl); i++) {
-                SDL_Texture* tex = NULL;
-                if ((*dl)[i].texture[0]) tex = GET_ASSET(SDL_Texture, (*dl)[i].texture);
+                struct Texture* tex = NULL;
+                if ((*dl)[i].texture[0]) tex = GET_ASSET(struct Texture, (*dl)[i].texture);
                 LE_DrawSetColor(client_drawlist, (*dl)[i].color);
                 LE_DrawListAppend(client_drawlist, tex,
                     (*dl)[i].dstx, (*dl)[i].dsty, (*dl)[i].dstw, (*dl)[i].dsth,
