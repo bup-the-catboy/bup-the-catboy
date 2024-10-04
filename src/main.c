@@ -12,6 +12,7 @@
 #include "game/savefile.h"
 #include "game/overlay/menu.h"
 #include "font/font.h"
+#include "bupscript/bupscript.h"
 
 #include <SDL2/SDL.h>
 #include <GL/gl.h>
@@ -57,6 +58,14 @@ void drawlist_renderer(void* texture, float dstx, float dsty, float dstw, float 
     float dstY1 = dsty;
     float dstX2 = dstx + dstw;
     float dstY2 = dsty + dsth;
+    if (dstX2 < dstX1) {
+        dstX1 -= dstw;
+        dstX2 -= dstw;
+    }
+    if (dstY2 < dstY1) {
+        dstY1 -= dsth;
+        dstY2 -= dsth;
+    }
     if (texture) {
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, tex->gl_texture);
