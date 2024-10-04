@@ -33,7 +33,7 @@ tools         - Programs used during compilation
 2. Launch the **MINGW64** shell
 3. Install dependencies
 ```sh
-pacman -S git make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-libgme
+pacman -S git make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-libgme mingw-w64-x86_64-glew
 ```
 4. Follow the [General compile steps](#general-compile-steps)
 
@@ -43,11 +43,11 @@ pacman -S git make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-l
 
 **Debian**
 ```sh
-sudo apt install git make gcc libsdl2-dev libgme-dev
+sudo apt install git make gcc libsdl2-dev libgme-dev libglew-dev
 ```
 **Arch**
 ```sh
-sudo pacman -S git make gcc sdl2 libgme
+sudo pacman -S git make gcc sdl2 libgme glew
 ```
 2. Follow the [General compile steps](#general-compile-steps)
 
@@ -56,7 +56,7 @@ sudo pacman -S git make gcc sdl2 libgme
 1. Install [Homebrew](https://brew.sh/)
 2. Install dependencies
 ```sh
-brew install gcc make sdl2 game-music-emu
+brew install gcc make sdl2 game-music-emu glew
 ```
 3. Follow the [General compile steps](#general-compile-steps)
 
@@ -69,7 +69,7 @@ curl https://raw.githubusercontent.com/bup-the-catboy/bup-the-catboy/main/quasi-
 2. After that, run `~/quasi-msys2/env/shell.sh`
 3. Install dependencies
 ```sh
-pacmake install _gcc _SDL2 _libgme
+pacmake install _gcc _SDL2 _libgme _glew
 ```
 4. Follow the [General compile steps](#general-compile-steps)
 

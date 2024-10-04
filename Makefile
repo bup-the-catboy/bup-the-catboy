@@ -24,7 +24,7 @@ TOOLS_BINDIR := build/tools
 TOOLS_CC := $(COMPILER)
 EXECUTABLE := $(BIN_DIR)/btcb$(EXE)
 
-LIB_NAMES := sdl2 libgme gl
+LIB_NAMES := sdl2 libgme glew
 
 LIBS_DIR := lib
 LIBS_SRC := $(shell find $(LIBS_DIR)/* -maxdepth 0 -type d -name "*")
