@@ -35,6 +35,9 @@ float quad_in_out(float x);
 float cubic_in(float x);
 float cubic_out(float x);
 float cubic_in_out(float x);
+float elastic_in(float x);
+float elastic_out(float x);
+float elastic_in_out(float x);
 
 #undef _
 #undef __

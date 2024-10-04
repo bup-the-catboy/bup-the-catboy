@@ -268,10 +268,10 @@ void _load_menu(int index) {
 float update_animation() {
     float translation = 0;
     float x = anim_timer / (float)MENU_ANIM_DELAY;
-    if (anim_state == AnimState_Pop1)  translation = lerp(quad_in (x),  0,  WIDTH);
-    if (anim_state == AnimState_Pop2)  translation = lerp(quad_out(x), -WIDTH,  0);
-    if (anim_state == AnimState_Push1) translation = lerp(quad_in (x),  0, -WIDTH);
-    if (anim_state == AnimState_Push2) translation = lerp(quad_out(x),  WIDTH,  0);
+    if (anim_state == AnimState_Pop1)  translation = lerp(elastic_in (x),  0,  WIDTH);
+    if (anim_state == AnimState_Pop2)  translation = lerp(elastic_out(x), -WIDTH,  0);
+    if (anim_state == AnimState_Push1) translation = lerp(elastic_in (x),  0, -WIDTH);
+    if (anim_state == AnimState_Push2) translation = lerp(elastic_out(x),  WIDTH,  0);
     if (anim_state != AnimState_Idle)  anim_timer++;
     if (anim_timer == MENU_ANIM_DELAY) {
         anim_timer = 0;

@@ -66,6 +66,18 @@ float sin_out(float x) {
     return sin((x * M_PI) / 2);
 }
 
+float elastic_in(float x) {
+    float c1 = 1.70158f;
+    float c2 = c1 + 1;
+    return c2 * x * x * x - c1 * x * x;
+}
+
+float elastic_out(float x) {
+    float c1 = 1.70158f;
+    float c2 = c1 + 1;
+    return 1 + c2 * pow(x - 1, 3) + c1 * pow(x - 1, 2);
+}
+
 float quad_in(float x) EXPO_IN(2)
 float quad_out(float x) EXPO_OUT(2)
 float cubic_in(float x) EXPO_IN(3)
@@ -73,3 +85,4 @@ float cubic_out(float x) EXPO_OUT(3)
 float sin_in_out(float x) IN_OUT(sin)
 float quad_in_out(float x) IN_OUT(quad)
 float cubic_in_out(float x) IN_OUT(cubic)
+float elastic_in_out(float x) IN_OUT(elastic)
