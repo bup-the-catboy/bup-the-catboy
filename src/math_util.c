@@ -1,5 +1,10 @@
 #include "math_util.h"
 
+#ifdef WINDOWS
+#undef min
+#undef max
+#endif
+
 #define _( ...)
 #define __(...) __VA_ARGS__
 

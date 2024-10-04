@@ -1,6 +1,11 @@
 #ifndef BTCB_MATH_UTIL_H
 #define BTCB_MATH_UTIL_H
 
+#ifdef WINDOWS
+#undef min
+#undef max
+#endif
+
 #include <foreach.h>
 #include <math.h>
 #include <stdlib.h>

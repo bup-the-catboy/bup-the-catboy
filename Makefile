@@ -44,7 +44,7 @@ BUILD_FILES := $(BIN_DIR) $(LIBS_BIN) $(LIBS_BUILD) src/assets/asset_data.h
 
 ifeq ($(WINDOWS),1)
 	CFLAGS += -DWINDOWS
-	LIBS += -static $(shell pkg-config --libs --static $(LIB_NAMES)) -lm -lWs2_32 $(LIBS_FLAGS)
+	LIBS += -static $(shell pkg-config --libs --static $(LIB_NAMES)) -lm -lWs2_32 -lopengl32 $(LIBS_FLAGS)
 else ifeq ($(MACOS_CROSS),1)
 	CFLAGS += $(shell $(MACOS_TOOL)-pkg-config --cflags $(LIB_NAMES)) -DMACOS
 	LIBS += $(shell $(MACOS_TOOL)-pkg-config --libs $(LIB_NAMES)) -lm $(LIBS_FLAGS)
