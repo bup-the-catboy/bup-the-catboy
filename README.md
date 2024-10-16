@@ -8,7 +8,8 @@ A Mario-like 2D platformer game written in C with SDL
 include       - Headers for various libraries
 lib
   lunarengine - A custom 2D platformer engine built for this game
-lvledit       - Source code for the level editor program
+  bupscript   - Source code for the BupScript language
+                interpreter used for modding
 src
   assets      - Reading & parsing assets
   audio       - Audio engine
@@ -98,9 +99,11 @@ export MACOS_ARCH=x86_64 # optional
 ```sh
 git clone --recursive https://github.com/bup-the-catboy/bup-the-catboy && cd bup-the-catboy
 ```
-2. [Acquire assets](#acquiring-assets)
+2. [Acquire assets](#acquiring-assets)*
 3. Compile the game using the `make -j$(nproc)` command
 4. The executable should be located at `build/btcb`
+
+*Assets aren't required for the game to compile, but it won't be able to run correctly as level, texture and sound data is missing. 
 
 ## Acquiring assets
 
