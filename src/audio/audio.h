@@ -1,7 +1,11 @@
 #ifndef BTCB_AUDIO_H
 #define BTCB_AUDIO_H
 
-#define AUDIO_SAMPLE_RATE 48000
+#define _STR(x) #x
+#define STR(x) _STR(x)
+
+#define AUDIO_SAMPLE_RATE 44100
+#define STR_AUDIO_SAMPLE_RATE STR(AUDIO_SAMPLE_RATE)
 
 #include <stdbool.h>
 
