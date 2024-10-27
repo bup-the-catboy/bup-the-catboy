@@ -32,7 +32,6 @@ while true; do
 done
 
 SDK_VERSION=$SDK_VER UNATTENDED=1 ./build.sh
-./build_gcc.sh
 PWD=$(pwd)
 echo "
 export PATH=\$PATH:$PWD/target/bin

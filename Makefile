@@ -6,13 +6,14 @@ else
 	WINDOWS := 0
 endif
 
-COMPILER ?= gcc
 MACOS_ARCH ?= $(shell uname -m)
 MACOS_CROSS ?= 0
 ifeq ($(MACOS_CROSS),1)
+	COMPILER ?= clang
 	MACOS_TOOL := $(MACOS_ARCH)-apple-$(OSXCROSS_TARGET)
 	CC := $(MACOS_TOOL)-$(COMPILER)
 else
+	COMPILER ?= gcc
 	CC := $(COMPILER)
 endif
 
@@ -97,11 +98,10 @@ $(EXECUTABLE): $(OBJS)
 	@if [ $(MACOS_CROSS) == 1 ]; then \
 		printf "\033[1m\033[32mBundling \033[36m$(EXECUTABLE) \033[32m-> \033[34m$(EXECUTABLE).app\033[0m\n"; \
 		mkdir -p $(EXECUTABLE).app/Contents/MacOS; \
-		cp $(EXECUTABLE) $(EXECUTABLE).app/Contents/MacOS; \
-		cp $(OSXCROSS_TARGET_DIR)/macports/pkgs/opt/local/lib/libSDL2-2.0.0.dylib $(EXECUTABLE).app/Contents/MacOS; \
 		cp $(OSXCROSS_TARGET_DIR)/macports/pkgs/opt/local/lib/libgme.dylib $(EXECUTABLE).app/Contents/MacOS; \
-		$(MACOS_TOOL)-install_name_tool -change /opt/local/lib/libSDL2-2.0.0.dylib @executable_path/libSDL2-2.0.0.dylib $(EXECUTABLE); \
 		$(MACOS_TOOL)-install_name_tool -change @rpath/libgme.0.dylib @executable_path/libgme.dylib $(EXECUTABLE); \
+		./osxcross-patch-exe.sh $(EXECUTABLE).app/Contents/MacOS $(EXECUTABLE).app/Contents/MacOS/$
+		cp $(EXECUTABLE) $(EXECUTABLE).app/Contents/MacOS; \
 		echo '<?xml version="1.0" encoding="UTF-8"?>' > $(EXECUTABLE).app/Contents/Info.plist; \
 		echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> $(EXECUTABLE).app/Contents/Info.plist; \
 		echo '<plist version="1.0">' >> $(EXECUTABLE).app/Contents/Info.plist; \

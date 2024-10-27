@@ -82,7 +82,7 @@ curl https://raw.githubusercontent.com/bup-the-catboy/bup-the-catboy/main/osxcro
 ```
 3. Install dependencies
 ```sh
-omp install libsdl2
+omp install libsdl2 glew mesa mesa-glu
 curl https://raw.githubusercontent.com/bup-the-catboy/bup-the-catboy/main/osxcross-libgme.sh | sh
 ```
 4. Turn on macOS cross compile mode for the `Makefile`

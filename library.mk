@@ -1,9 +1,13 @@
+MACOS_ARCH ?= $(shell uname -m)
 MACOS_CROSS ?= 0
 ifeq ($(MACOS_CROSS),1)
-	CC := o64-gcc
-	AR := $(shell uname -m)-apple-$(OSXCROSS_TARGET)-ar
+	COMPILER ?= clang
+	MACOS_TOOL := $(MACOS_ARCH)-apple-$(OSXCROSS_TARGET)
+	CC := $(MACOS_TOOL)-$(COMPILER)
+	AR := $(MACOS_TOOL)-ar
 else
-	CC := gcc
+	COMPILER ?= gcc
+	CC := $(COMPILER)
 	AR := ar
 endif
 
