@@ -1,6 +1,7 @@
-#ifndef NO_VSCODE
 #ifndef BTCB_DATA_DEFINES_H
 #define BTCB_DATA_DEFINES_H
+
+#define NO_VSCODE
 
 #include <lunarengine.h>
 #include <SDL2/SDL_keycode.h>
@@ -8,6 +9,7 @@
 #include "game/entities/functions.h"
 #include "game/tiles/functions.h"
 #include "game/overlay/menu_functions.h"
+#include "game/data.h"
 #include "main.h"
 
 // we trick vscode into giving a specific syntax highlight color 
@@ -17,12 +19,15 @@
 
 #define GAME_ELEMENT(_1, _2) static void CONCAT(_, __COUNTER__)() { int _1; _2 }
 
+#define TILE(_1, _2) int _1; _2
 #define UPDATE(_1) (void)(_1);
 #define COLLISION(_1) (void)(_1);
 #define TEXTURE(_1) (void)(_1);
 #define FLAGS(_1) (void)(_1);
 #define SIZE(_1, _2) (void)(_1); (void)(_2);
 #define TILES_IN_ROW(_1) (void)(_1);
+#define PALETTE(_1) (void)(TILE_PALETTE_##_1);
+#define THEME_TILESET(_1, _2) (void)(TILESET_TYPE_##_1); (void)(TILESET_##_2);
 #define SOLID()
 #define LVLEDIT_HIDE()
 #define LVLEDIT_TEXTURE(_1) (void)(_1);
@@ -32,9 +37,11 @@
 #define BOOL  1
 #define FLOAT 2
 
-#define ENTITY( _1, _2) GAME_ELEMENT(_1, _2)
-#define TILESET(_1, _2) GAME_ELEMENT(_1, _2)
-#define TILE(   _1, _2) GAME_ELEMENT(_1, _2)
+#define ENTITY(      _1, _2) GAME_ELEMENT(_1, _2)
+#define TILESET(     _1, _2) GAME_ELEMENT(_1, _2)
+#define THEME(       _1, _2) GAME_ELEMENT(_1, _2)
+#define TILE_PALETTE(_1, _2) GAME_ELEMENT(_1, _2)
+#define TILESET_TYPE(_     ) GAME_ELEMENT(_ ,   )
 
 #define ENUM(id)
 
@@ -91,5 +98,4 @@
 #define FOLLOW()
 #define IMAGE(path, srcx, srcy, srcw, srch, dstx, dsty, dstw, dsth) ITEM(path, IMGSIZE(srcx, srcy, srcw, srch, dstx, dsty, dstw, dsth))
 
-#endif
 #endif

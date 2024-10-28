@@ -1,4 +1,8 @@
+#ifndef NO_VSCODE
 #include "defines.h"
+#endif
+
+TILE_PALETTE(generic,
 
 TILE(air,
     LVLEDIT_HIDE()
@@ -171,4 +175,15 @@ TILE(catcoin_bottom_right_outline,
 TILE(life_coin,
     SIMPLE_ANIMATED_TEXTURE(4, 10, 19, 18, 17, 16)
     COLLISION(tilecol_life_coin)
+)
+
+)
+
+TILE_PALETTE(background,
+    TILE(layer0, SIMPLE_STATIONARY_TEXTURE(0))
+    TILE(layer1, SIMPLE_STATIONARY_TEXTURE(1))
+    TILE(layer2, SIMPLE_STATIONARY_TEXTURE(2))
+    TILE(layer3, SIMPLE_STATIONARY_TEXTURE(3))
+    TILE(layer4, SIMPLE_STATIONARY_TEXTURE(4))
+    TILE(layer5, SIMPLE_STATIONARY_TEXTURE(5))
 )

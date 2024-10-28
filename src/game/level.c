@@ -82,6 +82,7 @@ struct Level* parse_level(unsigned char* data, int datalen) {
     BINARY_STREAM_READ(stream, level->default_music);
     BINARY_STREAM_READ(stream, level->default_cambound);
     stream = binary_stream_close(stream);
+    level->default_music = 3;
 
     stream = binary_stream_goto(stream);
     BINARY_STREAM_READ(stream, level->num_cambounds);
@@ -158,7 +159,9 @@ struct Level* parse_level(unsigned char* data, int datalen) {
         stream = binary_stream_goto(stream);
         switch (type) {
         case LE_LayerType_Tilemap: {
+            int tileset;
             unsigned int w, h;
+            BINARY_STREAM_READ(stream, tileset);
             BINARY_STREAM_READ(stream, w);
             BINARY_STREAM_READ(stream, h);
             LE_Tilemap* tilemap = LE_CreateTilemap(w, h);
@@ -169,7 +172,7 @@ struct Level* parse_level(unsigned char* data, int datalen) {
                     LE_TilemapSetTile(tilemap, x, y, tile);
                 }
             }
-            LE_TilemapSetTileset(tilemap, get_tileset(level->default_theme));
+            LE_TilemapSetTileset(tilemap, get_theme(level->default_theme)[tileset]);
             layer = LE_AddTilemapLayer(level->layers, tilemap);
         } break;
         case LE_LayerType_Entity: {
@@ -202,8 +205,8 @@ struct Level* parse_level(unsigned char* data, int datalen) {
             }
             layer = LE_AddEntityLayer(level->layers, el);
         } break; }
-        layer->scrollSpeedX = smx;
-        layer->scrollSpeedY = smy;
+        layer->scrollSpeedX = smx * 16;
+        layer->scrollSpeedY = smy * 16;
         layer->scrollOffsetX = sox;
         layer->scrollOffsetY = soy;
         layer->scaleW = scx;

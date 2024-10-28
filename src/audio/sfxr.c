@@ -293,7 +293,7 @@ bool audio_sfxr_synth(int length, float* buffer, struct SFXRContext* context) {
         ssample *= 2.0f * context->sound_vol;
         if (buffer != NULL) {
             if (ssample > 1.0f) ssample = 1.0f;
-            if (ssample < -1.0f) ssample =- 1.0f;
+            if (ssample < -1.0f) ssample = -1.0f;
             *buffer++ = ssample;
         }
     }

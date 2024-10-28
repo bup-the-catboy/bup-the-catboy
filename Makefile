@@ -100,7 +100,7 @@ $(EXECUTABLE): $(OBJS)
 		mkdir -p $(EXECUTABLE).app/Contents/MacOS; \
 		cp $(OSXCROSS_TARGET_DIR)/macports/pkgs/opt/local/lib/libgme.dylib $(EXECUTABLE).app/Contents/MacOS; \
 		$(MACOS_TOOL)-install_name_tool -change @rpath/libgme.0.dylib @executable_path/libgme.dylib $(EXECUTABLE); \
-		./osxcross-patch-exe.sh $(EXECUTABLE).app/Contents/MacOS $(EXECUTABLE).app/Contents/MacOS/$
+		./osxcross-patch-exe.sh $(EXECUTABLE).app/Contents/MacOS $(EXECUTABLE).app/Contents/MacOS/$ \
 		cp $(EXECUTABLE) $(EXECUTABLE).app/Contents/MacOS; \
 		echo '<?xml version="1.0" encoding="UTF-8"?>' > $(EXECUTABLE).app/Contents/Info.plist; \
 		echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> $(EXECUTABLE).app/Contents/Info.plist; \

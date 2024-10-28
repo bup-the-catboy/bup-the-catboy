@@ -1,4 +1,6 @@
+#ifndef NO_VSCODE
 #include "defines.h"
+#endif
 
 MENU(title_screen,
     IMAGE("images/logo.png", 0, 0, 90, 49, WIDTH / 2 - 90, 24, 180, 98)

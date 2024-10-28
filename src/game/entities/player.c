@@ -79,5 +79,5 @@ entity_update(player) {
     entity->velY += 0.03f;
     if ((entity->flags & LE_EntityFlags_OnGround) && is_button_pressed(player_id, BUTTON_JUMP)) entity->velY = -0.5f;
     hud_update(entity);
-    camera_set_focus(players[player_id].camera, entity->posX, entity->posY);
+    camera_set_focus(players[player_id].camera, entity->posX, 8);
 }

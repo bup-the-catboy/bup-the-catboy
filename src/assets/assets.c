@@ -14,7 +14,6 @@
 #include "audio/audio.h"
 #include "audio/nsf.h"
 #include "audio/wav.h"
-#include "audio/sfxr.h"
 #include "binary_reader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -150,9 +149,6 @@ void load_assets() {
             }
             EXT(nsf) {
                 asset->data = audio_load_nsf(data, datasize);
-            }
-            EXT(sfxr) {
-                asset->data = audio_load_sfxr(data, datasize);
             }
             else binary_fallback = true;
         }

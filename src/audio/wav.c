@@ -16,7 +16,7 @@ void validate_wav(unsigned char* data) {
     memcpy(&sample_rate, data + 24, 4);
     memcpy(&bits_per_sample, data + 34, 2);
     if (format != 1 || num_channels != 2 || sample_rate != AUDIO_SAMPLE_RATE || bits_per_sample != 16) {
-        printf("WAV file should be signed 16-bit stereo PCM with " STR_AUDIO_SAMPLE_RATE " Hz sample rate\n");
+        printf("WAV file should be signed 16-bit stereo PCM with 48000 Hz sample rate\n");
     }
 }
 

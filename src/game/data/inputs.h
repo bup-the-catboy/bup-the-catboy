@@ -1,4 +1,6 @@
+#ifndef NO_VSCODE
 #include "defines.h"
+#endif
 
 INPUT(BUTTON_MOUSE_LEFT)   MOUSEBTN(1)         CONTROLLER(A)
 INPUT(BUTTON_MOUSE_RIGHT)  MOUSEBTN(3)

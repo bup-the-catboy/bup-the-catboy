@@ -1,4 +1,6 @@
+#ifndef NO_VSCODE
 #include "defines.h"
+#endif
 
 ENTITY(player_spawner,
     UPDATE(player_spawner_update)
