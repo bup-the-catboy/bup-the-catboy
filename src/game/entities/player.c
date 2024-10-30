@@ -8,7 +8,6 @@
 #include "game/input.h"
 #include "game/camera.h"
 #include "game/level.h"
-#include "game/network/common.h"
 #include "game/network/packet.h"
 #include "game/overlay/hud.h"
 #include "main.h"
@@ -41,6 +40,7 @@ entity_texture(player) {
     *srcH = 16;
     *w = facing_left.asBool ? -16 : 16;
     *h = 16;
+    entity_apply_squish(entity, w, h);
     return GET_ASSET(struct Texture, "images/entities/player.png");
 }
 
@@ -77,7 +77,12 @@ entity_update(player) {
         }
     }
     entity->velY += 0.03f;
-    if ((entity->flags & LE_EntityFlags_OnGround) && is_button_pressed(player_id, BUTTON_JUMP)) entity->velY = -0.5f;
+    if ((entity->flags & LE_EntityFlags_OnGround) && is_button_pressed(player_id, BUTTON_JUMP)) {
+        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 1.5f }, "squish");
+        entity->velY = -0.5f;
+    }
     hud_update(entity);
     camera_set_focus(players[player_id].camera, entity->posX, 8);
+    entity_fall_squish(entity, 10, .5f, .25f);
+    entity_update_squish(entity, 5);
 }

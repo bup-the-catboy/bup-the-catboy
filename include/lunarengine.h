@@ -64,7 +64,7 @@ typedef void(*DrawListRenderer)(void* texture,
     unsigned int color
 );
 typedef void*(*EntityTextureCallback)(
-    LE_Entity* entity, int* width, int* height,
+    LE_Entity* entity, float* width, float* height,
     int* srcX, int* srcY, int* srcW, int* srcH
 );
 typedef void(*EntityUpdateCallback)(LE_Entity* entity);

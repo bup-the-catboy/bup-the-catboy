@@ -139,7 +139,7 @@ void hud_update_element(LE_Entity* player, struct HUDElement* element, int targe
 }
 
 void hud_update(LE_Entity* player) {
-    if (player->velX + player->velY < 0.05f) standing_timer++;
+    if (fabsf(player->velX) + fabsf(player->velY) < 0.05f) standing_timer++;
     else standing_timer = 0;
     for (int i = 0; i < sizeof(hud_elements) / sizeof(*hud_elements); i++) {
         if (hud_elements[i].show_timer < SHOW_DELAY) continue;

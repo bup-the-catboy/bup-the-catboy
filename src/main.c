@@ -126,7 +126,7 @@ void init_game() {
     savefile_load();
     savefile_select(0);
     if (!client) {
-        load_level(GET_ASSET(struct Binary, "levels/test2.lvl"));
+        load_level(GET_ASSET(struct Binary, "levels/1-1.lvl"));
         create_player(current_level->default_cambound);
         load_menu(title_screen);
     }
