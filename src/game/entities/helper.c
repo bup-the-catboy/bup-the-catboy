@@ -36,3 +36,21 @@ void entity_fall_squish(LE_Entity* entity, float max_distance, float max_squish,
     LE_EntitySetProperty(entity, peak_height, "peak_height");
     LE_EntitySetProperty(entity, prev_in_air, "prev_in_air");
 }
+
+bool entity_can_jump(LE_Entity* entity) {
+    LE_EntityProperty coyote;
+    if (!LE_EntityGetProperty(entity, &coyote, "coyote")) coyote.asInt = 999;
+    if (entity->flags & LE_EntityFlags_OnGround) coyote.asInt = 0;
+    else coyote.asInt++;
+    LE_EntitySetProperty(entity, coyote, "coyote");
+    return coyote.asInt < 3;
+}
+
+bool entity_jump_requested(LE_Entity* entity, bool jump_pressed) {
+    LE_EntityProperty jump_timer;
+    if (!LE_EntityGetProperty(entity, &jump_timer, "jump_timer")) jump_timer.asInt = 999;
+    if (jump_pressed) jump_timer.asInt = 0;
+    else jump_timer.asInt++;
+    LE_EntitySetProperty(entity, jump_timer, "jump_timer");
+    return jump_timer.asInt < 5;
+}

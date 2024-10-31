@@ -67,19 +67,22 @@ entity_update(player) {
         if (entity->velX > 0.2f) entity->velX = 0.2f;
     }
     else {
+        float decel = (entity->flags & LE_EntityFlags_OnGround) ? 0.02f : 0.01f;
         if (entity->velX < 0) {
-            entity->velX += 0.02f;
+            entity->velX += decel;
             if (entity->velX > 0) entity->velX = 0;
         }
         if (entity->velX > 0) {
-            entity->velX -= 0.02f;
+            entity->velX -= decel;
             if (entity->velX < 0) entity->velX = 0;
         }
     }
     entity->velY += 0.03f;
-    if ((entity->flags & LE_EntityFlags_OnGround) && is_button_pressed(player_id, BUTTON_JUMP)) {
+    if (entity_can_jump(entity) & entity_jump_requested(entity, is_button_pressed(player_id, BUTTON_JUMP))) {
+        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = 999 }, "jump_timer");
         LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 1.5f }, "squish");
         entity->velY = -0.5f;
+        if (!l && !r) entity->velX *= 0.6f;
     }
     hud_update(entity);
     camera_set_focus(players[player_id].camera, entity->posX, 8);
