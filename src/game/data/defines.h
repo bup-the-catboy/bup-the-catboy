@@ -26,6 +26,7 @@
 #define FLAGS(_1) (void)(_1);
 #define SIZE(_1, _2) (void)(_1); (void)(_2);
 #define TILES_IN_ROW(_1) (void)(_1);
+#define DEFAULT_PROPERTY(_1, _2, _3) (void)(_1); (void)(LE_EntityProperty){ .as##_2 = _3 };
 #define PALETTE(_1) (void)(TILE_PALETTE_##_1);
 #define THEME_TILESET(_1, _2) (void)(TILESET_TYPE_##_1); (void)(TILESET_##_2);
 #define SOLID()
