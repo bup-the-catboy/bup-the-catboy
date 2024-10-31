@@ -13,7 +13,7 @@
     out.val;                                      \
 })
 
-#ifdef __LITTLE_ENDIAN__
+#if defined(__ORDER_LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN__)
 #define BE(x) FLIP_ENDIAN(x)
 #define LE(x) (x)
 #else
