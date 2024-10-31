@@ -172,9 +172,16 @@ TILE(catcoin_bottom_right_outline,
     SIMPLE_ANIMATED_TEXTURE(4, 10, 73, 75, 77, 79)
 )
 
-TILE(life_coin,
-    SIMPLE_ANIMATED_TEXTURE(4, 10, 19, 18, 17, 16)
-    COLLISION(tilecol_life_coin)
+TILE(death_fade_left,
+    SIMPLE_STATIONARY_TEXTURE(20)
+)
+
+TILE(death_fade_center,
+    SIMPLE_STATIONARY_TEXTURE(21)
+)
+
+TILE(death_fade_right,
+    SIMPLE_STATIONARY_TEXTURE(22)
 )
 
 )
