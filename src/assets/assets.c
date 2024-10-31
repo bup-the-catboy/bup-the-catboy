@@ -51,50 +51,6 @@ void get_extension(char* out, const char* in) {
     strcpy(out, in);
 }
 
-struct MemoryStream {
-    void* data;
-    size_t size;
-    size_t ptr;
-};
-
-size_t memstream_read(void* out, size_t size, size_t n, void* in) {
-    struct MemoryStream* memstream = in;
-    size_t bytes = size * n;
-    size_t remaining = memstream->size - memstream->ptr;
-    if (remaining < bytes) bytes = remaining;
-    memcpy(out, memstream->data + memstream->ptr, bytes);
-    memstream->ptr += bytes;
-    return bytes;
-}
-
-int memstream_seek(void* data, long offset, int pos) {
-    struct MemoryStream* memstream = data;
-    size_t newpos = pos;
-    switch (pos) {
-        case SEEK_SET:
-            newpos = 0;
-            break;
-        case SEEK_CUR:
-            newpos = memstream->ptr;
-            break;
-        case SEEK_END:
-            newpos = memstream->size;
-            break;
-    }
-    newpos += offset;
-    if (newpos > memstream->size) return -1;
-    memstream->ptr = newpos;
-    return 0;
-}
-
-int memstream_close(void* data) {
-    return 0;
-}
-
-long memstream_tell(void* data) {
-    return ((struct MemoryStream*)data)->ptr;
-}
-
 bool starts_with(const char* a, const char* b) {
     for (int i = 0; i < strlen(b); i++) {
         if (a[i] != b[i]) return false;

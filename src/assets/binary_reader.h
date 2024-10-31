@@ -5,13 +5,15 @@
 
 #include <stddef.h>
 
+#include <endianness.h>
+
 struct BinaryStream {
     int ptr;
     const unsigned char* data;
     struct BinaryStream* parent;
 };
 
-#define BINARY_STREAM_READ(stream, var) binary_stream_read(stream, &var, sizeof(var))
+#define BINARY_STREAM_READ(stream, var) { binary_stream_read(stream, &var, sizeof(var)); var = LE(var); }
 #define BINARY_STREAM_GOTO(stream) ({                       \
     struct BinaryStream* child = binary_stream_goto(stream); \
     ((child) == (stream)) ? NULL : (child);                   \

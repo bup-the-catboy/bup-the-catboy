@@ -7,6 +7,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
+#include <endianness.h>
+
 #ifdef WINDOWS
 #define BINARY "b"
 #else
@@ -34,9 +36,10 @@ void write_file(FILE* f, const char* filename) {
     else {
         FILE* file = fopen(filename, "r" BINARY);
         uint32_t filesize = s.st_size;
+        uint32_t filesize_le = LE(filesize);
         const char* name = filename + 2;
         fwrite(name, strlen(name) + 1, 1, f);
-        fwrite(&filesize, sizeof(uint32_t), 1, f);
+        fwrite(&filesize_le, sizeof(uint32_t), 1, f);
         char* data = malloc(filesize);
         fread(data, filesize, 1, file);
         fclose(file);
