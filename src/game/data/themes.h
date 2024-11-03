@@ -1,5 +1,7 @@
 #ifndef NO_VSCODE
 #include "defines.h"
+#include "tilesets.h"
+#include "tileset_types.h"
 #endif
 
 THEME(grass,

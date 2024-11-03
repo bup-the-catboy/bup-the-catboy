@@ -18,5 +18,8 @@ entity_update(player_spawner);
 entity_update(player);
 entity_update(gravity);
 entity_update(walk);
+entity_update(squashed_mouse);
+entity_collision(squash);
+entity_texture(squashed_mouse);
 entity_texture(player);
 entity_texture(mouse);

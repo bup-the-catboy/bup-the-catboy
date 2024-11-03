@@ -8,3 +8,21 @@ entity_texture(mouse) {
     *h = 16;
     return GET_ASSET(struct Texture, "images/entities/mouse.png");
 }
+
+entity_texture(squashed_mouse) {
+    *srcX = 32;
+    *srcY = 0;
+    *srcW = 16;
+    *srcH = 16;
+    *w = 16;
+    *h = 16;
+    return GET_ASSET(struct Texture, "images/entities/mouse.png");
+}
+
+entity_update(squashed_mouse) {
+    LE_EntityProperty timer = (LE_EntityProperty){ .asInt = 60 };
+    LE_EntityGetProperty(entity, &timer, "timer");
+    timer.asInt--;
+    if (timer.asInt == 0) LE_DeleteEntity(entity);
+    LE_EntitySetProperty(entity, timer, "timer");
+}

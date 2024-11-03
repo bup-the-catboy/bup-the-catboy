@@ -1,5 +1,6 @@
 #ifndef NO_VSCODE
 #include "defines.h"
+#include "tiles.h"
 #endif
 
 TILESET(grass,

@@ -9,15 +9,18 @@
 #include "game/entities/functions.h"
 #include "game/tiles/functions.h"
 #include "game/overlay/menu_functions.h"
-#include "game/data.h"
 #include "main.h"
 
-// we trick vscode into giving a specific syntax highlight color 
+// this file is completely unnecessary
+// but it gives syntax errors for missing data entries
+// like a tile palette for the PALETTE command in tilesets.h
+
+// its complicated but its also funny lmao :3
 
 #define _CONCAT(a, b) a##b
 #define CONCAT(a, b) _CONCAT(a, b)
 
-#define GAME_ELEMENT(_1, _2) static void CONCAT(_, __COUNTER__)() { int _1; _2 }
+#define GAME_ELEMENT(id, _1, _2) static void id##__##_1() { int _1; _2 } static int id##_##_1;
 
 #define TILE(_1, _2) int _1; _2
 #define UPDATE(_1) (void)(_1);
@@ -38,11 +41,11 @@
 #define BOOL  1
 #define FLOAT 2
 
-#define ENTITY(      _1, _2) GAME_ELEMENT(_1, _2)
-#define TILESET(     _1, _2) GAME_ELEMENT(_1, _2)
-#define THEME(       _1, _2) GAME_ELEMENT(_1, _2)
-#define TILE_PALETTE(_1, _2) GAME_ELEMENT(_1, _2)
-#define TILESET_TYPE(_     ) GAME_ELEMENT(_ ,   )
+#define ENTITY(      _1, _2) GAME_ELEMENT(ENTITY_BUILDER, _1, _2)
+#define TILESET(     _1, _2) GAME_ELEMENT(TILESET,        _1, _2)
+#define THEME(       _1, _2) GAME_ELEMENT(THEME,          _1, _2)
+#define TILE_PALETTE(_1, _2) GAME_ELEMENT(TILE_PALETTE,   _1, _2)
+#define TILESET_TYPE(_     ) GAME_ELEMENT(TILESET_TYPE,   _ ,   )
 
 #define ENUM(id)
 
@@ -91,7 +94,7 @@
 #define POS_RIGHT
 #define POS_BOTTOM
 
-#define MENU(name, content) GAME_ELEMENT(name, content)
+#define MENU(name, content) GAME_ELEMENT(MENU, name, content)
 #define ITEM(label, val) (void)(label); val
 #define POSITION(x, y) (void)(x); (void)(y);
 #define MENU_WIDTH(w) (void)(w);
