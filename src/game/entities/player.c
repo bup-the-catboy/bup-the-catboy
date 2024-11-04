@@ -52,6 +52,10 @@ entity_update(player) {
     LE_EntityProperty player_id = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "player_id");
     bool l = is_button_down(player_id.asInt, BUTTON_MOVE_LEFT);
     bool r = is_button_down(player_id.asInt, BUTTON_MOVE_RIGHT);
+    if (entity->flags & LE_EntityFlags_OnGround) {
+        if (is_button_pressed(player_id.asInt, BUTTON_MOVE_LEFT )) entity_spawn_dust(entity, false, true, 0.2f + entity->velX);
+        if (is_button_pressed(player_id.asInt, BUTTON_MOVE_RIGHT)) entity_spawn_dust(entity, true, false, 0.2f - entity->velX);
+    }
     if (l && !r) {
         entity->velX -= 0.02f;
         if (entity->velX < -0.2f) entity->velX = -0.2f;
@@ -75,6 +79,12 @@ entity_update(player) {
         LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 1.5f }, "squish");
         entity->velY = -0.5f;
         if (!l && !r) entity->velX *= 0.6f;
+        entity_spawn_dust(entity, true, true, 0.2f);
+    }
+    LE_EntityProperty peak_height = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = entity->posY }, "peak_height");
+    LE_EntityProperty prev_in_air = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool  = false        }, "prev_in_air");
+    if (prev_in_air.asBool && (entity->flags & LE_EntityFlags_OnGround) && entity->posY - peak_height.asFloat > 1) {
+        entity_spawn_dust(entity, true, true, 0.2f);
     }
     hud_update(entity);
     camera_set_focus(players[player_id.asInt].camera, entity->posX, 8);

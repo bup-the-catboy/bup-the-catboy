@@ -1,5 +1,6 @@
 #include "functions.h"
-#include "main.h"
+#include "math_util.h"
+#include "game/data.h"
 
 bool entity_init(LE_Entity* entity) {
     if (LE_EntityGetProperty(entity, NULL, "init")) return false;
@@ -64,12 +65,20 @@ bool entity_flip_texture(LE_Entity* entity) {
     return flip.asBool;
 }
 
-void entity_animate(int* srcX, int* srcY, int* srcW, int* srcH, int width, int height, int delay, int frames) {
-    int frame = (global_timer / delay) % frames;
+void entity_animate(int* srcX, int* srcY, int* srcW, int* srcH, int width, int height, int delay, int frames, bool loop, int curr_frame) {
+    int frame = ((loop ? curr_frame : (int)min(delay * frames - 1, curr_frame)) / delay) % frames;
     *srcX = width * frame;
     *srcY = 0;
     *srcW = width;
     *srcH = height;
+}
+
+int entity_get_anim_frame(LE_Entity* entity) {
+    LE_EntityProperty anim_timer = (LE_EntityProperty){ .asInt = -1 };
+    LE_EntityGetProperty(entity, &anim_timer, "anim_timer");
+    anim_timer.asInt++;
+    LE_EntitySetProperty(entity, anim_timer, "anim_timer");
+    return anim_timer.asInt;
 }
 
 bool entity_collided(LE_Entity* entity, enum LE_Direction* dir) {
@@ -78,4 +87,11 @@ bool entity_collided(LE_Entity* entity, enum LE_Direction* dir) {
     LE_EntityDelProperty(entity, "collision");
     *dir = collision.asInt;
     return true;
+}
+
+void entity_spawn_dust(LE_Entity* entity, bool left, bool right, float speed) {
+    LE_EntityBuilder* builder = get_entity_builder_by_id(dust);
+    LE_EntityList* list = LE_EntityGetList(entity);
+    if (left ) LE_CreateEntity(list, builder, entity->posX, entity->posY)->velX = -speed;
+    if (right) LE_CreateEntity(list, builder, entity->posX, entity->posY)->velX =  speed;
 }

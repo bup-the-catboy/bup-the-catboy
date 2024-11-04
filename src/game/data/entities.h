@@ -44,3 +44,10 @@ ENTITY(mouse,
     DEFAULT_PROPERTY("squashed", Int, ENTITY_BUILDER_squashed_mouse)
     LVLEDIT_TEXTURE("images/entities/mouse.png")
 )
+
+ENTITY(dust,
+    UPDATE(dust_update)
+    TEXTURE(dust_texture)
+    SIZE(0.5f, 0.5f)
+    LVLEDIT_HIDE()
+)
