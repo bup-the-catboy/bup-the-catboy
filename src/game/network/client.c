@@ -39,6 +39,7 @@ int inet_pton(int _, const char* src, void* dst) {
 #include "common.h"
 #include "packet.h"
 #include "main.h"
+#include "io/assets/assets.h"
 
 int client_sock;
 pthread_t client_thread_id;

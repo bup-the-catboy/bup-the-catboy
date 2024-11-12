@@ -1,5 +1,5 @@
 #include "functions.h"
-#include "assets/assets.h"
+#include "io/assets/assets.h"
 
 entity_update(dust) {
     LE_EntityProperty initial_speed = (LE_EntityProperty){ .asFloat = entity->velX };

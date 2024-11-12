@@ -1,7 +1,7 @@
 #ifndef BTCB_NETWORK_COMMON_H
 #define BTCB_NETWORK_COMMON_H
 
-#include "assets/assets.h"
+#include "io/assets/assets.h"
 
 #include <stdbool.h>
 

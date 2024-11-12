@@ -1,8 +1,6 @@
 #ifndef BTCB_ASSETS_H
 #define BTCB_ASSETS_H
 
-#include <GL/gl.h>
-
 #define GET_ASSET(type, name) ((typeof(type)*)get_asset(name))
 
 struct Binary {
@@ -11,7 +9,7 @@ struct Binary {
 };
 
 struct Texture {
-    GLuint gl_texture;
+    int texture_handle;
     int width;
     int height;
 };

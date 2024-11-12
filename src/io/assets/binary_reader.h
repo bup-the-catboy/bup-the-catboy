@@ -1,7 +1,7 @@
 #ifndef BTCB_BINARY_READER_H
 #define BTCB_BINARY_READER_H
 
-#include "assets/assets.h"
+#include "assets.h"
 
 #include <stddef.h>
 

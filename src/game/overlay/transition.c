@@ -1,8 +1,6 @@
 #include "transition.h"
 
-#include <SDL2/SDL.h>
-
-#include "assets/assets.h"
+#include "io/assets/assets.h"
 #include "math_util.h"
 #include "main.h"
 

@@ -1,4 +1,3 @@
-#include <GL/gl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -6,18 +5,16 @@
 #include <foreach.h>
 #include <sys/stat.h>
 
-#ifdef LINUX
+#ifdef __linux__
 #include <linux/limits.h>
 #endif
 
 #include "assets.h"
-#include "audio/audio.h"
-#include "audio/nsf.h"
-#include "audio/wav.h"
+#include "io/io.h"
+#include "io/audio/audio.h"
+#include "io/audio/nsf.h"
+#include "io/audio/wav.h"
 #include "binary_reader.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 
 #ifdef WINDOWS
 #define BINARY "b"
@@ -86,17 +83,7 @@ void load_assets() {
         bool binary_fallback = false;
         if (!force_binary) {
             _ EXT(png) {
-                struct Texture* texture = malloc(sizeof(struct Texture));
-                unsigned char* image = stbi_load_from_memory(data, datasize, &texture->width, &texture->height, NULL, STBI_rgb_alpha);
-                glGenTextures(1, &texture->gl_texture);
-                glBindTexture(GL_TEXTURE_2D, texture->gl_texture);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-                glBindTexture(GL_TEXTURE_2D, 0);
-                stbi_image_free(image);
+                struct Texture* texture = graphics_load_texture(data, datasize);
                 free(data);
                 asset->data = texture;
             }

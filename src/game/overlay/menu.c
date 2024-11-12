@@ -1,12 +1,11 @@
 #include "menu.h"
 
 #include <stdlib.h>
-#include <SDL2/SDL.h>
 
 #include "game/input.h"
 #include "game/savefile.h"
 #include "main.h"
-#include "assets/assets.h"
+#include "io/assets/assets.h"
 #include "font/font.h"
 #include "math_util.h"
 

@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <lunarengine.h>
 
-#include "assets/binary_reader.h"
-#include "audio/nsf.h"
-#include "audio/audio.h"
+#include "io/assets/binary_reader.h"
+#include "io/audio/nsf.h"
+#include "io/audio/audio.h"
 #include "camera.h"
 #include "data.h"
 #include "input.h"

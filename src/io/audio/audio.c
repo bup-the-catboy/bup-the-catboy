@@ -35,6 +35,7 @@ struct InstanceList* make_list_entry(struct InstanceList* prev) {
 }
 
 void audio_init() {
+    SDL_Init(SDL_INIT_AUDIO);
     instances = make_list_entry(NULL);
     pthread_create(&audio_thread_id, NULL, audio_thread, NULL);
 }

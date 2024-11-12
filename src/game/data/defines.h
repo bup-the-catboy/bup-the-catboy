@@ -4,7 +4,6 @@
 #define NO_VSCODE
 
 #include <lunarengine.h>
-#include <SDL2/SDL_keycode.h>
 
 #include "game/entities/functions.h"
 #include "game/tiles/functions.h"

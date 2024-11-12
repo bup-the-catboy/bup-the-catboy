@@ -57,7 +57,7 @@ int main() {
     chdir("..");
     size_t size = ftell(f);
     fseek(f, 0, SEEK_SET);
-    FILE* out = fopen("src/assets/asset_data.h", "w");
+    FILE* out = fopen("src/io/assets/asset_data.h", "w");
     for (size_t i = 0; i < size; i++) {
         uint8_t byte;
         fread(&byte, 1, 1, f);

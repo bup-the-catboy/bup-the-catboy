@@ -5,6 +5,7 @@
 #include "client.h"
 #include "packet.h"
 #include "main.h"
+#include "io/assets/assets.h"
 
 #include "game/level.h"
 

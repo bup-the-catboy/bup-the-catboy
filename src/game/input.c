@@ -1,9 +1,7 @@
 #include "input.h"
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_events.h>
-
 #include "game/network/common.h"
+#include "io/io.h"
 #include "game/network/packet.h"
 #include "main.h"
 
@@ -12,9 +10,6 @@ struct {
     unsigned int prev_button_down;
     int mouse_x, mouse_y;
 } inputs[MAX_PLAYERS];
-
-
-SDL_Joystick* joystick = NULL;
 
 bool is_button_down(int id, int key) {
     return !!(inputs[id].button_down & key);
@@ -65,17 +60,13 @@ void get_input_from_packet(LibSerialObj_Input* input) {
     inputs[id].button_down = input->input;
 }
 
-bool handle_sdl_events(int id) {
-    bool exit = false;
-    SDL_Event event;
+void update_input(int id) {
     int curr;
     inputs[id].prev_button_down = inputs[id].button_down;
-#define SET_BUTTON(is_released) inputs[id].button_down = event.type == is_released ? (inputs[id].button_down & ~curr) : (inputs[id].button_down | curr)
+    inputs[id].button_down = 0;
+
 #define INPUT(_) curr = _;
-    while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) exit = true;
-        if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-#define KEYMAP(_) if (event.key.keysym.sym == _) SET_BUTTON(SDL_KEYUP);
+#define KEYMAP(_) if (controller_key_down(_)) inputs[id].button_down |= curr;
 #define MOUSEBTN(_)
 #define CONTROLLER(_)
 #define JOYSTICK(_)
@@ -84,10 +75,9 @@ bool handle_sdl_events(int id) {
 #undef MOUSEBTN
 #undef CONTROLLER
 #undef JOYSTICK
-        }
-        if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
+
 #define KEYMAP(_)
-#define MOUSEBTN(_) if (event.button.button == _) SET_BUTTON(SDL_MOUSEBUTTONUP);
+#define MOUSEBTN(_) if (controller_mouse_down(_)) inputs[id].button_down |= curr;
 #define CONTROLLER(_)
 #define JOYSTICK(_)
 #include "game/data/inputs.h"
@@ -95,40 +85,28 @@ bool handle_sdl_events(int id) {
 #undef MOUSEBTN
 #undef CONTROLLER
 #undef JOYSTICK
-        }
-        if (event.type == SDL_JOYBUTTONDOWN || event.type == SDL_JOYBUTTONUP) {
+
 #define KEYMAP(_)
 #define MOUSEBTN(_)
-#define CONTROLLER(_) if (event.cbutton.button == _) SET_BUTTON(SDL_JOYBUTTONUP);
+#define CONTROLLER(_) if (controller_button_down(_)) inputs[id].button_down |= curr;
 #define JOYSTICK(_)
 #include "game/data/inputs.h"
 #undef KEYMAP
 #undef MOUSEBTN
 #undef CONTROLLER
 #undef JOYSTICK
-        }
-        if (event.type == SDL_JOYAXISMOTION) {
-            bool held;
+
 #define KEYMAP(_)
 #define MOUSEBTN(_)
 #define CONTROLLER(_)
-#define JOYSTICK(_)                                                \
-    held = true;                                                    \
-    if (abs(event.caxis.value) <= DEADZONE) held = false;            \
-    if (event.caxis.axis == (_) / 2) {                                \
-        if (!(                                                         \
-            (event.caxis.value < 0 && (_) % 2 == 0) ||                  \
-            (event.caxis.value > 0 && (_) % 2 == 1)                      \
-        )) held = false;                                                  \
-        inputs[id].button_down = held ? (inputs[id].button_down | curr) : (inputs[id].button_down & ~curr); \
-    }
+#define JOYSTICK(_) if ( \
+    (_ % 2 == 0 && controller_get_axis(_ / 2) < -DEADZONE) || \
+    (_ % 2 == 1 && controller_get_axis(_ / 2) >  DEADZONE))    \
+        inputs[id].button_down |= curr;
 #include "game/data/inputs.h"
 #undef KEYMAP
 #undef MOUSEBTN
 #undef CONTROLLER
 #undef JOYSTICK
-        }
-    }
     if (id != 0) send_packet(packet_input(id));
-    return exit;
 }

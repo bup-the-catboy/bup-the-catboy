@@ -11,8 +11,9 @@ lib
   bupscript   - Source code for the BupScript language
                 interpreter used for modding
 src
-  assets      - Reading & parsing assets
-  audio       - Audio engine
+  io          - Input and output
+    assets    - Reading & parsing assets
+    audio     - Audio engine
   font        - Text/font renderer
   game        - Core game source code
     data      - Game data (tile, tileset and entity metadata)

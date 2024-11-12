@@ -1,11 +1,11 @@
 #include "font.h"
 
-#include <SDL2/SDL.h>
 #include <lunarengine.h>
 #include <math.h>
+#include <string.h>
 
 #include "main.h"
-#include "assets/assets.h"
+#include "io/assets/assets.h"
 #include "math_util.h"
 
 #define M_2PI 6.283185307179586

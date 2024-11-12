@@ -3,7 +3,7 @@
 
 #include <lunarengine.h>
 
-#include "assets/assets.h"
+#include "io/assets/assets.h"
 #include "game/camera.h"
 #include "main.h"
 

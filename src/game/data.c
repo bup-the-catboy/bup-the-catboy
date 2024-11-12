@@ -1,6 +1,6 @@
 #include "data.h"
 
-#include "assets/assets.h"
+#include "io/assets/assets.h"
 #include "game/entities/functions.h"
 #include "game/tiles/functions.h"
 #include "main.h"

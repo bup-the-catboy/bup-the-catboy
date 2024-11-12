@@ -1,5 +1,5 @@
 #include "functions.h"
-#include "assets/assets.h"
+#include "io/assets/assets.h"
 #include "main.h"
 
 entity_texture(mouse) {

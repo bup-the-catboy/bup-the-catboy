@@ -1,6 +1,7 @@
 #include "common.h"
 #include "packet.h"
 #include "main.h"
+#include "io/assets/assets.h"
 
 #ifdef WINDOWS
 #include <winsock2.h>

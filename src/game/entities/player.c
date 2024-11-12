@@ -1,9 +1,9 @@
 #include "functions.h"
 
 #include <lunarengine.h>
-#include <SDL2/SDL.h>
+#include <math.h>
 
-#include "assets/assets.h"
+#include "io/assets/assets.h"
 #include "game/data.h"
 #include "game/input.h"
 #include "game/camera.h"
