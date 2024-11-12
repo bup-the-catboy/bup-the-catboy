@@ -27,6 +27,7 @@ struct Texture* graphics_load_texture(unsigned char* buf, size_t len) {
 }
 
 void graphics_init(const char* window_name, int width, int height) {
+    SDL_SetHint("SDL_VIDEODRIVER", "wayland");
     SDL_Init(SDL_INIT_VIDEO);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     window = SDL_CreateWindow(window_name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
