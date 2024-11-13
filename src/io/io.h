@@ -19,7 +19,15 @@ void graphics_end_frame(float fps);
 void graphics_get_size(int* width, int* height);
 void graphics_select_texture(struct Texture* texture);
 void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, uint32_t color);
+void graphics_flush();
 void graphics_deinit();
+
+#ifndef LEGACY_GL
+int  graphics_load_shader(const char* shader);
+void graphics_select_shader(int shader);
+void graphics_shader_set_float(const char* name, float value);
+void graphics_shader_set_int  (const char* name, int   value);
+#endif
 
 void        controller_init();
 int         controller_count();

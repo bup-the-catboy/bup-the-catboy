@@ -1,3 +1,5 @@
+include config.mk
+
 ifeq ($(OS),Windows_NT)
 	EXE := .exe
 	WINDOWS := 1
@@ -6,8 +8,6 @@ else
 	WINDOWS := 0
 endif
 
-MACOS_ARCH ?= $(shell uname -m)
-MACOS_CROSS ?= 0
 ifeq ($(MACOS_CROSS),1)
 	COMPILER ?= clang
 	MACOS_TOOL := $(MACOS_ARCH)-apple-$(OSXCROSS_TARGET)
@@ -24,8 +24,6 @@ TOOLS_SRCDIR := tools
 TOOLS_BINDIR := build/tools
 TOOLS_CC := $(COMPILER)
 EXECUTABLE := $(BIN_DIR)/btcb$(EXE)
-
-LIB_NAMES := sdl2 libgme glew
 
 LIBS_DIR := lib
 LIBS_SRC := $(shell find $(LIBS_DIR)/* -maxdepth 0 -type d -name "*")
@@ -45,13 +43,20 @@ BUILD_FILES := $(BIN_DIR) $(LIBS_BIN) $(LIBS_BUILD) src/assets/asset_data.h
 
 ifeq ($(WINDOWS),1)
 	CFLAGS += -DWINDOWS
-	LIBS += -static $(shell pkg-config --libs --static $(LIB_NAMES)) -lm -lWs2_32 -lopengl32 $(LIBS_FLAGS)
+	LIBS += -static $(shell pkg-config --libs --static $(LIBRARIES)) -lm -lWs2_32 -lopengl32 $(LIBS_FLAGS)
 else ifeq ($(MACOS_CROSS),1)
-	CFLAGS += $(shell $(MACOS_TOOL)-pkg-config --cflags $(LIB_NAMES)) -DMACOS
-	LIBS += $(shell $(MACOS_TOOL)-pkg-config --libs $(LIB_NAMES)) -lm $(LIBS_FLAGS)
+	CFLAGS += $(shell $(MACOS_TOOL)-pkg-config --cflags $(LIBRARIES)) -DMACOS
+	LIBS += $(shell $(MACOS_TOOL)-pkg-config --libs $(LIBRARIES)) -lm $(LIBS_FLAGS)
 else
-	CFLAGS += $(shell pkg-config --cflags $(LIB_NAMES)) -DLINUX
-	LIBS += $(shell pkg-config --libs $(LIB_NAMES)) -lm $(LIBS_FLAGS)
+	CFLAGS += $(shell pkg-config --cflags $(LIBRARIES)) -DLINUX
+	LIBS += $(shell pkg-config --libs $(LIBRARIES)) -lm $(LIBS_FLAGS)
+endif
+
+ifeq ($(LEGACY_GL),1)
+	CFLAGS += -DLEGACY_GL
+endif
+ifeq ($(NETWORK),1)
+	CFLAGS += -DNETWORK
 endif
 
 CFLAGS += -DNO_VSCODE

@@ -5,7 +5,7 @@
 #include <foreach.h>
 #include <sys/stat.h>
 
-#ifdef __linux__
+#ifdef LINUX
 #include <linux/limits.h>
 #endif
 
