@@ -148,6 +148,7 @@ void graphics_get_size(int* width, int* height) {
 
 void graphics_select_texture(struct Texture* texture) {
     if (current_texture == texture) return;
+    current_texture = texture;
     graphics_flush();
     if (texture) glEnable(GL_TEXTURE_2D);
     else glDisable(GL_TEXTURE_2D);
@@ -180,8 +181,8 @@ void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, f
 }
 
 void graphics_flush() {
-    if (vertex_ptr == 0) return;
 #ifndef LEGACY_GL
+    if (vertex_ptr == 0) return;
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertex_ptr * sizeof(struct Vertex), vertices);
     glBindVertexArray(vao);
