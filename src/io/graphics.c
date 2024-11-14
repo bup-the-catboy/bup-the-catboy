@@ -10,8 +10,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include "math_util.h"
-
 Uint64 start_ticks;
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -28,10 +26,11 @@ float win_width, win_height;
 struct Vertex {
     float x, y;
     float u, v;
-    uint32_t rgba;
+    float r, g, b, a;
 };
 
 GLuint vao, vbo, ebo;
+GLuint empty_texture;
 struct Vertex vertices[4 * MAX_QUADS];
 int indices[6 * MAX_QUADS];
 int vertex_ptr = 0;
@@ -41,23 +40,27 @@ int dummy_shader = 0;
 #define _ "\n"
 
 const char* dummy_shader_vertex =
-    "attribute vec2 aPos;"_
-    "attribute vec2 aTexCoord;"_
+    "attribute vec2 a_pos;"_
+    "attribute vec2 a_coord;"_
+    "attribute vec4 a_color;"_
     ""_
-    "varying vec2 v_texCoords;"_
+    "varying vec2 v_coord;"_
+    "varying vec4 v_color;"_
     ""_
     "void main() {"_
-    "    gl_Position = vec4(aPos, 0.0, 1.0);"_
-    "    v_texCoords = aTexCoord;"_
+    "    gl_Position = vec4(a_pos, 0.0, 1.0);"_
+    "    v_coord = a_coord;"_
+    "    v_color = a_color;"_
     "}";
 
 const char* dummy_shader_fragment =
-    "varying vec2 v_texCoords;"_
+    "varying vec2 v_coord;"_
+    "varying vec4 v_color;"_
+    ""_
     "uniform sampler2D u_texture;"_
     ""_
     "void main() {"_
-    "    vec4 texColor = texture2D(u_texture, v_texCoords);"_
-    "    gl_FragColor = texColor;"_
+    "    gl_FragColor = texture2D(u_texture, v_coord) * v_color;"_
     "}";
 
 #undef _
@@ -97,6 +100,11 @@ void graphics_init(const char* window_name, int width, int height) {
         indices[iindex + 4] = vindex + 3;
         indices[iindex + 5] = vindex + 0;
     }
+    uint32_t pixel = 0xFFFFFFFF;
+    glGenTextures(1, &empty_texture);
+    glBindTexture(GL_TEXTURE_2D, empty_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixel);
+    glBindTexture(GL_TEXTURE_2D, 0);
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
     glGenBuffers(1, &ebo);
@@ -110,7 +118,7 @@ void graphics_init(const char* window_name, int width, int height) {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, u));
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, rgba));
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_TRUE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, r));
     glBindVertexArray(0);
     dummy_shader = graphics_load_shader(dummy_shader_fragment);
     graphics_select_shader(0);
@@ -153,12 +161,15 @@ void graphics_select_texture(struct Texture* texture) {
     if (current_texture == texture) return;
     current_texture = texture;
     graphics_flush();
+#ifdef LEGACY_GL
     if (texture) glEnable(GL_TEXTURE_2D);
     else glDisable(GL_TEXTURE_2D);
-#ifndef LEGACY_GL
-    glActiveTexture(GL_TEXTURE0);
-#endif
     glBindTexture(GL_TEXTURE_2D, texture ? texture->texture_handle : 0);
+#else
+    glActiveTexture(GL_TEXTURE0);
+    if (texture) glBindTexture(GL_TEXTURE_2D, texture->texture_handle);
+    else glBindTexture(GL_TEXTURE_2D, empty_texture);
+#endif
 }
 
 void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, uint32_t color) {
@@ -188,10 +199,14 @@ void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, f
     glEnd();
 #else
     if (vertex_ptr == MAX_QUADS * 4) graphics_flush();
-    vertices[vertex_ptr++] = (struct Vertex){ x1, y1, u1, v1, color };
-    vertices[vertex_ptr++] = (struct Vertex){ x2, y1, u2, v1, color };
-    vertices[vertex_ptr++] = (struct Vertex){ x2, y2, u2, v2, color };
-    vertices[vertex_ptr++] = (struct Vertex){ x1, y2, u1, v2, color };
+    float r = ((color >> 24) & 0xFF) / 255.f;
+    float g = ((color >> 16) & 0xFF) / 255.f;
+    float b = ((color >>  8) & 0xFF) / 255.f;
+    float a = ((color >>  0) & 0xFF) / 255.f;
+    vertices[vertex_ptr++] = (struct Vertex){ x1, y1, u1, v1, r, g, b, a };
+    vertices[vertex_ptr++] = (struct Vertex){ x2, y1, u2, v1, r, g, b, a };
+    vertices[vertex_ptr++] = (struct Vertex){ x2, y2, u2, v2, r, g, b, a };
+    vertices[vertex_ptr++] = (struct Vertex){ x1, y2, u1, v2, r, g, b, a };
 #endif
 }
 
@@ -255,7 +270,6 @@ void graphics_select_shader(int shader) {
     graphics_flush();
     glUseProgram(shader == 0 ? dummy_shader : shader);
     current_shader = shader;
-    graphics_shader_set_int("u_texture", 0);
 }
 
 void graphics_shader_set_int(const char* name, int value) {
