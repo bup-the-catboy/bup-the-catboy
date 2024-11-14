@@ -48,29 +48,12 @@ void drawlist_renderer(void* texture, float dstx, float dsty, float dstw, float 
         texY2 = (float)(srcy + srch) / tex->height;
     }
     graphics_select_texture(texture);
-    graphics_draw(texX1, texY1, texX2, texY2, dstX1, dstY1, dstX2, dstY2, color);
-}
-
-void update_viewport() {
-    if (windoww == 0) windoww = 1; // prevent division by 0
-    if (windowh == 0) windowh = 1;
-    float vieww = WIDTH, viewh = HEIGHT;
-    float aspect_ratio = WIDTH / (float)HEIGHT;
-    float scr_aspect_ratio = windoww / (float)windowh;
-    if (aspect_ratio > scr_aspect_ratio) viewh = windowh / (windoww / vieww);
-    else vieww = windoww / (windowh / viewh);
-    viewx = (vieww - WIDTH)  / 2;
-    viewy = (viewh - HEIGHT) / 2;
-    graphics_update_viewport(viewx, viewy, vieww, viewh);
-}
-
-void render_border(float x1, float y1, float x2, float y2) {
-    graphics_select_texture(NULL);
-    graphics_draw(x1, y1, x2, y2, 0, 0, 0, 0, 0x000000FF);
+    graphics_draw(dstX1, dstY1, dstX2, dstY2, texX1, texY1, texX2, texY2, color);
 }
 
 void init_game() {
     graphics_init("Bup the Catboy", WIDTH * 2, HEIGHT * 2);
+    graphics_set_resolution(WIDTH, HEIGHT);
     controller_init();
     audio_init();
     load_assets();
@@ -105,7 +88,6 @@ int main(int argc, char** argv) {
         if (requested_quit()) break;
         update_input(client_player_id);
         graphics_get_size(&windoww, &windowh);
-        update_viewport();
         graphics_start_frame();
         if (client && client_drawlist && LE_DrawListSize(client_drawlist)) {
             LE_Render(client_drawlist, drawlist_renderer);
@@ -126,10 +108,6 @@ int main(int argc, char** argv) {
             LE_Render(drawlist, drawlist_renderer);
             LE_ClearDrawList(drawlist);
         }
-        render_border(-viewx, -viewy, WIDTH + viewx, 0);
-        render_border(-viewx, -viewy, 0, HEIGHT + viewy);
-        render_border(-viewx, HEIGHT, WIDTH + viewx, HEIGHT + viewy);
-        render_border(WIDTH, -viewy, WIDTH + viewx, HEIGHT + viewy);
         process_packets();
         graphics_end_frame(FPS);
         global_timer++;

@@ -10,11 +10,15 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include "math_util.h"
+
 Uint64 start_ticks;
 SDL_Window* window;
 SDL_Renderer* renderer;
 SDL_GLContext* gl_context;
 struct Texture* current_texture;
+float res_width, res_height;
+float win_width, win_height;
 
 #ifndef LEGACY_GL
 
@@ -113,18 +117,17 @@ void graphics_init(const char* window_name, int width, int height) {
 #endif
 }
 
-void graphics_update_viewport(float viewx, float viewy, float vieww, float viewh) {
-    int width, height;
-    SDL_GetWindowSize(window, &width, &height);
-    glViewport(0, 0, width, height);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-viewx, vieww - viewx, viewh - viewy, -viewy, -1.0, 1.0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+void graphics_set_resolution(float width, float height) {
+    res_width  = width;
+    res_height = height;
 }
 
 void graphics_start_frame() {
+    int width, height;
+    SDL_GetWindowSize(window, &width, &height);
+    win_width  = width;
+    win_height = height;
+    glViewport(0, 0, width, height);
     glClearColor(.5f, .5f, .5f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_BLEND);
@@ -159,17 +162,29 @@ void graphics_select_texture(struct Texture* texture) {
 }
 
 void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, uint32_t color) {
+    float width  = win_width;
+    float height = win_height;
+    float target_aspect_ratio = res_width / res_height;
+    float aspect_ratio = win_width / win_height;
+    if (target_aspect_ratio > aspect_ratio) height = width / target_aspect_ratio;
+    else width = height * target_aspect_ratio;
+    width  /= win_width;
+    height /= win_height;
+    x1 = ((x1 / res_width)  * width  + (1 - width)  / 2) *  2 - 1;
+    x2 = ((x2 / res_width)  * width  + (1 - width)  / 2) *  2 - 1;
+    y1 = ((y1 / res_height) * height + (1 - height) / 2) * -2 + 1;
+    y2 = ((y2 / res_height) * height + (1 - height) / 2) * -2 + 1;
 #ifdef LEGACY_GL
     glColor4ub(color >> 24, color >> 16, color >> 8, color >> 0);
     glBegin(GL_QUADS);
-    glTexCoord2f(x1, y1);
-    glVertex2f(u1, v1);
-    glTexCoord2f(x2, y1);
-    glVertex2f(u2, v1);
-    glTexCoord2f(x2, y2);
-    glVertex2f(u2, v2);
-    glTexCoord2f(x1, y2);
-    glVertex2f(u1, v2);
+    glTexCoord2f(u1, v1);
+    glVertex2f(x1, y1);
+    glTexCoord2f(u2, v1);
+    glVertex2f(x2, y1);
+    glTexCoord2f(u2, v2);
+    glVertex2f(x2, y2);
+    glTexCoord2f(u1, v2);
+    glVertex2f(x1, y2);
     glEnd();
 #else
     if (vertex_ptr == MAX_QUADS * 4) graphics_flush();

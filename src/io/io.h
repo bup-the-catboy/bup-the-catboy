@@ -13,7 +13,7 @@
 
 struct Texture* graphics_load_texture(unsigned char* buf, size_t len);
 void graphics_init(const char* window_name, int width, int height);
-void graphics_update_viewport(float viewx, float viewy, float vieww, float viewh);
+void graphics_set_resolution(float width, float height);
 void graphics_start_frame();
 void graphics_end_frame(float fps);
 void graphics_get_size(int* width, int* height);

@@ -42,6 +42,10 @@ MATHFUNC(lerp, {
     return (t - f) * x + f;
 }, x, f, t)
 
+MATHFUNC(map, {
+    return (fmax - fmin) / (x - fmin) * (tmax - tmin) + tmin;
+}, fmin, fmax, tmin, tmax, x)
+
 #define IN_OUT(func) { return in_out(x, func##_in, func##_out); }
 #define EXPO_IN(val) { return expo_in(x, val); }
 #define EXPO_OUT(val) { return expo_out(x, val); }
