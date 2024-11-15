@@ -1,4 +1,5 @@
 #include "io.h"
+#include "main.h"
 
 #include <SDL2/SDL.h>
 
@@ -61,6 +62,9 @@ const char* dummy_shader_fragment =
     "varying vec4 v_color;"_
     ""_
     "uniform sampler2D u_texture;"_
+    "uniform int u_timer;"_
+    "uniform int u_width;"_
+    "uniform int u_height;"_
     ""_
     "void main() {"_
     "    gl_FragColor = texture2D(u_texture, v_coord) * v_color;"_
@@ -77,6 +81,12 @@ void graphics_flush() {
     glBindVertexArray(0);
     vertex_ptr = 0;
     glFlush();
+}
+
+void graphics_update_shader_params() {
+    graphics_shader_set_int("u_timer",  global_timer);
+    graphics_shader_set_int("u_width",  res_width);
+    graphics_shader_set_int("u_height", res_height);
 }
 
 void graphics_init_framebuffer() {
@@ -96,6 +106,7 @@ void graphics_draw_framebuffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, rendertexture_id);
     glUseProgram(current_shader);
+    graphics_update_shader_params();
     glEnable(GL_SCISSOR_TEST);
     glScissor(scissor_x, scissor_y, scissor_w, scissor_h);
     struct Vertex quad[] = {
@@ -210,6 +221,7 @@ void graphics_start_frame() {
     view_width  /= win_width;
     view_height /= win_height;
     glViewport(0, 0, width, height);
+    current_shader = dummy_shader;
 #ifdef LEGACY_GL
     glScissor(scissor_x, scissor_y, scissor_w, scissor_h);
     glClearColor(.5f, .5f, .5f, 1.f);
