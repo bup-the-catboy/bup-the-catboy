@@ -17,6 +17,8 @@ SDL_GLContext* gl_context;
 struct Texture* current_texture;
 float res_width, res_height;
 float win_width, win_height;
+float view_width, view_height;
+int scissor_x, scissor_y, scissor_w, scissor_h;
 
 #ifndef LEGACY_GL
 
@@ -31,12 +33,12 @@ struct Vertex {
 
 GLuint vao, vbo, ebo;
 GLuint empty_texture;
+GLuint rendertexture_id, framebuffer_id;
 struct Vertex vertices[4 * MAX_QUADS];
 int indices[6 * MAX_QUADS];
 int vertex_ptr = 0;
 int current_shader = 0;
 int dummy_shader = 0;
-float view_width, view_height;
 
 #define _ "\n"
 
@@ -77,6 +79,50 @@ void graphics_flush() {
     glFlush();
 }
 
+void graphics_init_framebuffer() {
+    glGenFramebuffers(1, &framebuffer_id);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
+    glGenTextures(1, &rendertexture_id);
+    glBindTexture(GL_TEXTURE_2D, rendertexture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, win_width, win_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rendertexture_id, 0);
+    glClearColor(.5f, .5f, .5f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void graphics_draw_framebuffer() {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, rendertexture_id);
+    glUseProgram(current_shader);
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(scissor_x, scissor_y, scissor_w, scissor_h);
+    struct Vertex quad[] = {
+        { -1, -1, 0, 0, 1, 1, 1, 1, },
+        {  1, -1, 1, 0, 1, 1, 1, 1, },
+        {  1,  1, 1, 1, 1, 1, 1, 1, },
+        { -1,  1, 0, 1, 1, 1, 1, 1, },
+    };
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(quad), quad);
+    glBindVertexArray(vao);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+    glDisable(GL_SCISSOR_TEST);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
+    glUseProgram(dummy_shader);
+    struct Texture* tex = current_texture;
+    current_texture = NULL;
+    graphics_select_texture(tex);
+}
+
+void graphics_deinit_framebuffer() {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDeleteFramebuffers(1, &framebuffer_id);
+    glDeleteTextures(1, &rendertexture_id);
+}
+
 #endif
 
 struct Texture* graphics_load_texture(unsigned char* buf, size_t len) {
@@ -100,7 +146,9 @@ void graphics_init(const char* window_name, int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     window = SDL_CreateWindow(window_name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
     gl_context = SDL_GL_CreateContext(window);
-#ifndef LEGACY_GL
+#ifdef LEGACY_GL
+    glEnable(GL_SCISSOR_TEST);
+#else
     glewInit();
     for (int i = 0; i < MAX_QUADS; i++) {
         int vindex = i * 4;
@@ -149,25 +197,39 @@ void graphics_start_frame() {
     SDL_GetWindowSize(window, &width, &height);
     win_width  = width;
     win_height = height;
-    glViewport(0, 0, width, height);
-    glClearColor(.5f, .5f, .5f, 1.f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    start_ticks = SDL_GetTicks64();
     view_width  = win_width;
     view_height = win_height;
     float target_aspect_ratio = res_width / res_height;
     float aspect_ratio = win_width / win_height;
     if (target_aspect_ratio > aspect_ratio) view_height = width / target_aspect_ratio;
     else view_width = height * target_aspect_ratio;
+    scissor_x = round((win_width  - view_width)  / 2);
+    scissor_y = round((win_height - view_height) / 2);
+    scissor_w = view_width;
+    scissor_h = view_height;
     view_width  /= win_width;
     view_height /= win_height;
+    glViewport(0, 0, width, height);
+#ifdef LEGACY_GL
+    glScissor(scissor_x, scissor_y, scissor_w, scissor_h);
+    glClearColor(.5f, .5f, .5f, 1.f);
+#else
+    glClearColor(0.f, 0.f, 0.f, 1.f);
+#endif
+    glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    start_ticks = SDL_GetTicks64();
+#ifndef LEGACY_GL
+    graphics_init_framebuffer();
+#endif
 }
 
 void graphics_end_frame(float fps) {
 #ifndef LEGACY_GL
     graphics_flush();
+    graphics_draw_framebuffer();
+    graphics_deinit_framebuffer();
 #endif
     glFlush();
     SDL_GL_SwapWindow(window);
@@ -270,9 +332,9 @@ int graphics_load_shader(const char* shader) {
 }
 
 void graphics_select_shader(int shader) {
+    current_shader = shader == 0 ? dummy_shader : shader;
     graphics_flush();
-    glUseProgram(shader == 0 ? dummy_shader : shader);
-    current_shader = shader;
+    graphics_draw_framebuffer();
 }
 
 void graphics_shader_set_int(const char* name, int value) {
