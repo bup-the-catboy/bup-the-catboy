@@ -36,6 +36,7 @@ int indices[6 * MAX_QUADS];
 int vertex_ptr = 0;
 int current_shader = 0;
 int dummy_shader = 0;
+float view_width, view_height;
 
 #define _ "\n"
 
@@ -64,6 +65,17 @@ const char* dummy_shader_fragment =
     "}";
 
 #undef _
+
+void graphics_flush() {
+    if (vertex_ptr == 0) return;
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertex_ptr * sizeof(struct Vertex), vertices);
+    glBindVertexArray(vao);
+    glDrawElements(GL_TRIANGLES, vertex_ptr * 6 / 4, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+    vertex_ptr = 0;
+    glFlush();
+}
 
 #endif
 
@@ -101,6 +113,8 @@ void graphics_init(const char* window_name, int width, int height) {
         indices[iindex + 5] = vindex + 0;
     }
     uint32_t pixel = 0xFFFFFFFF;
+    glEnable(GL_TEXTURE_2D);
+    glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &empty_texture);
     glBindTexture(GL_TEXTURE_2D, empty_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixel);
@@ -114,10 +128,10 @@ void graphics_init(const char* window_name, int width, int height) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, x));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, u));
     glEnableVertexAttribArray(2);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, x));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, u));
     glVertexAttribPointer(2, 4, GL_FLOAT, GL_TRUE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, r));
     glBindVertexArray(0);
     dummy_shader = graphics_load_shader(dummy_shader_fragment);
@@ -141,10 +155,21 @@ void graphics_start_frame() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     start_ticks = SDL_GetTicks64();
+    view_width  = win_width;
+    view_height = win_height;
+    float target_aspect_ratio = res_width / res_height;
+    float aspect_ratio = win_width / win_height;
+    if (target_aspect_ratio > aspect_ratio) view_height = width / target_aspect_ratio;
+    else view_width = height * target_aspect_ratio;
+    view_width  /= win_width;
+    view_height /= win_height;
 }
 
 void graphics_end_frame(float fps) {
+#ifndef LEGACY_GL
     graphics_flush();
+#endif
+    glFlush();
     SDL_GL_SwapWindow(window);
     Uint64 end_ticks = SDL_GetTicks64();
     Uint64 frame_time = end_ticks - start_ticks;
@@ -160,31 +185,22 @@ void graphics_get_size(int* width, int* height) {
 void graphics_select_texture(struct Texture* texture) {
     if (current_texture == texture) return;
     current_texture = texture;
-    graphics_flush();
 #ifdef LEGACY_GL
     if (texture) glEnable(GL_TEXTURE_2D);
     else glDisable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture ? texture->texture_handle : 0);
 #else
-    glActiveTexture(GL_TEXTURE0);
+    graphics_flush();
     if (texture) glBindTexture(GL_TEXTURE_2D, texture->texture_handle);
     else glBindTexture(GL_TEXTURE_2D, empty_texture);
 #endif
 }
 
 void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, uint32_t color) {
-    float width  = win_width;
-    float height = win_height;
-    float target_aspect_ratio = res_width / res_height;
-    float aspect_ratio = win_width / win_height;
-    if (target_aspect_ratio > aspect_ratio) height = width / target_aspect_ratio;
-    else width = height * target_aspect_ratio;
-    width  /= win_width;
-    height /= win_height;
-    x1 = ((x1 / res_width)  * width  + (1 - width)  / 2) *  2 - 1;
-    x2 = ((x2 / res_width)  * width  + (1 - width)  / 2) *  2 - 1;
-    y1 = ((y1 / res_height) * height + (1 - height) / 2) * -2 + 1;
-    y2 = ((y2 / res_height) * height + (1 - height) / 2) * -2 + 1;
+    x1 = ((x1 / res_width)  * view_width  + (1 - view_width)  / 2) *  2 - 1;
+    x2 = ((x2 / res_width)  * view_width  + (1 - view_width)  / 2) *  2 - 1;
+    y1 = ((y1 / res_height) * view_height + (1 - view_height) / 2) * -2 + 1;
+    y2 = ((y2 / res_height) * view_height + (1 - view_height) / 2) * -2 + 1;
 #ifdef LEGACY_GL
     glColor4ub(color >> 24, color >> 16, color >> 8, color >> 0);
     glBegin(GL_QUADS);
@@ -208,19 +224,6 @@ void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, f
     vertices[vertex_ptr++] = (struct Vertex){ x2, y2, u2, v2, r, g, b, a };
     vertices[vertex_ptr++] = (struct Vertex){ x1, y2, u1, v2, r, g, b, a };
 #endif
-}
-
-void graphics_flush() {
-#ifndef LEGACY_GL
-    if (vertex_ptr == 0) return;
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, vertex_ptr * sizeof(struct Vertex), vertices);
-    glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, vertex_ptr * 6 / 4, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
-    vertex_ptr = 0;
-#endif
-    glFlush();
 }
 
 void graphics_deinit() {
