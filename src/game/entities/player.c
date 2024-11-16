@@ -8,15 +8,12 @@
 #include "game/input.h"
 #include "game/camera.h"
 #include "game/level.h"
-#include "game/network/packet.h"
 #include "game/overlay/hud.h"
-#include "main.h"
 
 #define arrsize(x) (sizeof(x) / sizeof(*(x)))
 
 entity_texture(player) {
     int sprite = 0;
-    LE_EntityProperty player_id = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "player_id");
     LE_EntityProperty facing_left = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "facing_left");
     if (fabs(entity->velX) > 0) {
         if (entity->velX < 0) facing_left.asBool = true;
@@ -24,8 +21,8 @@ entity_texture(player) {
         sprite = (int)(entity->posX) % 2 + 1;
     }
     if (
-        ( facing_left.asBool && is_button_down(player_id.asInt, BUTTON_MOVE_RIGHT)) ||
-        (!facing_left.asBool && is_button_down(player_id.asInt, BUTTON_MOVE_LEFT))
+        ( facing_left.asBool && is_button_down(BUTTON_MOVE_RIGHT)) ||
+        (!facing_left.asBool && is_button_down(BUTTON_MOVE_LEFT))
     ) sprite = 5;
     if (entity->velY > 0) sprite = 4;
     if (entity->velY < 0) sprite = 3;
@@ -41,20 +38,20 @@ entity_texture(player) {
 }
 
 entity_update(player_spawner) {
-    for (int i = 0; i < MAX_PLAYERS; i++) {
-        if (!players[i].camera || players[i].entity) continue;
-        players[i].entity = LE_CreateEntity(LE_EntityGetList(entity), get_entity_builder_by_id(player), entity->posX, entity->posY);
-        LE_EntitySetProperty(players[i].entity, (LE_EntityProperty){ .asInt = i }, "player_id");
+    camera = camera_create();
+    if (current_level->default_cambound >= 0 && current_level->default_cambound < current_level->num_cambounds) {
+        camera_set_bounds(camera, current_level->cambounds[current_level->default_cambound]);
     }
+    LE_CreateEntity(LE_EntityGetList(entity), get_entity_builder_by_id(player), entity->posX, entity->posY);
+    LE_DeleteEntity(entity);
 }
 
 entity_update(player) {
-    LE_EntityProperty player_id = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "player_id");
-    bool l = is_button_down(player_id.asInt, BUTTON_MOVE_LEFT);
-    bool r = is_button_down(player_id.asInt, BUTTON_MOVE_RIGHT);
+    bool l = is_button_down(BUTTON_MOVE_LEFT);
+    bool r = is_button_down(BUTTON_MOVE_RIGHT);
     if (entity->flags & LE_EntityFlags_OnGround) {
-        if (is_button_pressed(player_id.asInt, BUTTON_MOVE_LEFT )) entity_spawn_dust(entity, false, true, 0.2f + entity->velX);
-        if (is_button_pressed(player_id.asInt, BUTTON_MOVE_RIGHT)) entity_spawn_dust(entity, true, false, 0.2f - entity->velX);
+        if (is_button_pressed(BUTTON_MOVE_LEFT )) entity_spawn_dust(entity, false, true, 0.2f + entity->velX);
+        if (is_button_pressed(BUTTON_MOVE_RIGHT)) entity_spawn_dust(entity, true, false, 0.2f - entity->velX);
     }
     if (l && !r) {
         entity->velX -= 0.02f;
@@ -75,7 +72,7 @@ entity_update(player) {
             if (entity->velX < 0) entity->velX = 0;
         }
     }
-    if ((entity->flags & LE_EntityFlags_OnGround) && is_button_pressed(player_id.asInt, BUTTON_JUMP)) {
+    if ((entity->flags & LE_EntityFlags_OnGround) && is_button_pressed(BUTTON_JUMP)) {
         LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 1.5f }, "squish");
         entity->velY = -0.5f;
         if (!l && !r) entity->velX *= 0.6f;
@@ -87,7 +84,7 @@ entity_update(player) {
         entity_spawn_dust(entity, true, true, 0.2f);
     }
     hud_update(entity);
-    camera_set_focus(players[player_id.asInt].camera, entity->posX, 8);
+    camera_set_focus(camera, entity->posX, 8);
     entity_fall_squish(entity, 10, .5f, .25f);
     entity_update_squish(entity, 5);
 }

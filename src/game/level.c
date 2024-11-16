@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <lunarengine.h>
+#include <string.h>
 
 #include "io/assets/binary_reader.h"
 #include "io/audio/nsf.h"
@@ -17,8 +18,7 @@ struct AudioInstance* music_instance;
 struct Level* current_level = NULL;
 uint8_t curr_level_id = 0;
 uint32_t unique_entity_id = 2;
-
-struct PlayerInfo players[MAX_PLAYERS];
+Camera* camera;
 
 void change_level_music(int track) {
     struct Audio* nsf = GET_ASSET(struct Audio, "audio/music.nsf");
@@ -27,18 +27,6 @@ void change_level_music(int track) {
     }
     audio_nsf_select_track(nsf, track);
     music_instance = audio_play(nsf);
-}
-
-int create_player(int cambound) {
-    for (int i = 0; i < MAX_PLAYERS; i++) {
-        if (players[i].camera) continue;
-        Camera* cam = camera_create();
-        if (cambound >= 0 && cambound < current_level->num_cambounds) camera_set_bounds(cam, current_level->cambounds[cambound]);
-        players[i].camera = cam;
-        players[i].entity = NULL;
-        return i;
-    }
-    return -1;
 }
 
 void destroy_level(struct Level* level) {

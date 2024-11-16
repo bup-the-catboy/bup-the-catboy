@@ -5,8 +5,6 @@
 #include "io/audio/audio.h"
 #include "game/data.h"
 #include "game/level.h"
-#include "game/network/packet.h"
-#include "game/network/common.h"
 #include "game/overlay/transition.h"
 #include "game/savefile.h"
 #include "game/overlay/menu.h"
@@ -15,6 +13,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #define FPS 60
 
@@ -22,9 +21,6 @@ uint64_t global_timer = 0;
 
 int windoww, windowh;
 float viewx, viewy, vieww, viewh;
-LE_DrawList* client_drawlist = NULL;
-int client_player_id = 0;
-bool client = false;
 
 void drawlist_renderer(void* texture, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
     struct Texture* tex = texture;
@@ -59,23 +55,14 @@ void init_game() {
     load_assets();
     init_data();
     menu_init();
-    libserial_init();
     savefile_load();
     savefile_select(0);
-    if (!client) {
-        load_level(GET_ASSET(struct Binary, "levels/1-1.lvl"));
-        create_player(current_level->default_cambound);
-        load_menu(title_screen);
-    }
+    load_level(GET_ASSET(struct Binary, "levels/1-1.lvl"));
+    load_menu(title_screen);
 }
 
 int main(int argc, char** argv) {
     if (argc >= 2) {
-        if (strcmp(argv[1], "--server") == 0) start_server();
-        if (strcmp(argv[1], "--client") == 0) {
-            client = true;
-            start_client(argv[2]);
-        }
         if (strcmp(argv[1], "--extract") == 0) {
             extract_assets();
             return 0;
@@ -86,33 +73,19 @@ int main(int argc, char** argv) {
     init_game();
     while (true) {
         if (requested_quit()) break;
-        update_input(client_player_id);
+        update_input();
         graphics_get_size(&windoww, &windowh);
         graphics_start_frame();
-        if (client && client_drawlist && LE_DrawListSize(client_drawlist)) {
-            LE_Render(client_drawlist, drawlist_renderer);
-            LE_DestroyDrawList(client_drawlist);
-            client_drawlist = NULL;
-        }
-        else if (current_level != NULL) {
+        if (current_level != NULL) {
             update_transition();
             update_level();
-            render_level(players[0].camera, drawlist, WIDTH, HEIGHT);
-            for (int i = 1; i < MAX_PLAYERS; i++) {
-                if (!players[i].camera) continue;
-                LE_DrawList* dl = LE_CreateDrawList();
-                render_level(players[i].camera, dl, WIDTH, HEIGHT);
-                send_packet_to(i, packet_rendered_screen(dl));
-                LE_DestroyDrawList(dl);
-            }
+            render_level(camera, drawlist, WIDTH, HEIGHT);
             LE_Render(drawlist, drawlist_renderer);
             LE_ClearDrawList(drawlist);
         }
-        process_packets();
         graphics_end_frame(FPS);
         global_timer++;
     }
-    disconnect();
     graphics_deinit();
     controller_deinit();
     audio_deinit();

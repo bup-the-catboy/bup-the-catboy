@@ -1,9 +1,6 @@
 #ifndef BTCB_INPUT_H
 #define BTCB_INPUT_H
 
-#define LIBSERIAL_INCLUDE "game/network/packets.h"
-#include <libserial.h>
-
 #include <stdbool.h>
 
 #ifndef NO_VSCODE
@@ -25,12 +22,11 @@ enum ButtonIDs {
 #undef CONTROLLER
 #undef JOYSTICK
 
-bool is_button_down(int id, int key);
-bool is_button_up(int id, int key);
-bool is_button_pressed(int id, int key);
-bool is_button_released(int id, int key);
-void get_mouse_position(int id, int* x, int* y);
-void update_input(int id);
-void get_input_from_packet(LibSerialObj_Input* input);
+bool is_button_down(int key);
+bool is_button_up(int key);
+bool is_button_pressed(int key);
+bool is_button_released(int key);
+void get_mouse_position(int* x, int* y);
+void update_input();
 
 #endif

@@ -8,7 +8,6 @@
 
 #define WIDTH  384
 #define HEIGHT 256
-#define MAX_PLAYERS 16
 
 extern uint64_t global_timer;
 extern LE_DrawList* client_drawlist;

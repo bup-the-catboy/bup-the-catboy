@@ -1,6 +1,7 @@
 #include "menu.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "game/input.h"
 #include "game/savefile.h"
@@ -361,9 +362,9 @@ bool render_menu(LE_DrawList* drawlist) {
         curr = curr->next;
     }
     if (anim_state == AnimState_Idle) {
-        if (is_button_pressed(0, BUTTON_MOVE_UP))   cursor_move_up();
-        if (is_button_pressed(0, BUTTON_MOVE_DOWN)) cursor_move_down();
-        if (is_button_pressed(0, BUTTON_JUMP) && selected_item->type == ItemType_Button) selected_item->button_action(selected_item_index);
+        if (is_button_pressed(BUTTON_MOVE_UP))   cursor_move_up();
+        if (is_button_pressed(BUTTON_MOVE_DOWN)) cursor_move_down();
+        if (is_button_pressed(BUTTON_JUMP) && selected_item->type == ItemType_Button) selected_item->button_action(selected_item_index);
     }
     return true;
 }

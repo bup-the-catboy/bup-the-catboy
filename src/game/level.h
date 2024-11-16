@@ -28,16 +28,10 @@ struct Level {
     unsigned int default_cambound, default_music, default_theme;
 };
 
-struct PlayerInfo {
-    Camera* camera;
-    LE_Entity* entity;
-};
-
 extern struct Level* current_level;
 extern uint8_t curr_level_id;
-extern struct PlayerInfo players[MAX_PLAYERS];
+extern Camera* camera;
 
-int create_player(int cambound);
 void load_level(struct Binary* data);
 void load_level_impl(unsigned char* data, int datalen);
 void change_level_music(int track);
