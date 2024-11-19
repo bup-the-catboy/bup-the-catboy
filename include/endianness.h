@@ -14,9 +14,15 @@
 })
 
 #if defined(__ORDER_LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN__)
+#ifndef IS_LITTLE_ENDIAN
+#define IS_LITTLE_ENDIAN
+#endif
 #define BE(x) FLIP_ENDIAN(x)
 #define LE(x) (x)
 #else
+#ifndef IS_BIG_ENDIAN
+#define IS_BIG_ENDIAN
+#endif
 #define BE(x) (x)
 #define LE(x) FLIP_ENDIAN(x)
 #endif

@@ -1,11 +1,11 @@
-#include "io.h"
+#ifdef RENDERER_OPENGL
+
+#include "io/io.h"
 #include "main.h"
 
 #include <SDL2/SDL.h>
 
-#ifndef LEGACY_GL
 #include <GL/glew.h>
-#endif
 #include <GL/gl.h>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -13,15 +13,12 @@
 
 Uint64 start_ticks;
 SDL_Window* window;
-SDL_Renderer* renderer;
 SDL_GLContext* gl_context;
 struct Texture* current_texture;
 float res_width, res_height;
 float win_width, win_height;
 float view_width, view_height;
 int scissor_x, scissor_y, scissor_w, scissor_h;
-
-#ifndef LEGACY_GL
 
 #define MAX_QUADS 256
 #define QUAD_SIZE 5
@@ -134,13 +131,12 @@ void graphics_deinit_framebuffer() {
     glDeleteTextures(1, &rendertexture_id);
 }
 
-#endif
-
 struct Texture* graphics_load_texture(unsigned char* buf, size_t len) {
     struct Texture* texture = malloc(sizeof(struct Texture));
     unsigned char* image = stbi_load_from_memory(buf, len, &texture->width, &texture->height, NULL, STBI_rgb_alpha);
-    glGenTextures(1, (GLuint*)&texture->texture_handle);
-    glBindTexture(GL_TEXTURE_2D, texture->texture_handle);
+    GLuint handle;
+    glGenTextures(1, &handle);
+    glBindTexture(GL_TEXTURE_2D, handle);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -148,6 +144,7 @@ struct Texture* graphics_load_texture(unsigned char* buf, size_t len) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
     glBindTexture(GL_TEXTURE_2D, 0);
     stbi_image_free(image);
+    texture->texture_handle = (void*)(uintptr_t)handle;
     return texture;
 }
 
@@ -157,9 +154,6 @@ void graphics_init(const char* window_name, int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     window = SDL_CreateWindow(window_name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
     gl_context = SDL_GL_CreateContext(window);
-#ifdef LEGACY_GL
-    glEnable(GL_SCISSOR_TEST);
-#else
     glewInit();
     for (int i = 0; i < MAX_QUADS; i++) {
         int vindex = i * 4;
@@ -195,7 +189,6 @@ void graphics_init(const char* window_name, int width, int height) {
     glBindVertexArray(0);
     dummy_shader = graphics_load_shader(dummy_shader_fragment);
     graphics_select_shader(0);
-#endif
 }
 
 void graphics_set_resolution(float width, float height) {
@@ -222,27 +215,18 @@ void graphics_start_frame() {
     view_height /= win_height;
     glViewport(0, 0, width, height);
     current_shader = dummy_shader;
-#ifdef LEGACY_GL
-    glScissor(scissor_x, scissor_y, scissor_w, scissor_h);
-    glClearColor(.5f, .5f, .5f, 1.f);
-#else
     glClearColor(0.f, 0.f, 0.f, 1.f);
-#endif
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     start_ticks = SDL_GetTicks64();
-#ifndef LEGACY_GL
     graphics_init_framebuffer();
-#endif
 }
 
 void graphics_end_frame(float fps) {
-#ifndef LEGACY_GL
     graphics_flush();
     graphics_draw_framebuffer();
     graphics_deinit_framebuffer();
-#endif
     glFlush();
     SDL_GL_SwapWindow(window);
     Uint64 end_ticks = SDL_GetTicks64();
@@ -259,15 +243,9 @@ void graphics_get_size(int* width, int* height) {
 void graphics_select_texture(struct Texture* texture) {
     if (current_texture == texture) return;
     current_texture = texture;
-#ifdef LEGACY_GL
-    if (texture) glEnable(GL_TEXTURE_2D);
-    else glDisable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, texture ? texture->texture_handle : 0);
-#else
     graphics_flush();
-    if (texture) glBindTexture(GL_TEXTURE_2D, texture->texture_handle);
+    if (texture) glBindTexture(GL_TEXTURE_2D, (uintptr_t)texture->texture_handle);
     else glBindTexture(GL_TEXTURE_2D, empty_texture);
-#endif
 }
 
 void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, uint32_t color) {
@@ -275,19 +253,6 @@ void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, f
     x2 = ((x2 / res_width)  * view_width  + (1 - view_width)  / 2) *  2 - 1;
     y1 = ((y1 / res_height) * view_height + (1 - view_height) / 2) * -2 + 1;
     y2 = ((y2 / res_height) * view_height + (1 - view_height) / 2) * -2 + 1;
-#ifdef LEGACY_GL
-    glColor4ub(color >> 24, color >> 16, color >> 8, color >> 0);
-    glBegin(GL_QUADS);
-    glTexCoord2f(u1, v1);
-    glVertex2f(x1, y1);
-    glTexCoord2f(u2, v1);
-    glVertex2f(x2, y1);
-    glTexCoord2f(u2, v2);
-    glVertex2f(x2, y2);
-    glTexCoord2f(u1, v2);
-    glVertex2f(x1, y2);
-    glEnd();
-#else
     if (vertex_ptr == MAX_QUADS * 4) graphics_flush();
     float r = ((color >> 24) & 0xFF) / 255.f;
     float g = ((color >> 16) & 0xFF) / 255.f;
@@ -297,15 +262,12 @@ void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, f
     vertices[vertex_ptr++] = (struct Vertex){ x2, y1, u2, v1, r, g, b, a };
     vertices[vertex_ptr++] = (struct Vertex){ x2, y2, u2, v2, r, g, b, a };
     vertices[vertex_ptr++] = (struct Vertex){ x1, y2, u1, v2, r, g, b, a };
-#endif
 }
 
 void graphics_deinit() {
     SDL_GL_DeleteContext(gl_context);
     SDL_DestroyWindow(window);
 }
-
-#ifndef LEGACY_GL
 
 #define check_error(handle, get, attr, log, msg) { \
     GLint success;                                  \

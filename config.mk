@@ -1,6 +1,6 @@
 ### BUP THE CATBOY CONFIG
 
-LEGACY_GL ?= 0                   # Use legacy OpenGL (1.x), will disable shaders
+RENDERER ?= OPENGL               # Valid options: OPENGL, OPENGL_LEGACY, SDL_RENDERER. Anything besides OPENGL disables shaders
 MACOS_CROSS ?= 0                 # Enable cross compilation for macOS with osxcross
 MACOS_ARCH ?= $(shell uname -m)  # Set target arch for osxcross, defaults to system arch
 COMPILER ?= gcc                  # Set a compiler

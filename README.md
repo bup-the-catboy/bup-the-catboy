@@ -14,6 +14,7 @@ src
   io          - Input and output
     assets    - Reading & parsing assets
     audio     - Audio engine
+    graphics  - Different graphics API implementations for the RENDERER config option
   font        - Text/font renderer
   game        - Core game source code
     data      - Game data (tile, tileset and entity metadata)

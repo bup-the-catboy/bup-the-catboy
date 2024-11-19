@@ -52,14 +52,7 @@ else
 	LIBS += $(shell pkg-config --libs $(LIBRARIES)) -lm $(LIBS_FLAGS)
 endif
 
-ifeq ($(LEGACY_GL),1)
-	CFLAGS += -DLEGACY_GL
-endif
-ifeq ($(NETWORK),1)
-	CFLAGS += -DNETWORK
-endif
-
-CFLAGS += -DNO_VSCODE
+CFLAGS += -DNO_VSCODE -DRENDERER_$(RENDERER)
 
 .PHONY: all clean compile-libs compile-tools run-tools tools compile
 

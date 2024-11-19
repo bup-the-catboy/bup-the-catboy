@@ -9,7 +9,7 @@ struct Binary {
 };
 
 struct Texture {
-    int texture_handle;
+    void* texture_handle;
     int width;
     int height;
 };
