@@ -19,6 +19,7 @@ float res_width, res_height;
 float win_width, win_height;
 float view_width, view_height;
 int scissor_x, scissor_y, scissor_w, scissor_h;
+float target_fps;
 
 #define MAX_QUADS 256
 #define QUAD_SIZE 5
@@ -189,6 +190,12 @@ void graphics_init(const char* window_name, int width, int height) {
     glBindVertexArray(0);
     dummy_shader = graphics_load_shader(dummy_shader_fragment);
     graphics_select_shader(0);
+    SDL_DisplayMode mode;
+    if (SDL_GetWindowDisplayMode(window, &mode)) target_fps = mode.refresh_rate;
+    if (target_fps == 0) {
+        printf("Cannot get monitor refresh rate, defaulting to 60 FPS\n");
+        target_fps = 60;
+    }
 }
 
 void graphics_set_resolution(float width, float height) {
@@ -219,21 +226,17 @@ void graphics_start_frame() {
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    start_ticks = SDL_GetTicks64();
     graphics_init_framebuffer();
+    start_ticks = ticks();
 }
 
-void graphics_end_frame(float fps) {
+void graphics_end_frame() {
     graphics_flush();
     graphics_draw_framebuffer();
     graphics_deinit_framebuffer();
     glFlush();
     SDL_GL_SwapWindow(window);
-    Uint64 end_ticks = SDL_GetTicks64();
-    Uint64 frame_time = end_ticks - start_ticks;
-    Sint64 wait_time = (1000 / fps) - frame_time;
-    if (wait_time <= 0) return;
-    SDL_Delay(wait_time);
+    sync(start_ticks, 1000 / target_fps);
 }
 
 void graphics_get_size(int* width, int* height) {

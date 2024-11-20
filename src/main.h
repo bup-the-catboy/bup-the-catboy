@@ -10,8 +10,6 @@
 #define HEIGHT 256
 
 extern uint64_t global_timer;
-extern LE_DrawList* client_drawlist;
-extern int client_player_id;
-extern bool client;
+extern float delta_time;
 
 #endif

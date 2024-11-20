@@ -1,4 +1,5 @@
 #include "camera.h"
+#include "main.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -48,8 +49,8 @@ void camera_screenshake(Camera* camera, int duration, float x, float y) {
 
 void camera_update(Camera* camera) {
     _Camera* cam = (_Camera*)camera;
-    cam->pos_x += (cam->foc_x - cam->pos_x) / 10;
-    cam->pos_y += (cam->foc_y - cam->pos_y) / 10;
+    cam->pos_x += (cam->foc_x - cam->pos_x) / 10 * delta_time;
+    cam->pos_y += (cam->foc_y - cam->pos_y) / 10 * delta_time;
     cam->ssp_x = cam->pos_x;
     cam->ssp_y = cam->pos_y;
     for (int i = 0; i < NUM_SCREENSHAKES; i++) {

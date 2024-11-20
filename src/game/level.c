@@ -242,20 +242,21 @@ void reload_level() {
     free(leveldata);
 }
 
-void update_level() {
+void update_level(float delta_time) {
+    LE_UpdateLayerList(current_level->layers);
     LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
     while (iter) {
         LE_Layer* layer = LE_LayerListGet(iter);
         enum LE_LayerType type = LE_LayerGetType(layer);
-        if (type == LE_LayerType_Entity) LE_UpdateEntities(LE_LayerGetDataPointer(layer));
+        if (type == LE_LayerType_Entity) LE_UpdateEntities(LE_LayerGetDataPointer(layer), delta_time);
         iter = LE_LayerListNext(iter);
     }
-}
-
-void render_level(Camera* camera, LE_DrawList* drawlist, int width, int height) {
     float x, y;
     camera_update(camera);
     camera_get(camera, &x, &y);
     LE_ScrollCamera(current_level->layers, x, y);
-    LE_Draw(current_level->layers, width, height, drawlist);
+}
+
+void render_level(LE_DrawList* drawlist, int width, int height, float interpolation) {
+    LE_Draw(current_level->layers, width, height, interpolation, drawlist);
 }

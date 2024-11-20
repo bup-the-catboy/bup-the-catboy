@@ -18,6 +18,7 @@ float res_width, res_height;
 float win_width, win_height;
 float view_width, view_height;
 int scissor_x, scissor_y, scissor_w, scissor_h;
+float target_fps;
 
 struct Texture* graphics_load_texture(unsigned char* buf, size_t len) {
     struct Texture* texture = malloc(sizeof(struct Texture));
@@ -41,6 +42,12 @@ void graphics_init(const char* window_name, int width, int height) {
     SDL_Init(SDL_INIT_VIDEO);
     window = SDL_CreateWindow(window_name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_DisplayMode mode;
+    if (SDL_GetWindowDisplayMode(window, &mode)) target_fps = mode.refresh_rate;
+    if (target_fps == 0) {
+        printf("Cannot get monitor refresh rate, defaulting to 60 FPS\n");
+        target_fps = 60;
+    }
 }
 
 void graphics_set_resolution(float width, float height) {
@@ -67,10 +74,10 @@ void graphics_start_frame() {
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    start_ticks = SDL_GetTicks64();
+    start_ticks = ticks();
 }
 
-void graphics_end_frame(float fps) {
+void graphics_end_frame() {
     SDL_Rect rect;
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     rect = (SDL_Rect){ 0, 0, win_width, scissor_y };
@@ -82,11 +89,7 @@ void graphics_end_frame(float fps) {
     rect = (SDL_Rect){ win_width - scissor_x, 0, win_width, scissor_y };
     SDL_RenderFillRect(renderer, &rect);
     SDL_RenderPresent(renderer);
-    Uint64 end_ticks = SDL_GetTicks64();
-    Uint64 frame_time = end_ticks - start_ticks;
-    Sint64 wait_time = (1000 / fps) - frame_time;
-    if (wait_time <= 0) return;
-    SDL_Delay(wait_time);
+    sync(start_ticks, 1000 / target_fps);
 }
 
 void graphics_get_size(int* width, int* height) {

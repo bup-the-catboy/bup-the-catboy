@@ -36,6 +36,7 @@ ENTITY(squashed_mouse,
 ENTITY(mouse,
     UPDATE(gravity_update)
     UPDATE(walk_update)
+    UPDATE(animable_update)
     COLLISION(squash_collision)
     TEXTURE(mouse_texture)
     SIZE(0.75f, 0.75f)

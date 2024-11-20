@@ -14,13 +14,19 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <pthread.h>
 
-#define FPS 60
+#define STEPS_PER_SECOND 60
+#define STEP_TIME (1000.f / STEPS_PER_SECOND)
 
+double internal_global_timer = 0;
 uint64_t global_timer = 0;
+uint64_t game_start_ticks = 0;
+float delta_time = 0;
+bool running = true;
+pthread_t game_loop_thread;
 
 int windoww, windowh;
-float viewx, viewy, vieww, viewh;
 
 void drawlist_renderer(void* texture, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
     struct Texture* tex = texture;
@@ -61,6 +67,24 @@ void init_game() {
     load_menu(title_screen);
 }
 
+void* game_loop(void* _) {
+    while (running) {
+        uint64_t num_ticks = ticks();
+        if (game_start_ticks == 0) game_start_ticks = num_ticks;
+        delta_time = (num_ticks - game_start_ticks) / 1000.f * 60;
+        game_start_ticks = num_ticks;
+        update_input();
+        if (current_level != NULL) {
+            update_transition();
+            update_level(delta_time);
+        }
+        sync(game_start_ticks, STEP_TIME);
+        internal_global_timer += delta_time;
+        global_timer = internal_global_timer;
+    }
+    return NULL;
+}
+
 int main(int argc, char** argv) {
     if (argc >= 2) {
         if (strcmp(argv[1], "--extract") == 0) {
@@ -71,21 +95,18 @@ int main(int argc, char** argv) {
     srand(time(NULL));
     LE_DrawList* drawlist = LE_CreateDrawList();
     init_game();
+    pthread_create(&game_loop_thread, NULL, game_loop, NULL);
     while (true) {
         if (requested_quit()) break;
-        update_input();
         graphics_get_size(&windoww, &windowh);
         graphics_start_frame();
-        if (current_level != NULL) {
-            update_transition();
-            update_level();
-            render_level(camera, drawlist, WIDTH, HEIGHT);
-            LE_Render(drawlist, drawlist_renderer);
-            LE_ClearDrawList(drawlist);
-        }
-        graphics_end_frame(FPS);
-        global_timer++;
+        render_level(drawlist, WIDTH, HEIGHT, min((ticks() - game_start_ticks) / STEP_TIME, 1));
+        LE_Render(drawlist, drawlist_renderer);
+        LE_ClearDrawList(drawlist);
+        graphics_end_frame();
     }
+    running = false;
+    pthread_join(game_loop_thread, NULL);
     graphics_deinit();
     controller_deinit();
     audio_deinit();

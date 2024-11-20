@@ -1,4 +1,5 @@
 #include "functions.h"
+#include "main.h"
 #include "math_util.h"
 #include "game/data.h"
 
@@ -16,7 +17,7 @@ void entity_apply_squish(LE_Entity* entity, float* w, float* h) {
 
 void entity_update_squish(LE_Entity* entity, float modifier) {
     LE_EntityProperty squish = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 1 }, "squish");
-    squish.asFloat += (1 - squish.asFloat) / modifier;
+    squish.asFloat += (1 - squish.asFloat) / modifier * delta_time;
     LE_EntitySetProperty(entity, squish, "squish");
 }
 
@@ -73,12 +74,18 @@ void entity_animate(int* srcX, int* srcY, int* srcW, int* srcH, int width, int h
     *srcH = height;
 }
 
-int entity_get_anim_frame(LE_Entity* entity) {
-    LE_EntityProperty anim_timer = (LE_EntityProperty){ .asInt = -1 };
+int entity_advance_anim_frame(LE_Entity* entity) {
+    LE_EntityProperty anim_timer = (LE_EntityProperty){ .asFloat = -1 };
     LE_EntityGetProperty(entity, &anim_timer, "anim_timer");
-    anim_timer.asInt++;
+    anim_timer.asFloat += delta_time;
     LE_EntitySetProperty(entity, anim_timer, "anim_timer");
-    return anim_timer.asInt;
+    return anim_timer.asFloat;
+}
+
+int entity_get_anim_frame(LE_Entity* entity) {
+    LE_EntityProperty anim_timer = (LE_EntityProperty){ .asFloat = -1 };
+    LE_EntityGetProperty(entity, &anim_timer, "anim_timer");
+    return anim_timer.asFloat;
 }
 
 bool entity_collided(LE_Entity* entity, enum LE_Direction* dir) {

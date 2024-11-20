@@ -54,21 +54,21 @@ entity_update(player) {
         if (is_button_pressed(BUTTON_MOVE_RIGHT)) entity_spawn_dust(entity, true, false, 0.2f - entity->velX);
     }
     if (l && !r) {
-        entity->velX -= 0.02f;
+        entity->velX -= 0.02f * delta_time;
         if (entity->velX < -0.2f) entity->velX = -0.2f;
     }
     else if (!l && r) {
-        entity->velX += 0.02f;
+        entity->velX += 0.02f * delta_time;
         if (entity->velX > 0.2f) entity->velX = 0.2f;
     }
     else {
         float decel = (entity->flags & LE_EntityFlags_OnGround) ? 0.02f : 0.01f;
         if (entity->velX < 0) {
-            entity->velX += decel;
+            entity->velX += decel * delta_time;
             if (entity->velX > 0) entity->velX = 0;
         }
         if (entity->velX > 0) {
-            entity->velX -= decel;
+            entity->velX -= decel * delta_time;
             if (entity->velX < 0) entity->velX = 0;
         }
     }

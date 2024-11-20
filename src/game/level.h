@@ -36,8 +36,8 @@ void load_level(struct Binary* data);
 void load_level_impl(unsigned char* data, int datalen);
 void change_level_music(int track);
 void reload_level();
-void update_level();
-void render_level(Camera* camera, LE_DrawList* drawlist, int width, int height);
+void update_level(float delta_time);
+void render_level(LE_DrawList* drawlist, int width, int height, float interpolation);
 uint32_t get_unique_entity_id();
 
 #endif

@@ -1,5 +1,6 @@
 #include "functions.h"
 #include "game/data.h"
+#include "main.h"
 
 #include <string.h>
 
@@ -14,7 +15,7 @@ entity_update(walk) {
 }
 
 entity_update(gravity) {
-    entity->velY += LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "gravity").asFloat;
+    entity->velY += LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "gravity").asFloat * delta_time;
 }
 
 entity_collision(squash) {
@@ -25,4 +26,8 @@ entity_collision(squash) {
     enum EntityBuilderIDs builder = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "squashed").asInt;
     LE_CreateEntity(LE_EntityGetList(entity), get_entity_builder(builder), entity->posX, entity->posY);
     LE_DeleteEntity(entity);
+}
+
+entity_update(animable) {
+    entity_advance_anim_frame(entity);
 }
