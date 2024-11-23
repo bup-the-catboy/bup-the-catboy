@@ -13,7 +13,7 @@
     out.val;                                      \
 })
 
-#if defined(__ORDER_LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN__)
+#if __LITTLE_ENDIAN__
 #ifndef IS_LITTLE_ENDIAN
 #define IS_LITTLE_ENDIAN
 #endif
