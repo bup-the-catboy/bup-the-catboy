@@ -9,12 +9,13 @@ else
 endif
 
 ifeq ($(MACOS_CROSS),1)
-	COMPILER ?= clang
 	MACOS_TOOL := $(MACOS_ARCH)-apple-$(OSXCROSS_TARGET)
 	CC := $(MACOS_TOOL)-$(COMPILER)
+	CXX := $(MACOS_TOOL)-$(COMPILER_CXX)
+	AR := $(MACOS_TOOL)-$(AR)
 else
-	COMPILER ?= gcc
 	CC := $(COMPILER)
+	CXX := $(COMPILER_CXX)
 endif
 
 SRC_DIR := src
@@ -23,6 +24,7 @@ BIN_DIR := build
 TOOLS_SRCDIR := tools
 TOOLS_BINDIR := build/tools
 TOOLS_CC := $(COMPILER)
+TOOLS_CXX := $(COMPILER_CXX)
 EXECUTABLE := $(BIN_DIR)/btcb$(EXE)
 
 LIBS_DIR := lib
@@ -81,6 +83,11 @@ $(TOOLS_BINDIR)/%: $(TOOLS_SRCDIR)/%.c
 	@mkdir -p $(dir $@)
 	@$(TOOLS_CC) $(CFLAGS) $< -o $@
 
+$(TOOLS_BINDIR)/%: $(TOOLS_SRCDIR)/%.cpp
+	@printf "\033[1m\033[32mCompiling tool \033[36m$< \033[32m-> \033[34m$@\033[0m\n"
+	@mkdir -p $(dir $@)
+	@$(TOOLS_CXX) $(CFLAGS) $< -o $@
+
 run-tools:
 	@for tool in $(TOOLS_EXEC); do \
 		printf "\033[1m\033[32mRunning tool \033[36m$$tool\033[0m\n"; \
@@ -92,12 +99,10 @@ compile: $(EXECUTABLE)
 $(EXECUTABLE): $(OBJS)
 	@printf "\033[1m\033[32mLinking \033[36m$(OBJ_DIR) \033[32m-> \033[34m$(EXECUTABLE)\033[0m\n"
 	@mkdir -p $(BIN_DIR)
-	@$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
+	@$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 	@if [ $(MACOS_CROSS) == 1 ]; then \
 		printf "\033[1m\033[32mBundling \033[36m$(EXECUTABLE) \033[32m-> \033[34m$(EXECUTABLE).app\033[0m\n"; \
 		mkdir -p $(EXECUTABLE).app/Contents/MacOS; \
-		cp $(OSXCROSS_TARGET_DIR)/macports/pkgs/opt/local/lib/libgme.dylib $(EXECUTABLE).app/Contents/MacOS; \
-		$(MACOS_TOOL)-install_name_tool -change @rpath/libgme.0.dylib @executable_path/libgme.dylib $(EXECUTABLE); \
 		./osxcross-patch-exe.sh $(EXECUTABLE).app/Contents/MacOS $(EXECUTABLE).app/Contents/MacOS/$ \
 		cp $(EXECUTABLE) $(EXECUTABLE).app/Contents/MacOS; \
 		echo '<?xml version="1.0" encoding="UTF-8"?>' > $(EXECUTABLE).app/Contents/Info.plist; \
@@ -127,6 +132,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
 	@$(CC) $(CFLAGS) -c $< -o $@
 
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@printf "\033[1m\033[32mCompiling \033[36m$< \033[32m-> \033[34m$@\033[0m\n"
+	@mkdir -p $(dir $@)
+	@$(CXX) $(CFLAGS) -c $< -o $@
+
 clean:
 	@for i in $(BUILD_FILES); do \
 		printf "\033[1m\033[32mDeleting \033[36m$$i \033[32m-> \033[31mX\033[0m\n"; \
@@ -136,6 +146,10 @@ clean:
 -include $(OBJS:.o=.d)
 
 $(OBJ_DIR)/%.d: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	@$(CC) $(CFLAGS) -MM -MT $(@:.d=.o) $< -o $@ 2> /dev/null
+
+$(OBJ_DIR)/%.d: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	@$(CC) $(CFLAGS) -MM -MT $(@:.d=.o) $< -o $@ 2> /dev/null
 
