@@ -93,7 +93,6 @@ void load_assets() {
             EXT(nsf) {
                 asset->data = audio_load_nsf(data, datasize);
             }
-#ifndef LEGACY_GL
             EXT(glsl) {
                 char* shader = malloc(datasize + 1);
                 memcpy(shader, data, datasize);
@@ -104,7 +103,6 @@ void load_assets() {
                 free(shader);
                 free(data);
             }
-#endif
             else binary_fallback = true;
         }
         else binary_fallback = true;

@@ -43,7 +43,7 @@ void graphics_init(const char* window_name, int width, int height) {
     window = SDL_CreateWindow(window_name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_DisplayMode mode;
-    if (SDL_GetWindowDisplayMode(window, &mode)) target_fps = mode.refresh_rate;
+    if (SDL_GetWindowDisplayMode(window, &mode) == 0) target_fps = mode.refresh_rate;
     if (target_fps == 0) {
         printf("Cannot get monitor refresh rate, defaulting to 60 FPS\n");
         target_fps = 60;
