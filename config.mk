@@ -6,4 +6,4 @@ MACOS_ARCH ?= $(shell uname -m)  # Set target arch for osxcross, defaults to sys
 COMPILER ?= gcc                  # Set a C compiler
 COMPILER_CXX ?= g++              # Set a C++ compiler
 AR ?= ar                         # The ar command
-LIBRARIES ?= sdl2 glew libgme    # External libraries to link against
+LIBRARIES ?= sdl2 glew           # External libraries to link against

@@ -2,11 +2,32 @@
 
 A Mario-like 2D platformer game written in C with SDL
 
+## Licenses
+
+This repository is licensed under DWTFYWT license, but some parts are licensed under other licenses.
+
+### MIT License
+
+Parts licensed under the MIT License are:
+- `include/stb_image.h`
+  - (C) 2017 Sean Barrett
+- Part of `src/io/audio/sfxr.c`
+  - (C) 2007 Tomas Pettersson
+
+### LGPL2.1 License
+
+Parts licensed under the LGPL2.1 license are:
+- `lib/gme`, `include/gme.h`
+  - A fork of libgme with additional changes
+  - The full LGPL2.1 License can be found at `lib/gme/license.txt` (after cloning the submodule)
+  - (C) 2009 Shay Green
+
 ## Source Tree
 
 ```
 include       - Headers for various libraries
 lib
+  gme         - Modified version of libgme
   lunarengine - A custom 2D platformer engine built for this game
   bupscript   - Source code for the BupScript language
                 interpreter used for modding
@@ -36,7 +57,7 @@ tools         - Programs used during compilation
 2. Launch the **MINGW64** shell
 3. Install dependencies
 ```sh
-pacman -S git make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-libgme mingw-w64-x86_64-glew
+pacman -S git make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-glew
 ```
 4. Follow the [General compile steps](#general-compile-steps)
 
@@ -46,11 +67,11 @@ pacman -S git make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-l
 
 **Debian**
 ```sh
-sudo apt install git make gcc libsdl2-dev libgme-dev libglew-dev
+sudo apt install git make gcc libsdl2-dev libglew-dev pkgconf
 ```
 **Arch**
 ```sh
-sudo pacman -S git make gcc sdl2 libgme glew
+sudo pacman -S git make gcc sdl2 glew pkgconf
 ```
 2. Follow the [General compile steps](#general-compile-steps)
 
@@ -59,7 +80,7 @@ sudo pacman -S git make gcc sdl2 libgme glew
 1. Install [Homebrew](https://brew.sh/)
 2. Install dependencies
 ```sh
-brew install gcc make sdl2 game-music-emu glew
+brew install gcc make sdl2 glew pkgconf
 ```
 3. Follow the [General compile steps](#general-compile-steps)
 
@@ -72,7 +93,7 @@ curl https://raw.githubusercontent.com/bup-the-catboy/bup-the-catboy/main/quasi-
 2. After that, run `~/quasi-msys2/env/shell.sh`
 3. Install dependencies
 ```sh
-pacmake install _gcc _SDL2 _libgme _glew
+pacmake install _gcc _SDL2 _glew _pkgconf
 ```
 4. Follow the [General compile steps](#general-compile-steps)
 
@@ -85,8 +106,7 @@ curl https://raw.githubusercontent.com/bup-the-catboy/bup-the-catboy/main/osxcro
 ```
 3. Install dependencies
 ```sh
-omp install libsdl2 glew mesa mesa-glu
-curl https://raw.githubusercontent.com/bup-the-catboy/bup-the-catboy/main/osxcross-libgme.sh | sh
+omp install libsdl2 glew mesa mesa-glu pkgconf
 ```
 4. Turn on macOS cross compile mode for the `Makefile`
 ```sh

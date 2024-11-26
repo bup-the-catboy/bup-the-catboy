@@ -1,6 +1,6 @@
 #include "nsf.h"
 
-#include <gme/gme.h>
+#include <gme.h>
 
 #include <stdlib.h>
 

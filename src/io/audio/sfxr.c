@@ -1,5 +1,3 @@
-
-
 #include "sfxr.h"
 
 #include <stdio.h>
