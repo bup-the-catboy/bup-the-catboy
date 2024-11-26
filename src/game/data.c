@@ -27,6 +27,7 @@ LE_TileData* tile_data[256][256];
 #define LVLEDIT_HIDE(         )
 #define LVLEDIT_TEXTURE(    _ )
 #define LVLEDIT_PROPERTIES(...)
+#define LVLEDIT_CROP(_1, _2, _3, _4)
 #define SIMPLE_ANIMATED_TEXTURE(num, delay, ...) return ((int[]){__VA_ARGS__})[(global_timer / delay) % num];
 #define SIMPLE_STATIONARY_TEXTURE(_1) SIMPLE_ANIMATED_TEXTURE(1, 1, _1)
 

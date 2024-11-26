@@ -5,6 +5,7 @@
 ENTITY(player_spawner,
     UPDATE(player_spawner_update)
     LVLEDIT_TEXTURE("images/entities/player.png")
+    LVLEDIT_CROP(0, 0, 16, 16)
 )
 
 ENTITY(player,
@@ -44,6 +45,7 @@ ENTITY(mouse,
     DEFAULT_PROPERTY("gravity", Float, 0.03)
     DEFAULT_PROPERTY("squashed", Int, ENTITY_BUILDER_squashed_mouse)
     LVLEDIT_TEXTURE("images/entities/mouse.png")
+    LVLEDIT_CROP(0, 0, 16, 16)
 )
 
 ENTITY(dust,

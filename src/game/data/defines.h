@@ -35,6 +35,7 @@
 #define LVLEDIT_HIDE()
 #define LVLEDIT_TEXTURE(_1) (void)(_1);
 #define LVLEDIT_PROPERTIES(...)
+#define LVLEDIT_CROP(x, y, w, h) (void)(x); (void)(y); (void)(w); (void)(h);
 
 #define INT   0
 #define BOOL  1
