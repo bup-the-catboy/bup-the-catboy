@@ -85,6 +85,7 @@ void graphics_update_shader_params() {
     graphics_shader_set_int("u_timer",  global_timer);
     graphics_shader_set_int("u_width",  res_width);
     graphics_shader_set_int("u_height", res_height);
+    graphics_shader_set_float("rng", rand() / (float)RAND_MAX);
 }
 
 void graphics_init_framebuffer() {
@@ -105,20 +106,22 @@ void graphics_draw_framebuffer() {
     glBindTexture(GL_TEXTURE_2D, rendertexture_id);
     glUseProgram(current_shader);
     graphics_update_shader_params();
-    glEnable(GL_SCISSOR_TEST);
+    float x1 = ((scissor_x + 0)         / (float)win_width)  * 2 - 1;
+    float y1 = ((scissor_y + 0)         / (float)win_height) * 2 - 1;
+    float x2 = ((scissor_x + scissor_w) / (float)win_width)  * 2 - 1;
+    float y2 = ((scissor_y + scissor_h) / (float)win_height) * 2 - 1;
     glScissor(scissor_x, scissor_y, scissor_w, scissor_h);
     struct Vertex quad[] = {
-        { -1, -1, 0, 0, 1, 1, 1, 1, },
-        {  1, -1, 1, 0, 1, 1, 1, 1, },
-        {  1,  1, 1, 1, 1, 1, 1, 1, },
-        { -1,  1, 0, 1, 1, 1, 1, 1, },
+        { x1, y1, 0, 0, 1, 1, 1, 1, },
+        { x2, y1, 1, 0, 1, 1, 1, 1, },
+        { x2, y2, 1, 1, 1, 1, 1, 1, },
+        { x1, y2, 0, 1, 1, 1, 1, 1, },
     };
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(quad), quad);
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
-    glDisable(GL_SCISSOR_TEST);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
     glUseProgram(dummy_shader);
     struct Texture* tex = current_texture;
@@ -252,10 +255,10 @@ void graphics_select_texture(struct Texture* texture) {
 }
 
 void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, uint32_t color) {
-    x1 = ((x1 / res_width)  * view_width  + (1 - view_width)  / 2) *  2 - 1;
-    x2 = ((x2 / res_width)  * view_width  + (1 - view_width)  / 2) *  2 - 1;
-    y1 = ((y1 / res_height) * view_height + (1 - view_height) / 2) * -2 + 1;
-    y2 = ((y2 / res_height) * view_height + (1 - view_height) / 2) * -2 + 1;
+    x1 = (x1 / res_width)  *  2 - 1;
+    x2 = (x2 / res_width)  *  2 - 1;
+    y1 = (y1 / res_height) * -2 + 1;
+    y2 = (y2 / res_height) * -2 + 1;
     if (vertex_ptr == MAX_QUADS * 4) graphics_flush();
     float r = ((color >> 24) & 0xFF) / 255.f;
     float g = ((color >> 16) & 0xFF) / 255.f;
