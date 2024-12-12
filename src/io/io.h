@@ -11,6 +11,11 @@
 #define MOUSE_MIDDLE 2
 #define MOUSE_RIGHT  3
 
+#define NS_TO_S .0000000001 // number of seconds in a nanosecond
+#define S_TO_NS 1000000000. // number of nanoseconds in a second
+
+#define TICKS_PER_SEC S_TO_NS
+
 struct Texture* graphics_load_texture(unsigned char* buf, size_t len);
 void graphics_init(const char* window_name, int width, int height);
 void graphics_set_resolution(float width, float height);
@@ -41,6 +46,7 @@ void        controller_deinit();
 
 uint64_t ticks();
 void sync(uint64_t start, int ms);
+void sleep_ns(uint64_t ns);
 
 bool requested_quit();
 void io_deinit();

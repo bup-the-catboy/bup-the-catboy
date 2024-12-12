@@ -17,7 +17,7 @@
 #include <pthread.h>
 
 #define STEPS_PER_SECOND 60
-#define STEP_TIME (1000.f / STEPS_PER_SECOND)
+#define STEP_TIME (TICKS_PER_SEC / STEPS_PER_SECOND)
 
 double internal_global_timer = 0;
 uint64_t global_timer = 0;
@@ -71,7 +71,7 @@ void* game_loop(void* _) {
     while (running) {
         uint64_t num_ticks = ticks();
         if (game_start_ticks == 0) game_start_ticks = num_ticks;
-        delta_time = (num_ticks - game_start_ticks) / 1000.f * 60;
+        delta_time = (num_ticks - game_start_ticks) / TICKS_PER_SEC * 60;
         game_start_ticks = num_ticks;
         update_input();
         if (current_level != NULL) {

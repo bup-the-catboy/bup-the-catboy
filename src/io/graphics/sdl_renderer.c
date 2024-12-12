@@ -89,7 +89,7 @@ void graphics_end_frame() {
     rect = (SDL_Rect){ win_width - scissor_x, 0, win_width, scissor_y };
     SDL_RenderFillRect(renderer, &rect);
     SDL_RenderPresent(renderer);
-    sync(start_ticks, 1000 / target_fps);
+    sync(start_ticks, TICKS_PER_SEC / target_fps);
 }
 
 void graphics_get_size(int* width, int* height) {

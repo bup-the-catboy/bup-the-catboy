@@ -236,7 +236,7 @@ void graphics_end_frame() {
     graphics_deinit_framebuffer();
     glFlush();
     SDL_GL_SwapWindow(window);
-    sync(start_ticks, 1000 / target_fps);
+    sync(start_ticks, TICKS_PER_SEC / target_fps);
 }
 
 void graphics_get_size(int* width, int* height) {
