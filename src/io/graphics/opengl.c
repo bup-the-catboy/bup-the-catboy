@@ -11,7 +11,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-Uint64 start_ticks;
 SDL_Window* window;
 SDL_GLContext* gl_context;
 struct Texture* current_texture;
@@ -19,7 +18,6 @@ float res_width, res_height;
 float win_width, win_height;
 float view_width, view_height;
 int scissor_x, scissor_y, scissor_w, scissor_h;
-float target_fps;
 
 #define MAX_QUADS 256
 #define QUAD_SIZE 5
@@ -193,12 +191,6 @@ void graphics_init(const char* window_name, int width, int height) {
     glBindVertexArray(0);
     dummy_shader = graphics_load_shader(dummy_shader_fragment);
     graphics_select_shader(0);
-    SDL_DisplayMode mode;
-    if (SDL_GetWindowDisplayMode(window, &mode) == 0) target_fps = mode.refresh_rate;
-    if (target_fps == 0) {
-        printf("Cannot get monitor refresh rate, defaulting to 60 FPS\n");
-        target_fps = 60;
-    }
 }
 
 void graphics_set_resolution(float width, float height) {
@@ -230,7 +222,6 @@ void graphics_start_frame() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     graphics_init_framebuffer();
-    start_ticks = ticks();
 }
 
 void graphics_end_frame() {
@@ -239,7 +230,6 @@ void graphics_end_frame() {
     graphics_deinit_framebuffer();
     glFlush();
     SDL_GL_SwapWindow(window);
-    sync(start_ticks, TICKS_PER_SEC / target_fps);
 }
 
 void graphics_get_size(int* width, int* height) {

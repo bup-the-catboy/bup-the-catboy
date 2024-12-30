@@ -10,7 +10,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-Uint64 start_ticks;
 SDL_Window* window;
 SDL_Renderer* renderer;
 struct Texture* current_texture;
@@ -42,12 +41,6 @@ void graphics_init(const char* window_name, int width, int height) {
     SDL_Init(SDL_INIT_VIDEO);
     window = SDL_CreateWindow(window_name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_DisplayMode mode;
-    if (SDL_GetWindowDisplayMode(window, &mode) == 0) target_fps = mode.refresh_rate;
-    if (target_fps == 0) {
-        printf("Cannot get monitor refresh rate, defaulting to 60 FPS\n");
-        target_fps = 60;
-    }
 }
 
 void graphics_set_resolution(float width, float height) {
@@ -74,7 +67,6 @@ void graphics_start_frame() {
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    start_ticks = ticks();
 }
 
 void graphics_end_frame() {
@@ -89,7 +81,6 @@ void graphics_end_frame() {
     rect = (SDL_Rect){ win_width - scissor_x, 0, win_width, scissor_y };
     SDL_RenderFillRect(renderer, &rect);
     SDL_RenderPresent(renderer);
-    sync(start_ticks, TICKS_PER_SEC / target_fps);
 }
 
 void graphics_get_size(int* width, int* height) {
