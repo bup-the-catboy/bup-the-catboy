@@ -36,7 +36,7 @@ void _append(struct TextGraph* curr, char c) {
 }
 
 unsigned int _read_color(const char* string, int* ptr) {
-    unsigned int value;
+    unsigned int value = 0;
     char c;
     while ((c = string[(*ptr)++])) {
         int num = -1;

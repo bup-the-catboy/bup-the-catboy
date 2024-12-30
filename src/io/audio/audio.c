@@ -85,7 +85,6 @@ void audio_update(short* out, int num_samples) {
     int mixed[num_samples];
     short samples[num_samples];
     struct InstanceList* list = instances;
-    int num_channels = 0;
     memset(mixed, 0, sizeof(mixed));
     while (list->instance) {
         if ((list->instance->oneshot && !list->instance->playing) || list->instance->do_free) {
@@ -106,7 +105,6 @@ void audio_update(short* out, int num_samples) {
         for (int i = 0; i < num_samples; i++) {
             mixed[i] += samples[i];
         }
-        num_channels++;
         list = list->next;
     }
     for (int i = 0; i < num_samples; i++) {
