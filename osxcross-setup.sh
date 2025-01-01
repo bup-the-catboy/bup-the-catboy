@@ -9,7 +9,11 @@ if [ ! -e "$XCODE_PATH" ] || [ ! -n "$XCODE_PATH" ]; then
 fi
 
 cd ~
-git clone https://github.com/tpoechtrager/osxcross
+
+if [ ! -e "osxcross" ]; then
+    git clone https://github.com/tpoechtrager/osxcross
+fi
+
 cd osxcross
 echo Copying Xcode...
 cp "$XCODE_PATH" Xcode.xip
