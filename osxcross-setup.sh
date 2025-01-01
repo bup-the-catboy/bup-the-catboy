@@ -15,8 +15,12 @@ if [ ! -e "osxcross" ]; then
 fi
 
 cd osxcross
-echo Copying Xcode...
-cp "$XCODE_PATH" Xcode.xip
+
+if [ ! -e "Xcode.xip" ]; then
+    echo Copying Xcode...
+    cp "$XCODE_PATH" Xcode.xip
+fi
+
 ./tools/gen_sdk_package_pbzx.sh Xcode.xip
 mv *.sdk.tar.xz tarballs
 
