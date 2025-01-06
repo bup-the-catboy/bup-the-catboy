@@ -64,7 +64,7 @@ void camera_set_bounds(Camera* camera, CameraBounds* bounds) {
 void camera_set_focus(Camera* camera, float x, float y) {
     _Camera* cam = (_Camera*)camera;
     Point target = (Point){ x, y };
-    if (!is_in_polygon(target, cam->bounds->poly, cam->bounds->num_vert)) {
+    if (cam->bounds && !is_in_polygon(target, cam->bounds->poly, cam->bounds->num_vert)) {
         Point proj;
         float dist = FLT_MAX;
         for (int i = 0; i < cam->bounds->num_vert; i++) {
