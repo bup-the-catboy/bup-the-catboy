@@ -3,10 +3,12 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
+#include "math_util.h"
 
 #define NUM_SCREENSHAKES 8
 typedef struct {
-    struct CameraBounds* bounds;
+    CameraBounds* bounds;
     float pos_x, pos_y;
     float foc_x, foc_y;
     float ssp_x, ssp_y; // position after screenshake is applied
@@ -16,18 +18,69 @@ typedef struct {
     } screenshakes[NUM_SCREENSHAKES];
 } _Camera;
 
+static float distance(Point a, Point b) {
+    return sqrtf((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}
+
+static Point line_project(Point p, Point a, Point b) {
+    float dx = b.x - a.x;
+    float dy = b.y - a.y;
+    float apx = p.x - a.x;
+    float apy = p.y - a.y;
+    float ab_ab =  dx * dx +  dy * dy;
+    float ap_ab = apx * dx + apy * dy;
+    if (ap_ab == 0) return a;
+    else {
+        float t = ap_ab / ab_ab;
+        if (t < 0) return a;
+        if (t > 1) return b;
+        return (Point){ a.x + t * dx, a.y + t * dy };
+    }
+}
+
+static bool is_in_polygon(Point point, Point* polygon, int num_verts) {
+    int count = 0;
+    for (int i = 0; i < num_verts; i++) {
+        Point a = polygon[i];
+        Point b = polygon[(i + 1) % num_verts];
+        if ((point.y > min(a.y, b.y)) && (point.y <= max(a.y, b.y)) && (point.x <= max(a.x, b.x))) {
+            float xIntersect = (point.y - a.y) * (b.x - a.x) / (b.y - a.y) + a.x;
+            if (a.x == b.x || point.x <= xIntersect) count++;
+        }
+    }
+    return count % 2 == 1;
+}
+
 Camera* camera_create() {
     return memset(malloc(sizeof(_Camera)), 0, sizeof(_Camera));
 }
 
-void camera_set_bounds(Camera* camera, struct CameraBounds* bounds) {
-    ((_Camera*)camera)->bounds = bounds;
+void camera_set_bounds(Camera* camera, CameraBounds* bounds) {
+    _Camera* cam = (_Camera*)camera;
+    cam->bounds = bounds;
+    camera_set_focus(camera, cam->foc_x, cam->foc_y);
 }
 
 void camera_set_focus(Camera* camera, float x, float y) {
     _Camera* cam = (_Camera*)camera;
-    cam->foc_x = x;
-    cam->foc_y = y;
+    Point target = (Point){ x, y };
+    if (!is_in_polygon(target, cam->bounds->poly, cam->bounds->num_vert)) {
+        Point proj;
+        float dist = FLT_MAX;
+        for (int i = 0; i < cam->bounds->num_vert; i++) {
+            Point a = cam->bounds->poly[i];
+            Point b = cam->bounds->poly[(i + 1) % cam->bounds->num_vert];
+            Point curr_proj = line_project(target, a, b);
+            float curr_dist = distance(target, curr_proj);
+            if (dist > curr_dist) {
+                dist = curr_dist;
+                proj = curr_proj;
+            }
+        }
+        target = proj;
+    }
+    cam->foc_x = target.x;
+    cam->foc_y = target.y;
 }
 
 void camera_get(Camera* camera, float* x, float* y) {

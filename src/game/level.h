@@ -20,7 +20,7 @@ struct Warp {
 struct Level {
     int num_cambounds;
     int num_warps;
-    struct CameraBounds** cambounds;
+    CameraBounds** cambounds;
     struct Warp* warps;
     LE_LayerList* layers;
     unsigned char* raw;

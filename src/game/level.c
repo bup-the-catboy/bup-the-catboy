@@ -31,6 +31,7 @@ void change_level_music(int track) {
 
 void destroy_level(struct Level* level) {
     for (int i = 0; i < level->num_cambounds; i++) {
+        free(level->cambounds[i]->poly);
         free(level->cambounds[i]);
     }
     free(level->cambounds);
@@ -74,39 +75,17 @@ struct Level* parse_level(unsigned char* data, int datalen) {
 
     stream = binary_stream_goto(stream);
     BINARY_STREAM_READ(stream, level->num_cambounds);
-    level->cambounds = malloc(sizeof(struct CameraBounds*) * level->num_cambounds);
+    level->cambounds = malloc(sizeof(CameraBounds*) * level->num_cambounds);
     for (unsigned int i = 0; i < level->num_cambounds; i++) {
         stream = binary_stream_goto(stream);
-        unsigned int num_nodes, num_edges;
-        BINARY_STREAM_READ(stream, num_nodes);
-        BINARY_STREAM_READ(stream, num_edges);
-        struct CameraBounds* nodes = malloc(sizeof(struct CameraBounds) * num_nodes);
-        for (unsigned int j = 0; j < num_nodes; j++) {
-            BINARY_STREAM_READ(stream, nodes[j].x);
-            BINARY_STREAM_READ(stream, nodes[j].y);
+        CameraBounds* bounds = malloc(sizeof(CameraBounds));
+        BINARY_STREAM_READ(stream, bounds->num_vert);
+        bounds->poly = malloc(sizeof(Point) * bounds->num_vert);
+        for (unsigned int j = 0; j < bounds->num_vert; j++) {
+            BINARY_STREAM_READ(stream, bounds->poly[j].x);
+            BINARY_STREAM_READ(stream, bounds->poly[j].y);
         }
-        for (unsigned int j = 0; j < num_edges; j++) {
-            unsigned int a, b;
-            BINARY_STREAM_READ(stream, a);
-            BINARY_STREAM_READ(stream, b);
-            if (nodes[a].x == nodes[b].x && nodes[a].y == nodes[b].y - 1) {
-                nodes[a].up = &nodes[b];
-                nodes[b].down = &nodes[a];
-            }
-            if (nodes[a].x == nodes[b].x - 1 && nodes[a].y == nodes[b].y) {
-                nodes[a].left = &nodes[b];
-                nodes[b].right = &nodes[a];
-            }
-            if (nodes[a].x == nodes[b].x && nodes[a].y == nodes[b].y + 1) {
-                nodes[a].down = &nodes[b];
-                nodes[b].up = &nodes[a];
-            }
-            if (nodes[a].x == nodes[b].x + 1 && nodes[a].y == nodes[b].y) {
-                nodes[a].right = &nodes[b];
-                nodes[b].left = &nodes[a];
-            }
-        }
-        level->cambounds[i] = nodes;
+        level->cambounds[i] = bounds;
         stream = binary_stream_close(stream);
     }
     stream = binary_stream_close(stream);
