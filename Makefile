@@ -1,23 +1,5 @@
 include config.mk
 
-ifeq ($(OS),Windows_NT)
-	EXE := .exe
-	WINDOWS := 1
-else
-	EXE :=
-	WINDOWS := 0
-endif
-
-ifeq ($(MACOS_CROSS),1)
-	MACOS_TOOL := $(MACOS_ARCH)-apple-$(OSXCROSS_TARGET)
-	CC := $(MACOS_TOOL)-$(COMPILER)
-	CXX := $(MACOS_TOOL)-$(COMPILER_CXX)
-	AR := $(MACOS_TOOL)-$(AR)
-else
-	CC := $(COMPILER)
-	CXX := $(COMPILER_CXX)
-endif
-
 SRC_DIR := src
 OBJ_DIR := build/objs
 BIN_DIR := build
@@ -25,7 +7,8 @@ TOOLS_SRCDIR := tools
 TOOLS_BINDIR := build/tools
 TOOLS_CC := $(COMPILER)
 TOOLS_CXX := $(COMPILER_CXX)
-EXECUTABLE := $(BIN_DIR)/btcb$(EXE)
+BUILD_NAME := btcb
+EXECUTABLE := $(BIN_DIR)/$(BUILD_NAME)$(EXE)
 
 LIBS_DIR := lib
 LIBS_SRC := $(shell find $(LIBS_DIR)/* -maxdepth 0 -type d -name "*")
@@ -103,8 +86,8 @@ $(EXECUTABLE): $(OBJS)
 	@if [ $(MACOS_CROSS) == 1 ]; then \
 		printf "\033[1m\033[32mBundling \033[36m$(EXECUTABLE) \033[32m-> \033[34m$(EXECUTABLE).app\033[0m\n"; \
 		mkdir -p $(EXECUTABLE).app/Contents/MacOS; \
-		./osxcross-patch-exe.sh $(EXECUTABLE).app/Contents/MacOS $(EXECUTABLE).app/Contents/MacOS/$ \
 		cp $(EXECUTABLE) $(EXECUTABLE).app/Contents/MacOS; \
+		./osxcross-patch-exe.sh $(EXECUTABLE).app/Contents/MacOS/ $(EXECUTABLE).app/Contents/MacOS/$(BUILD_NAME) \
 		echo '<?xml version="1.0" encoding="UTF-8"?>' > $(EXECUTABLE).app/Contents/Info.plist; \
 		echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> $(EXECUTABLE).app/Contents/Info.plist; \
 		echo '<plist version="1.0">' >> $(EXECUTABLE).app/Contents/Info.plist; \

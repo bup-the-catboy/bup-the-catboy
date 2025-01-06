@@ -1,3 +1,5 @@
+include ../../config.mk
+
 SRC_DIR := .
 OBJ_DIR := build/objs
 BIN_DIR := build

@@ -22,6 +22,10 @@
 #define BINARY
 #endif
 
+#ifndef PATH_MAX
+#define PATH_MAX 256
+#endif
+
 struct Asset {
     char name[PATH_MAX];
     void* data;
