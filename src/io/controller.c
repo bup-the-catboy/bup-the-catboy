@@ -6,6 +6,10 @@ SDL_Joystick* joystick;
 
 void controller_init() {
     SDL_Init(SDL_INIT_JOYSTICK);
+    printf("%d controllers found\n", controller_count());
+    if (controller_count() > 0) {
+        controller_select(0);
+    }
 }
 
 int controller_count() {
@@ -15,6 +19,7 @@ int controller_count() {
 void controller_select(int index) {
     if (joystick) SDL_JoystickClose(joystick);
     joystick = SDL_JoystickOpen(index);
+    printf("Controller %d connected: %s\n", index, controller_current_name());
 }
 
 const char* controller_name(int index) {
