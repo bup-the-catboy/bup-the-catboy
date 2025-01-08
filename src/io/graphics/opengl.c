@@ -2,6 +2,7 @@
 
 #include "io/io.h"
 #include "main.h"
+#include "rng.h"
 
 #include <SDL2/SDL.h>
 
@@ -83,7 +84,7 @@ void graphics_update_shader_params() {
     graphics_shader_set_int("u_timer",  global_timer);
     graphics_shader_set_int("u_width",  res_width);
     graphics_shader_set_int("u_height", res_height);
-    graphics_shader_set_float("rng", rand() / (float)RAND_MAX);
+    graphics_shader_set_float("rng", random_float());
 }
 
 void graphics_init_framebuffer() {

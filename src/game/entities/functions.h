@@ -13,6 +13,9 @@ int  entity_get_anim_frame(LE_Entity* entity);
 bool entity_collided(LE_Entity* entity, enum LE_Direction* dir);
 void entity_spawn_dust(LE_Entity* entity, bool left, bool right, float speed);
 
+LE_Entity* find_entity_with_tag(const char* tag);
+LE_Entity* find_nearest_entity_with_tag(LE_Entity* self, const char* tag);
+
 #define entity_update(name) void name##_update(LE_Entity* entity)
 #define entity_texture(name) void* name##_texture(LE_Entity* entity, float* w, float* h, int* srcX, int* srcY, int* srcW, int* srcH)
 #define entity_collision(name) void name##_collision(LE_Entity* entity, LE_Entity* collider)
@@ -21,11 +24,17 @@ entity_update(player_spawner);
 entity_update(player);
 entity_update(walk);
 entity_update(squashed_mouse);
+entity_update(turtle_shell);
 entity_update(dust);
 entity_update(gravity);
 entity_update(animable);
+entity_update(despawn);
+entity_update(friction);
 entity_collision(squash);
 entity_texture(player);
 entity_texture(mouse);
 entity_texture(squashed_mouse);
+entity_texture(turtle);
+entity_texture(turtle_shell);
+entity_texture(turtle_shell_fragment);
 entity_texture(dust);

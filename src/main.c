@@ -9,6 +9,7 @@
 #include "game/savefile.h"
 #include "game/overlay/menu.h"
 #include "io/io.h"
+#include "rng.h"
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -63,7 +64,7 @@ void init_game() {
     menu_init();
     savefile_load();
     savefile_select(0);
-    load_level(GET_ASSET(struct Binary, "levels/1-1.lvl"));
+    load_level(GET_ASSET(struct Binary, "levels/turtle.lvl"));
     load_menu(title_screen);
 }
 
@@ -92,7 +93,7 @@ int main(int argc, char** argv) {
             return 0;
         }
     }
-    srand(time(NULL));
+    random_init();
     LE_DrawList* drawlist = LE_CreateDrawList();
     init_game();
     pthread_create(&game_loop_thread, NULL, game_loop, NULL);

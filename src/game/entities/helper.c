@@ -1,7 +1,11 @@
 #include "functions.h"
+#include "game/level.h"
 #include "main.h"
 #include "math_util.h"
 #include "game/data.h"
+
+#include <float.h>
+#include <string.h>
 
 bool entity_init(LE_Entity* entity) {
     if (LE_EntityGetProperty(entity, NULL, "init")) return false;
@@ -67,7 +71,10 @@ bool entity_flip_texture(LE_Entity* entity) {
 }
 
 void entity_animate(int* srcX, int* srcY, int* srcW, int* srcH, int width, int height, int delay, int frames, bool loop, int curr_frame) {
+    bool reverse = curr_frame < 0;
+    curr_frame = abs(curr_frame);
     int frame = ((loop ? curr_frame : (int)min(delay * frames - 1, curr_frame)) / delay) % frames;
+    if (reverse) frame = frames - 1 - frame;
     *srcX = width * frame;
     *srcY = 0;
     *srcW = width;
@@ -101,4 +108,50 @@ void entity_spawn_dust(LE_Entity* entity, bool left, bool right, float speed) {
     LE_EntityList* list = LE_EntityGetList(entity);
     if (left ) LE_CreateEntity(list, builder, entity->posX, entity->posY)->velX = -speed;
     if (right) LE_CreateEntity(list, builder, entity->posX, entity->posY)->velX =  speed;
+}
+
+LE_Entity* find_entity_with_tag(const char* tag) {
+    LE_LayerList* layers = current_level->layers;
+    LE_LayerListIter* i = LE_LayerListGetIter(layers);
+    while (i) {
+        LE_Layer* layer = LE_LayerListGet(i);
+        if (LE_LayerGetType(layer) == LE_LayerType_Entity) {
+            LE_EntityList* list = LE_LayerGetDataPointer(layer);
+            LE_EntityListIter* j = LE_EntityListGetIter(list);
+            while (j) {
+                LE_Entity* entity = LE_EntityListGet(j);
+                const char* entity_tag = LE_EntityGetPropertyOrDefault(
+                    entity, (LE_EntityProperty){ .asPtr = "" }, "tag"
+                ).asPtr;
+                if (strcmp(entity_tag, tag) == 0) return entity;
+                j = LE_EntityListNext(j);
+            }
+        }
+        i = LE_LayerListNext(i);
+    }
+    return NULL;
+}
+
+LE_Entity* find_nearest_entity_with_tag(LE_Entity* self, const char* tag) {
+    LE_EntityList* list = LE_EntityGetList(self);
+    LE_Entity* nearest = NULL;
+    float nearest_dist = FLT_MAX;
+    LE_EntityListIter* iter = LE_EntityListGetIter(list);
+    while (iter) {
+        LE_Entity* entity = LE_EntityListGet(iter);
+        const char* entity_tag = LE_EntityGetPropertyOrDefault(
+            entity, (LE_EntityProperty){ .asPtr = "" }, "tag"
+        ).asPtr;
+        if (strcmp(entity_tag, tag) == 0) {
+            float dx = self->posX - entity->posX;
+            float dy = self->posY - entity->posY;
+            float dist = dx * dx + dy * dy;
+            if (nearest_dist > dist) {
+                nearest_dist = dist;
+                nearest = entity;
+            }
+        }
+        iter = LE_EntityListNext(iter);
+    }
+    return nearest;
 }

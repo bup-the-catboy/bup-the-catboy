@@ -1,4 +1,5 @@
 #include "sfxr.h"
+#include "rng.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -109,7 +110,7 @@ void audio_sfxr_defaults(struct SFXRContext* context) {
 })
 
 float frnd(float x) {
-    return rand() / (float)RAND_MAX * x;
+    return random_float() * x;
 }
 
 void audio_sfxr_read(struct SFXRContext* context, unsigned char* data, int datalen) {

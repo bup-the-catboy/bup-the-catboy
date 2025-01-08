@@ -23,10 +23,5 @@ entity_texture(squashed_mouse) {
 
 entity_update(squashed_mouse) {
     if (entity_init(entity)) LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = .5f }, "squish");
-    LE_EntityProperty timer = (LE_EntityProperty){ .asFloat = 60 };
-    LE_EntityGetProperty(entity, &timer, "timer");
-    timer.asFloat -= delta_time;
-    if (timer.asFloat <= 0) LE_DeleteEntity(entity);
-    LE_EntitySetProperty(entity, timer, "timer");
     entity_update_squish(entity, 5);
 }

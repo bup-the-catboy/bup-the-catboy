@@ -1,10 +1,11 @@
 #include "camera.h"
 #include "main.h"
+#include "math_util.h"
+#include "rng.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
-#include "math_util.h"
 
 #define NUM_SCREENSHAKES 8
 typedef struct {
@@ -109,8 +110,8 @@ void camera_update(Camera* camera) {
     for (int i = 0; i < NUM_SCREENSHAKES; i++) {
         if (cam->screenshakes[i].duration == 0) continue;
         float intensity = cam->screenshakes[i].duration / (float)cam->screenshakes[i].start_duration;
-        cam->ssp_x += (rand() % 2 - 1) * intensity * cam->screenshakes[i].x;
-        cam->ssp_y += (rand() % 2 - 1) * intensity * cam->screenshakes[i].y;
+        cam->ssp_x += random_range(-1, 1) * intensity * cam->screenshakes[i].x;
+        cam->ssp_y += random_range(-1, 1) * intensity * cam->screenshakes[i].y;
         cam->screenshakes[i].duration--;
     }
 }
