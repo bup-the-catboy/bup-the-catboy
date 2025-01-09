@@ -51,5 +51,9 @@ void sleep_ns(uint64_t ns);
 bool requested_quit();
 void io_deinit();
 
+void audio_backend_open();
+void audio_backend_queue(short* samples, int num_samples);
+void audio_backend_close();
+
 #endif
 

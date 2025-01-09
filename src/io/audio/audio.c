@@ -1,9 +1,9 @@
 #include "audio.h"
+#include "io/io.h"
 
 #include <stdlib.h>
 #include <pthread.h>
-
-#include <SDL2/SDL.h>
+#include <string.h>
 
 #define _(x) ((struct _AudioInstance*)x)
 struct _AudioInstance {
@@ -35,7 +35,6 @@ struct InstanceList* make_list_entry(struct InstanceList* prev) {
 }
 
 void audio_init() {
-    SDL_Init(SDL_INIT_AUDIO);
     instances = make_list_entry(NULL);
     pthread_create(&audio_thread_id, NULL, audio_thread, NULL);
 }
@@ -120,21 +119,10 @@ void audio_deinit() {
 }
 
 void* audio_thread(void* param) {
-    SDL_AudioSpec spec;
-    spec.freq = AUDIO_SAMPLE_RATE;
-    spec.format = AUDIO_S16SYS;
-    spec.channels = 2;
-    spec.samples = 1024;
-    spec.callback = NULL;
-    SDL_OpenAudio(&spec, NULL);
-    SDL_PauseAudio(0);
     short buffer[2048];
     while (audio_do_loop) {
         audio_update(buffer, 2048);
-        while (SDL_GetQueuedAudioSize(1) > sizeof(buffer)) {
-            SDL_Delay(10);
-        }
-        SDL_QueueAudio(1, buffer, sizeof(buffer));
+        audio_backend_queue(buffer, 2048);
     }
     struct InstanceList* list = instances;
     while (list->instance) {
@@ -146,6 +134,6 @@ void* audio_thread(void* param) {
     instances = list;
     instances->prev = NULL;
     instances->next = NULL;
-    SDL_CloseAudio();
+    audio_backend_close();
     return NULL;
 }
