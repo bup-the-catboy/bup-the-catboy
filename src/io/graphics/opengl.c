@@ -69,18 +69,6 @@ const char* dummy_shader_fragment =
 
 #undef _
 
-static GLuint create_texture(int width, int height) {
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    return texture;
-}
-
 void graphics_flush() {
     if (vertex_ptr == 0) return;
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -102,7 +90,11 @@ void graphics_update_shader_params() {
 void graphics_init_framebuffer() {
     glGenFramebuffers(1, &framebuffer_id);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
-    rendertexture_id = create_texture(win_width, win_height);
+    glGenTextures(1, &rendertexture_id);
+    glBindTexture(GL_TEXTURE_2D, rendertexture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, win_width, win_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rendertexture_id, 0);
     glClearColor(.5f, .5f, .5f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -145,7 +137,15 @@ void graphics_deinit_framebuffer() {
 struct GfxResource* graphics_load_texture(unsigned char* buf, size_t len) {
     struct GfxResource* res = malloc(sizeof(struct GfxResource));
     unsigned char* image = stbi_load_from_memory(buf, len, &res->texture.width, &res->texture.height, NULL, STBI_rgb_alpha);
-    GLuint handle = create_texture(res->texture.width, res->texture.height);
+    GLuint handle;
+    glGenTextures(1, &handle);
+    glBindTexture(GL_TEXTURE_2D, handle);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, res->texture.width, res->texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    glBindTexture(GL_TEXTURE_2D, 0);
     stbi_image_free(image);
     res->type = GfxResType_Texture;
     res->texture.texture_handle = (void*)(uintptr_t)handle;

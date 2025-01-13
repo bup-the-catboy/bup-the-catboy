@@ -116,12 +116,12 @@ void graphics_deinit() {
 
 struct GfxResource* graphics_load_shader(const char* shader) {
     struct GfxResource* res = malloc(sizeof(struct GfxResource));
-    res->type == GfxResType_Shader;
+    res->type = GfxResType_Shader;
     res->shader_id = 0;
     return res;
 }
 
-void graphics_select_shader(int shader) {}
+void graphics_select_shader(struct GfxResource* shader) {}
 void graphics_shader_set_int(const char* name, int value) {}
 void graphics_shader_set_float(const char* name, float value) {}
 
