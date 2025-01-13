@@ -341,7 +341,7 @@ bool render_menu(LE_DrawList* drawlist) {
         struct MenuItem* item = curr->item;
         switch (item->type) {
             case ItemType_Image:
-                LE_DrawListAppend(drawlist, GET_ASSET(struct Texture, item->imgpath),
+                LE_DrawListAppend(drawlist, GET_ASSET(struct GfxResource, item->imgpath),
                     item->image.dstx + offsetX, item->image.dsty, item->image.dstw, item->image.dsth,
                     item->image.srcx,           item->image.srcy, item->image.srcw, item->image.srch
                 );

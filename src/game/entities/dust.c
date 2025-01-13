@@ -15,5 +15,5 @@ entity_texture(dust) {
     entity_animate(srcX, srcY, srcW, srcH, 8, 8, 2, 8, false, entity_get_anim_frame(entity));
     *w = 8;
     *h = 8;
-    return GET_ASSET(struct Texture, "images/entities/dust.png");
+    return GET_ASSET(struct GfxResource, "images/entities/dust.png");
 }

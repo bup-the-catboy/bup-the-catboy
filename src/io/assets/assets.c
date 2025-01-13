@@ -11,7 +11,6 @@
 
 #include "assets.h"
 #include "io/io.h"
-#include "io/audio/audio.h"
 #include "io/audio/nsf.h"
 #include "io/audio/wav.h"
 #include "binary_reader.h"
@@ -87,7 +86,7 @@ void load_assets() {
         bool binary_fallback = false;
         if (!force_binary) {
             _ EXT(png) {
-                struct Texture* texture = graphics_load_texture(data, datasize);
+                struct GfxResource* texture = graphics_load_texture(data, datasize);
                 free(data);
                 asset->data = texture;
             }
@@ -101,9 +100,7 @@ void load_assets() {
                 char* shader = malloc(datasize + 1);
                 memcpy(shader, data, datasize);
                 shader[datasize] = 0;
-                int* value = malloc(sizeof(int));
-                *value = graphics_load_shader(shader);
-                asset->data = value;
+                asset->data = graphics_load_shader(shader);
                 free(shader);
                 free(data);
             }

@@ -96,7 +96,7 @@ void init_data() {
 #undef SIMPLE_ANIMATED_TEXTURE
 #undef SIMPLE_STATIONARY_TEXTURE
 
-#define TEXTURE(     tex ) LE_TilesetSetTexture   (tileset, GET_ASSET(struct Texture, tex));
+#define TEXTURE(     tex ) LE_TilesetSetTexture   (tileset, GET_ASSET(struct GfxResource, tex));
 #define SIZE(        w, h) LE_TilesetSetTileSize  (tileset, w, h);
 #define TILES_IN_ROW(x   ) LE_TilesetSetTilesInRow(tileset, x   );
 #define PALETTE(     id  ) int palette = TILE_PALETTE_##id;

@@ -34,7 +34,7 @@ entity_texture(player) {
     *w = facing_left.asBool ? -16 : 16;
     *h = 16;
     entity_apply_squish(entity, w, h);
-    return GET_ASSET(struct Texture, "images/entities/player.png");
+    return GET_ASSET(struct GfxResource, "images/entities/player.png");
 }
 
 entity_update(player_spawner) {

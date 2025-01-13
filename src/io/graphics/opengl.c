@@ -14,7 +14,7 @@
 
 SDL_Window* window;
 SDL_GLContext* gl_context;
-struct Texture* current_texture;
+struct GfxResource* current_texture;
 float res_width, res_height;
 float win_width, win_height;
 float view_width, view_height;
@@ -35,8 +35,8 @@ GLuint rendertexture_id, framebuffer_id;
 struct Vertex vertices[4 * MAX_QUADS];
 int indices[6 * MAX_QUADS];
 int vertex_ptr = 0;
-int current_shader = 0;
-int dummy_shader = 0;
+struct GfxResource* current_shader = 0;
+struct GfxResource* dummy_shader = 0;
 
 #define _ "\n"
 
@@ -69,6 +69,18 @@ const char* dummy_shader_fragment =
 
 #undef _
 
+static GLuint create_texture(int width, int height) {
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    return texture;
+}
+
 void graphics_flush() {
     if (vertex_ptr == 0) return;
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -90,11 +102,7 @@ void graphics_update_shader_params() {
 void graphics_init_framebuffer() {
     glGenFramebuffers(1, &framebuffer_id);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
-    glGenTextures(1, &rendertexture_id);
-    glBindTexture(GL_TEXTURE_2D, rendertexture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, win_width, win_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    rendertexture_id = create_texture(win_width, win_height);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rendertexture_id, 0);
     glClearColor(.5f, .5f, .5f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -103,7 +111,7 @@ void graphics_init_framebuffer() {
 void graphics_draw_framebuffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, rendertexture_id);
-    glUseProgram(current_shader);
+    glUseProgram(current_shader->shader_id);
     graphics_update_shader_params();
     float x1 = ((scissor_x + 0)         / (float)win_width)  * 2 - 1;
     float y1 = ((scissor_y + 0)         / (float)win_height) * 2 - 1;
@@ -122,8 +130,8 @@ void graphics_draw_framebuffer() {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
-    glUseProgram(dummy_shader);
-    struct Texture* tex = current_texture;
+    glUseProgram(dummy_shader->shader_id);
+    struct GfxResource* tex = current_texture;
     current_texture = NULL;
     graphics_select_texture(tex);
 }
@@ -134,21 +142,14 @@ void graphics_deinit_framebuffer() {
     glDeleteTextures(1, &rendertexture_id);
 }
 
-struct Texture* graphics_load_texture(unsigned char* buf, size_t len) {
-    struct Texture* texture = malloc(sizeof(struct Texture));
-    unsigned char* image = stbi_load_from_memory(buf, len, &texture->width, &texture->height, NULL, STBI_rgb_alpha);
-    GLuint handle;
-    glGenTextures(1, &handle);
-    glBindTexture(GL_TEXTURE_2D, handle);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-    glBindTexture(GL_TEXTURE_2D, 0);
+struct GfxResource* graphics_load_texture(unsigned char* buf, size_t len) {
+    struct GfxResource* res = malloc(sizeof(struct GfxResource));
+    unsigned char* image = stbi_load_from_memory(buf, len, &res->texture.width, &res->texture.height, NULL, STBI_rgb_alpha);
+    GLuint handle = create_texture(res->texture.width, res->texture.height);
     stbi_image_free(image);
-    texture->texture_handle = (void*)(uintptr_t)handle;
-    return texture;
+    res->type = GfxResType_Texture;
+    res->texture.texture_handle = (void*)(uintptr_t)handle;
+    return res;
 }
 
 void graphics_init(const char* window_name, int width, int height) {
@@ -237,11 +238,11 @@ void graphics_get_size(int* width, int* height) {
     SDL_GetWindowSize(window, width, height);
 }
 
-void graphics_select_texture(struct Texture* texture) {
+void graphics_select_texture(struct GfxResource* texture) {
     if (current_texture == texture) return;
     current_texture = texture;
     graphics_flush();
-    if (texture) glBindTexture(GL_TEXTURE_2D, (uintptr_t)texture->texture_handle);
+    if (texture) glBindTexture(GL_TEXTURE_2D, (uintptr_t)texture->texture.texture_handle);
     else glBindTexture(GL_TEXTURE_2D, empty_texture);
 }
 
@@ -279,7 +280,10 @@ void graphics_deinit() {
 #define check_compile_error(handle) check_error(handle, glGetShaderiv,  GL_COMPILE_STATUS, glGetShaderInfoLog,  "Shader failed to compile")
 #define check_link_error(   handle) check_error(handle, glGetProgramiv, GL_LINK_STATUS,    glGetProgramInfoLog, "Shader failed to link")
 
-int graphics_load_shader(const char* shader) {
+struct GfxResource* graphics_load_shader(const char* shader) {
+    struct GfxResource* res = malloc(sizeof(struct GfxResource));
+    res->type = GfxResType_Shader;
+
     int vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, &dummy_shader_vertex, NULL);
     glCompileShader(vertex);
@@ -299,21 +303,26 @@ int graphics_load_shader(const char* shader) {
     glDeleteShader(vertex);
     glDeleteShader(fragment);
 
-    return program;
+    res->shader_id = program;
+    return res;
 }
 
-void graphics_select_shader(int shader) {
-    current_shader = shader == 0 ? dummy_shader : shader;
+void graphics_select_shader(struct GfxResource* shader) {
+    current_shader = shader == NULL ? dummy_shader : shader;
     graphics_flush();
     graphics_draw_framebuffer();
 }
 
 void graphics_shader_set_int(const char* name, int value) {
-    glUniform1i(glGetUniformLocation(current_shader, name), value);
+    glUniform1i(glGetUniformLocation(current_shader->shader_id, name), value);
 }
 
 void graphics_shader_set_float(const char* name, float value) {
-    glUniform1f(glGetUniformLocation(current_shader, name), value);
+    glUniform1f(glGetUniformLocation(current_shader->shader_id, name), value);
+}
+
+struct GfxResource* graphics_dummy_shader() {
+    return dummy_shader;
 }
 
 #endif

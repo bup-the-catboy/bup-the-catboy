@@ -7,7 +7,7 @@ entity_texture(mouse) {
     entity_animate(srcX, srcY, srcW, srcH, 16, 16, 10, 2, true, global_timer);
     *w = 16 * (do_flip ? -1 : 1);
     *h = 16;
-    return GET_ASSET(struct Texture, "images/entities/mouse.png");
+    return GET_ASSET(struct GfxResource, "images/entities/mouse.png");
 }
 
 entity_texture(squashed_mouse) {
@@ -18,7 +18,7 @@ entity_texture(squashed_mouse) {
     *w = 16;
     *h = 16;
     entity_apply_squish(entity, w, h);
-    return GET_ASSET(struct Texture, "images/entities/mouse.png");
+    return GET_ASSET(struct GfxResource, "images/entities/mouse.png");
 }
 
 entity_update(squashed_mouse) {

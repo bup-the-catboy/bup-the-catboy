@@ -11,15 +11,15 @@
 
 SDL_Window* window;
 SDL_GLContext* gl_context;
-struct Texture* current_texture;
+struct GfxResource* current_texture;
 float res_width, res_height;
 float win_width, win_height;
 float view_width, view_height;
 int scissor_x, scissor_y, scissor_w, scissor_h;
 
-struct Texture* graphics_load_texture(unsigned char* buf, size_t len) {
-    struct Texture* texture = malloc(sizeof(struct Texture));
-    unsigned char* image = stbi_load_from_memory(buf, len, &texture->width, &texture->height, NULL, STBI_rgb_alpha);
+struct GfxResource* graphics_load_texture(unsigned char* buf, size_t len) {
+    struct GfxResource* res = malloc(sizeof(struct GfxResource));
+    unsigned char* image = stbi_load_from_memory(buf, len, &res->texture.width, &res->texture.height, NULL, STBI_rgb_alpha);
     GLuint handle;
     glGenTextures(1, &handle);
     glBindTexture(GL_TEXTURE_2D, handle);
@@ -27,11 +27,12 @@ struct Texture* graphics_load_texture(unsigned char* buf, size_t len) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, res->texture.width, res->texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
     glBindTexture(GL_TEXTURE_2D, 0);
     stbi_image_free(image);
-    texture->texture_handle = (void*)(uintptr_t)handle;
-    return texture;
+    res->type = GfxResType_Texture;
+    res->texture.texture_handle = (void*)(uintptr_t)handle;
+    return res;
 }
 
 void graphics_init(const char* window_name, int width, int height) {
@@ -82,12 +83,12 @@ void graphics_get_size(int* width, int* height) {
     SDL_GetWindowSize(window, width, height);
 }
 
-void graphics_select_texture(struct Texture* texture) {
+void graphics_select_texture(struct GfxResource* texture) {
     if (current_texture == texture) return;
     current_texture = texture;
     if (texture) glEnable(GL_TEXTURE_2D);
     else glDisable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, texture ? (uintptr_t)texture->texture_handle : 0);
+    glBindTexture(GL_TEXTURE_2D, texture ? (uintptr_t)texture->texture.texture_handle : 0);
 }
 
 void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, uint32_t color) {
@@ -113,12 +114,19 @@ void graphics_deinit() {
     SDL_DestroyWindow(window);
 }
 
-int graphics_load_shader(const char* shader) {
-    return 0;
+struct GfxResource* graphics_load_shader(const char* shader) {
+    struct GfxResource* res = malloc(sizeof(struct GfxResource));
+    res->type == GfxResType_Shader;
+    res->shader_id = 0;
+    return res;
 }
 
 void graphics_select_shader(int shader) {}
 void graphics_shader_set_int(const char* name, int value) {}
 void graphics_shader_set_float(const char* name, float value) {}
+
+struct GfxResource* graphics_dummy_shader() {
+    return NULL;
+}
 
 #endif

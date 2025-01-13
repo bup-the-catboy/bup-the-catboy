@@ -29,8 +29,8 @@ pthread_t game_loop_thread;
 
 int windoww, windowh;
 
-void drawlist_renderer(void* texture, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
-    struct Texture* tex = texture;
+void drawlist_renderer(void* resource, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
+    struct GfxResource* res = resource;
     float texX1 = 0, texX2 = 0, texY1 = 0, texY2 = 0;
     float dstX1 = dstx;
     float dstY1 = dsty;
@@ -44,13 +44,21 @@ void drawlist_renderer(void* texture, float dstx, float dsty, float dstw, float 
         dstY1 -= dsth;
         dstY2 -= dsth;
     }
-    if (texture) {
-        texX1 = (float)(srcx       ) / tex->width;
-        texY1 = (float)(srcy       ) / tex->height;
-        texX2 = (float)(srcx + srcw) / tex->width;
-        texY2 = (float)(srcy + srch) / tex->height;
+    if (res) {
+        switch (res->type) {
+            case GfxResType_Texture:
+                texX1 = (float)(srcx       ) / res->texture.width;
+                texY1 = (float)(srcy       ) / res->texture.height;
+                texX2 = (float)(srcx + srcw) / res->texture.width;
+                texY2 = (float)(srcy + srch) / res->texture.height;
+                graphics_select_texture(res);
+                break;
+            case GfxResType_Shader:
+                graphics_select_shader(res);
+                break;
+        }
     }
-    graphics_select_texture(texture);
+    else graphics_select_texture(NULL);
     graphics_draw(dstX1, dstY1, dstX2, dstY2, texX1, texY1, texX2, texY2, color);
 }
 
@@ -64,7 +72,7 @@ void init_game() {
     menu_init();
     savefile_load();
     savefile_select(0);
-    load_level(GET_ASSET(struct Binary, "levels/turtle.lvl"));
+    load_level(GET_ASSET(struct Binary, "levels/1-1.lvl"));
     load_menu(title_screen);
 }
 

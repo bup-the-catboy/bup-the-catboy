@@ -12,17 +12,17 @@
 
 SDL_Window* window;
 SDL_Renderer* renderer;
-struct Texture* current_texture;
+struct GfxResource* current_texture;
 float res_width, res_height;
 float win_width, win_height;
 float view_width, view_height;
 int scissor_x, scissor_y, scissor_w, scissor_h;
 float target_fps;
 
-struct Texture* graphics_load_texture(unsigned char* buf, size_t len) {
-    struct Texture* texture = malloc(sizeof(struct Texture));
-    unsigned char* image = stbi_load_from_memory(buf, len, &texture->width, &texture->height, NULL, STBI_rgb_alpha);
-    SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(image, texture->width, texture->height, 32, 4 * texture->width,
+struct GfxResource* graphics_load_texture(unsigned char* buf, size_t len) {
+    struct GfxResource* res = malloc(sizeof(struct GfxResource));
+    unsigned char* image = stbi_load_from_memory(buf, len, &res->texture.width, &res->texture.height, NULL, STBI_rgb_alpha);
+    SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(image, res->texture.width, res->texture.height, 32, 4 * res->texture.width,
 #ifdef IS_BIG_ENDIAN
         0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF
 #else
@@ -32,8 +32,9 @@ struct Texture* graphics_load_texture(unsigned char* buf, size_t len) {
     SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
     stbi_image_free(image);
-    texture->texture_handle = tex;
-    return texture;
+    res->type = GfxResType_Texture;
+    res->texture.texture_handle = tex;
+    return res;
 }
 
 void graphics_init(const char* window_name, int width, int height) {
@@ -87,7 +88,7 @@ void graphics_get_size(int* width, int* height) {
     SDL_GetWindowSize(window, width, height);
 }
 
-void graphics_select_texture(struct Texture* texture) {
+void graphics_select_texture(struct GfxResource* texture) {
     current_texture = texture;
 }
 
@@ -117,7 +118,7 @@ void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, f
             dst.y -= dst.h;
             flip |= SDL_FLIP_VERTICAL;
         }
-        SDL_Texture* tex = current_texture->texture_handle;
+        SDL_Texture* tex = current_texture->texture.texture_handle;
         SDL_QueryTexture(tex, NULL, NULL, &w, &h);
         SDL_Rect src = (SDL_Rect){
             .x = round(u1 * w),
@@ -134,12 +135,19 @@ void graphics_deinit() {
     SDL_DestroyWindow(window);
 }
 
-int graphics_load_shader(const char* shader) {
-    return 0;
+struct GfxResource* graphics_load_shader(const char* shader) {
+    struct GfxResource* res = malloc(sizeof(struct GfxResource));
+    res->type = GfxResType_Shader;
+    res->shader_id = 0;
+    return res;
 }
 
-void graphics_select_shader(int shader) {}
+void graphics_select_shader(struct GfxResource* shader) {}
 void graphics_shader_set_int(const char* name, int value) {}
 void graphics_shader_set_float(const char* name, float value) {}
+
+struct GfxResource* graphics_dummy_shader() {
+    return NULL;
+}
 
 #endif

@@ -87,3 +87,10 @@ ENTITY(dust,
     SIZE(0.5f, 0.5f)
     LVLEDIT_HIDE()
 )
+
+ENTITY(shader_controller,
+    TEXTURE(shader_controller_texture)
+    DEFAULT_PROPERTY("shader", Ptr, (void*)"")
+    LVLEDIT_TEXTURE("images/lvledit/shader.png")
+    LVLEDIT_CROP(0, 0, 16, 16)
+)

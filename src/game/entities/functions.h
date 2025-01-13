@@ -38,3 +38,4 @@ entity_texture(turtle);
 entity_texture(turtle_shell);
 entity_texture(turtle_shell_fragment);
 entity_texture(dust);
+entity_texture(shader_controller);
