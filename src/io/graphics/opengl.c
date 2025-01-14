@@ -121,6 +121,13 @@ void graphics_draw_framebuffer() {
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_id);
+    glBlitFramebuffer(
+        scissor_x, scissor_y, scissor_x + scissor_w, scissor_y + scissor_h,
+        0, 0, win_width, win_height,
+        GL_COLOR_BUFFER_BIT, GL_NEAREST
+    );
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
     glUseProgram(dummy_shader->shader_id);
     struct GfxResource* tex = current_texture;
@@ -217,7 +224,7 @@ void graphics_start_frame() {
     scissor_h = view_height;
     view_width  /= win_width;
     view_height /= win_height;
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, win_width, win_height);
     current_shader = dummy_shader;
     glClearColor(0.f, 0.f, 0.f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);

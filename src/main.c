@@ -110,6 +110,7 @@ int main(int argc, char** argv) {
         graphics_get_size(&windoww, &windowh);
         graphics_start_frame();
         render_level(drawlist, WIDTH, HEIGHT, min((ticks() - game_start_ticks) / STEP_TIME, 1));
+        LE_DrawListAppend(drawlist, graphics_dummy_shader(), 0, 0, 0, 0, 0, 0, 0, 0);
         LE_Render(drawlist, drawlist_renderer);
         LE_ClearDrawList(drawlist);
         graphics_end_frame();
