@@ -121,15 +121,10 @@ void graphics_draw_framebuffer() {
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_id);
-    glBlitFramebuffer(
-        scissor_x, scissor_y, scissor_x + scissor_w, scissor_y + scissor_h,
-        0, 0, win_width, win_height,
-        GL_COLOR_BUFFER_BIT, GL_NEAREST
-    );
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
     glUseProgram(dummy_shader->shader_id);
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
     struct GfxResource* tex = current_texture;
     current_texture = NULL;
     graphics_select_texture(tex);
