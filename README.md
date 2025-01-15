@@ -57,7 +57,7 @@ tools         - Programs used during compilation
 2. Launch the **MINGW64** shell
 3. Install dependencies
 ```sh
-pacman -S git make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-glew
+pacman -S git make mingw-w64-x86_64-clang mingw-w64-x86_64-SDL2 mingw-w64-x86_64-glew
 ```
 4. Follow the [General compile steps](#general-compile-steps)
 
@@ -67,11 +67,11 @@ pacman -S git make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-g
 
 **Debian**
 ```sh
-sudo apt install git make gcc libsdl2-dev libglew-dev pkgconf
+sudo apt install git make clang libsdl2-dev libglew-dev pkgconf
 ```
 **Arch**
 ```sh
-sudo pacman -S git make gcc sdl2 glew pkgconf
+sudo pacman -S git make clang sdl2 glew pkgconf
 ```
 2. Follow the [General compile steps](#general-compile-steps)
 
@@ -80,7 +80,7 @@ sudo pacman -S git make gcc sdl2 glew pkgconf
 1. Install [Homebrew](https://brew.sh/)
 2. Install dependencies
 ```sh
-brew install gcc make sdl2 glew pkgconf
+brew install clang make sdl2 glew pkgconf
 ```
 3. Follow the [General compile steps](#general-compile-steps)
 
@@ -93,7 +93,7 @@ curl https://raw.githubusercontent.com/bup-the-catboy/bup-the-catboy/main/quasi-
 2. After that, run `~/quasi-msys2/env/shell.sh`
 3. Install dependencies
 ```sh
-pacmake install _gcc _SDL2 _glew _pkgconf
+pacmake install _clang _SDL2 _glew _pkgconf
 ```
 4. Follow the [General compile steps](#general-compile-steps)
 
