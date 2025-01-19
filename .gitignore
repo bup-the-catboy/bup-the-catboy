@@ -2,6 +2,6 @@ build
 *.a
 asset_data.h
 assets/*
-!assets/.gitkeep
+!assets/shaders
 btcb.sav
 lvledit
