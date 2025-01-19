@@ -12,21 +12,46 @@
 #include "input.h"
 #include "overlay/manager.h"
 #include "overlay/transition.h"
-#include "main.h"
+#include "game/entities/functions.h"
 
 struct AudioInstance* music_instance;
 struct Level* current_level = NULL;
+struct Warp* current_warp;
 uint8_t curr_level_id = 0;
 uint32_t unique_entity_id = 2;
 Camera* camera;
+int curr_audio_track = -1;
+int curr_theme = -1;
+
+int find_tileset_id(LE_Tileset* tileset) {
+    for (int i = 0; i < TILESET_TYPE_COUNT; i++) {
+        if (get_theme(curr_theme)[i] == tileset) return i;
+    }
+    return -1;
+}
 
 void change_level_music(int track) {
+    if (curr_audio_track == track) return;
+    curr_audio_track = track;
     struct Audio* nsf = GET_ASSET(struct Audio, "audio/music.nsf");
-    if (music_instance) {
-        audio_stop(music_instance);
-    }
+    if (music_instance) audio_stop(music_instance);
     audio_nsf_select_track(nsf, track);
     music_instance = audio_play(nsf);
+}
+
+void change_level_theme(int theme) {
+    if (curr_theme == theme) return;
+    LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
+    while (iter) {
+        LE_Layer* layer = LE_LayerListGet(iter);
+        if (LE_LayerGetType(layer) == LE_LayerType_Tilemap) {
+            LE_Tilemap* tilemap = LE_LayerGetDataPointer(layer);
+            LE_Tileset* tileset = LE_TilemapGetTileset(tilemap);
+            LE_TilemapSetTileset(tilemap, get_theme(theme)[find_tileset_id(tileset)]);
+        }
+        iter = LE_LayerListNext(iter);
+    }
+    curr_theme = theme;
 }
 
 void destroy_level(struct Level* level) {
@@ -71,7 +96,6 @@ struct Level* parse_level(unsigned char* data, int datalen) {
     BINARY_STREAM_READ(stream, level->default_music);
     BINARY_STREAM_READ(stream, level->default_cambound);
     stream = binary_stream_close(stream);
-    level->default_music = 3;
 
     stream = binary_stream_goto(stream);
     BINARY_STREAM_READ(stream, level->num_cambounds);
@@ -160,13 +184,23 @@ struct Level* parse_level(unsigned char* data, int datalen) {
                 unsigned int num_properties;
                 BINARY_STREAM_READ(stream, num_properties);
                 for (unsigned int i = 0; i < num_properties; i++) {
+                    stream = binary_stream_goto(stream);
                     char name[256];
+                    uint8_t type;
                     binary_stream_read_string(stream, name, 256);
-                    unsigned int value;
-                    BINARY_STREAM_READ(stream, value);
+                    BINARY_STREAM_READ(stream, type);
                     LE_EntityProperty property;
-                    property.asInt = value;
+                    switch (type) {
+                        case EntityPropertyType_Int:   BINARY_STREAM_READ(stream, property.asInt);   break;
+                        case EntityPropertyType_Bool:  BINARY_STREAM_READ(stream, property.asBool);  break;
+                        case EntityPropertyType_Float: BINARY_STREAM_READ(stream, property.asFloat); break;
+                        case EntityPropertyType_String:
+                            property.asPtr = (void*)(stream->data + stream->ptr);
+                            stream->ptr += strlen(property.asPtr) + 1;
+                            break;
+                    }
                     LE_EntitySetProperty(entity, property, name);
+                    stream = binary_stream_close(stream);
                 }
                 stream = binary_stream_close(stream);
             }
@@ -203,6 +237,33 @@ struct Level* parse_level(unsigned char* data, int datalen) {
     return level;
 }
 
+void do_warp() {
+    if (curr_level_id != current_warp->next_level) {
+        curr_level_id  = current_warp->next_level;
+        char level_name[32];
+        snprintf(level_name, 31, "levels/level%d.lvl", curr_level_id);
+        load_level(GET_ASSET(struct Binary, level_name));
+    }
+    change_level_music(current_warp->next_music);
+    change_level_theme(current_warp->next_theme);
+    camera_set_bounds(camera, current_level->cambounds[current_warp->next_cambound]);
+    LE_Entity* player = find_entity_with_tag("player");
+    player->posX = current_warp->next_pos_x;
+    player->posY = current_warp->next_pos_y;
+    LE_EntityChangeLists(player, LE_LayerGetDataPointer(LE_LayerGetByIndex(current_level->layers, current_warp->next_layer + 1)));
+}
+
+void activate_warp_no_transition(struct Warp* warp) {
+    current_warp = warp;
+    do_warp();
+}
+
+void activate_warp(struct Warp* warp, enum LE_Direction direction) {
+    if (is_transition_active()) return;
+    current_warp = warp;
+    start_transition(do_warp, 60, direction, quad_in_out);
+}
+
 void load_level(struct Binary* binary) {
     load_level_impl(binary->ptr, binary->length);
 }
@@ -211,6 +272,7 @@ void load_level_impl(unsigned char* data, int datalen) {
     if (current_level) destroy_level(current_level);
     unique_entity_id = 0;
     current_level = parse_level(data, datalen);
+    curr_theme = current_level->default_theme;
     change_level_music(current_level->default_music);
 }
 
@@ -234,6 +296,7 @@ void update_level(float delta_time) {
     camera_update(camera);
     camera_get(camera, &x, &y);
     LE_ScrollCamera(current_level->layers, x, y);
+    if (is_button_pressed(BUTTON_MOUSE_LEFT)) activate_warp(&current_level->warps[0], LE_Direction_Down);
 }
 
 void render_level(LE_DrawList* drawlist, int width, int height, float interpolation) {

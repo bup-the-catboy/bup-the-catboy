@@ -5,6 +5,7 @@
 ENTITY(player_spawner,
     UPDATE(player_spawner_update)
     SIZE(0.75f, 0.75f)
+    DEFAULT_PROPERTY("tag", Ptr, (void*)"player")
     LVLEDIT_TEXTURE("images/entities/player.png")
     LVLEDIT_CROP(0, 0, 16, 16)
 )

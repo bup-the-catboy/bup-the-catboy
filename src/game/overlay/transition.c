@@ -16,6 +16,10 @@ struct {
     float x, y;
 } curr_transition;
 
+bool is_transition_active() {
+    return curr_transition.active;
+}
+
 void start_transition(void(*action)(), int length, enum LE_Direction direction, Easing easing) {
     if (curr_transition.active) return;
     curr_transition.frame = 0;

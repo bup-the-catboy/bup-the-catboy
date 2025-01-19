@@ -7,6 +7,13 @@
 #include "game/camera.h"
 #include "main.h"
 
+enum EntityPropertyType {
+    EntityPropertyType_Int,
+    EntityPropertyType_Bool,
+    EntityPropertyType_Float,
+    EntityPropertyType_String,
+};
+
 struct Warp {
     int next_theme;
     int next_music;
@@ -14,7 +21,7 @@ struct Warp {
     int next_level;
     int next_layer;
     float next_pos_x;
-    float next_pos_y;  
+    float next_pos_y;
 };
 
 struct Level {
@@ -35,6 +42,9 @@ extern Camera* camera;
 void load_level(struct Binary* data);
 void load_level_impl(unsigned char* data, int datalen);
 void change_level_music(int track);
+void change_level_theme(int theme);
+void activate_warp_no_transition(struct Warp* warp);
+void activate_warp(struct Warp* warp, enum LE_Direction direction);
 void reload_level();
 void update_level(float delta_time);
 void render_level(LE_DrawList* drawlist, int width, int height, float interpolation);
