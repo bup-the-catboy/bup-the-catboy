@@ -92,7 +92,15 @@ ENTITY(dust,
 
 ENTITY(shader_controller,
     TEXTURE(shader_controller_texture)
+    SIZE(0.75f, 0.75f)
     DEFAULT_PROPERTY("shader", Ptr, (void*)"")
     LVLEDIT_TEXTURE("images/lvledit/shader.png")
+    LVLEDIT_CROP(0, 0, 16, 16)
+)
+
+ENTITY(death_barrier,
+    UPDATE(death_barrier_update)
+    SIZE(0.75f, 0.75f)
+    LVLEDIT_TEXTURE("images/lvledit/deathbarrier.png")
     LVLEDIT_CROP(0, 0, 16, 16)
 )

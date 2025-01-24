@@ -32,6 +32,7 @@ entity_update(gravity);
 entity_update(animable);
 entity_update(despawn);
 entity_update(friction);
+entity_update(death_barrier);
 entity_collision(squash);
 entity_texture(player);
 entity_texture(dead_player);
