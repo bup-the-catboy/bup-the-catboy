@@ -110,6 +110,18 @@ void entity_spawn_dust(LE_Entity* entity, bool left, bool right, float speed) {
     if (right) LE_CreateEntity(list, builder, entity->posX, entity->posY)->velX =  speed;
 }
 
+bool entity_should_squish(LE_Entity* entity, LE_Entity* collider) {
+    LE_EntityProperty stomp_timer = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "stomp_timer");
+    bool squish = false;
+    if (stomp_timer.asInt != 0) stomp_timer.asInt--;
+    else if (collider->velY > 0.05) {
+        stomp_timer.asInt = 5;
+        squish = true;
+    }
+    LE_EntitySetProperty(entity, stomp_timer, "stomp_timer");
+    return squish || stomp_timer.asInt != 0;
+}
+
 LE_Entity* find_entity_with_tag(const char* tag) {
     LE_LayerList* layers = current_level->layers;
     LE_LayerListIter* i = LE_LayerListGetIter(layers);

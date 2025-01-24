@@ -12,6 +12,7 @@ int  entity_advance_anim_frame(LE_Entity* entity);
 int  entity_get_anim_frame(LE_Entity* entity);
 bool entity_collided(LE_Entity* entity, enum LE_Direction* dir);
 void entity_spawn_dust(LE_Entity* entity, bool left, bool right, float speed);
+bool entity_should_squish(LE_Entity* entity, LE_Entity* collider);
 
 LE_Entity* find_entity_with_tag(const char* tag);
 LE_Entity* find_nearest_entity_with_tag(LE_Entity* self, const char* tag);

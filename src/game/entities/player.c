@@ -65,7 +65,7 @@ entity_update(player_spawner) {
 }
 
 entity_update(player) {
-    if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt) {
+    if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt == 2) {
         if (entity->velY >= 1) start_transition(reload_level, 60, LE_Direction_Up, cubic_in_out);
         return;
     }
@@ -105,8 +105,8 @@ entity_update(player) {
     if (prev_in_air.asBool && (entity->flags & LE_EntityFlags_OnGround) && entity->posY - peak_height.asFloat > 5) {
         entity_spawn_dust(entity, true, true, 0.2f);
     }
-    if (is_button_pressed(BUTTON_MOUSE_LEFT)) {
-        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = 1 }, "dead");
+    if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt == 1) {
+        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = 2 }, "dead");
         LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = entity->posX }, "xpos");
         LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = entity->posY }, "ypos");
         entity->velX =  0.0f;
