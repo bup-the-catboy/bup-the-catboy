@@ -81,7 +81,7 @@ void graphics_flush() {
 }
 
 void graphics_update_shader_params() {
-    graphics_shader_set_int("u_timer",  global_timer);
+    graphics_shader_set_int("u_timer",  global_timer + render_interpolation);
     graphics_shader_set_int("u_width",  res_width);
     graphics_shader_set_int("u_height", res_height);
     graphics_shader_set_float("rng", random_float());
@@ -309,10 +309,13 @@ struct GfxResource* graphics_load_shader(const char* shader) {
     return res;
 }
 
-void graphics_select_shader(struct GfxResource* shader) {
-    current_shader = shader == NULL ? dummy_shader : shader;
+void graphics_apply_shader() {
     graphics_flush();
     graphics_draw_framebuffer();
+}
+
+void graphics_select_shader(struct GfxResource* shader) {
+    current_shader = shader == NULL ? dummy_shader : shader;
 }
 
 void graphics_shader_set_int(const char* name, int value) {

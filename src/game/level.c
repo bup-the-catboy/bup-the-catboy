@@ -77,6 +77,7 @@ void destroy_level(struct Level* level) {
         iter = LE_LayerListNext(iter);
     }
     LE_DestroyLayerList(level->layers);
+    free(level->raw);
     free(level);
 }
 
@@ -84,12 +85,15 @@ uint32_t get_unique_entity_id() {
     return unique_entity_id++;
 }
 
+static int a = 0;
 struct Level* parse_level(unsigned char* data, int datalen) {
+    a++;
     struct Level* level = malloc(sizeof(struct Level));
     struct BinaryStream* stream = binary_stream_create(data);
 
-    level->raw = data;
+    level->raw = malloc(datalen);
     level->raw_length = datalen;
+    memcpy(level->raw, data, datalen);
 
     stream = binary_stream_goto(stream);
     BINARY_STREAM_READ(stream, level->default_theme);
@@ -233,7 +237,6 @@ struct Level* parse_level(unsigned char* data, int datalen) {
         }
         iter = LE_LayerListNext(iter);
     }
-
     return level;
 }
 
@@ -296,7 +299,6 @@ void update_level(float delta_time) {
     camera_update(camera);
     camera_get(camera, &x, &y);
     LE_ScrollCamera(current_level->layers, x, y);
-    if (is_button_pressed(BUTTON_MOUSE_LEFT)) activate_warp(&current_level->warps[0], LE_Direction_Down);
 }
 
 void render_level(LE_DrawList* drawlist, int width, int height, float interpolation) {

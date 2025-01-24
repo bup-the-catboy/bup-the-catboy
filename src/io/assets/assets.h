@@ -20,13 +20,13 @@ struct Texture {
 };
 
 struct GfxResource {
+    enum GfxResType type;
     union {
         struct Texture texture;
         int shader_id;
     };
-    enum GfxResType type;
 };
-
+;
 void load_assets();
 void* get_asset(const char* name);
 const char* get_asset_name(void* asset);

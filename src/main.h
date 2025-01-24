@@ -11,5 +11,7 @@
 
 extern uint64_t global_timer;
 extern float delta_time;
+extern LE_DrawList* drawlist;
+extern float render_interpolation;
 
 #endif

@@ -19,6 +19,7 @@ void audio_backend_queue(short* samples, int num_samples) {
         SDL_Delay(1);
     }
     SDL_QueueAudio(1, samples, sizeof(short) * num_samples);
+    SDL_Delay(1);
 }
 
 void audio_backend_close() {

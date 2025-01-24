@@ -26,43 +26,13 @@ uint64_t game_start_ticks = 0;
 float delta_time = 0;
 bool running = true;
 pthread_t game_loop_thread;
+LE_DrawList* drawlist;
+float render_interpolation = 0;
 
 int windoww, windowh;
 
-void drawlist_renderer(void* resource, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
-    struct GfxResource* res = resource;
-    float texX1 = 0, texX2 = 0, texY1 = 0, texY2 = 0;
-    float dstX1 = dstx;
-    float dstY1 = dsty;
-    float dstX2 = dstx + dstw;
-    float dstY2 = dsty + dsth;
-    if (dstX2 < dstX1) {
-        dstX1 -= dstw;
-        dstX2 -= dstw;
-    }
-    if (dstY2 < dstY1) {
-        dstY1 -= dsth;
-        dstY2 -= dsth;
-    }
-    if (res) {
-        switch (res->type) {
-            case GfxResType_Texture:
-                texX1 = (float)(srcx       ) / res->texture.width;
-                texY1 = (float)(srcy       ) / res->texture.height;
-                texX2 = (float)(srcx + srcw) / res->texture.width;
-                texY2 = (float)(srcy + srch) / res->texture.height;
-                graphics_select_texture(res);
-                break;
-            case GfxResType_Shader:
-                graphics_select_shader(res);
-                break;
-        }
-    }
-    else graphics_select_texture(NULL);
-    graphics_draw(dstX1, dstY1, dstX2, dstY2, texX1, texY1, texX2, texY2, color);
-}
-
 void init_game() {
+    random_init();
     graphics_init("Bup the Catboy", WIDTH * 2, HEIGHT * 2);
     graphics_set_resolution(WIDTH, HEIGHT);
     controller_init();
@@ -101,17 +71,17 @@ int main(int argc, char** argv) {
             return 0;
         }
     }
-    random_init();
-    LE_DrawList* drawlist = LE_CreateDrawList();
+    drawlist = LE_CreateDrawList();
     init_game();
     pthread_create(&game_loop_thread, NULL, game_loop, NULL);
     while (true) {
         if (requested_quit()) break;
         graphics_get_size(&windoww, &windowh);
         graphics_start_frame();
-        render_level(drawlist, WIDTH, HEIGHT, min((ticks() - game_start_ticks) / STEP_TIME, 1));
+        render_interpolation = min((ticks() - game_start_ticks) / STEP_TIME, 1);
+        render_level(drawlist, WIDTH, HEIGHT, render_interpolation);
         LE_DrawListAppend(drawlist, graphics_dummy_shader(), 0, 0, 0, 0, 0, 0, 0, 0);
-        LE_Render(drawlist, drawlist_renderer);
+        LE_Render(drawlist, gfxcmd_process);
         LE_ClearDrawList(drawlist);
         graphics_end_frame();
     }

@@ -3,6 +3,7 @@
 #include <lunarengine.h>
 #include <math.h>
 
+#include "game/overlay/transition.h"
 #include "io/assets/assets.h"
 #include "game/data.h"
 #include "game/input.h"
@@ -12,7 +13,24 @@
 
 #define arrsize(x) (sizeof(x) / sizeof(*(x)))
 
+entity_texture(dead_player) {
+    return GET_ASSET(struct GfxResource, "images/entities/player.png");
+}
+
 entity_texture(player) {
+    if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt) {
+        bool flip = entity->velY > 0;
+        int sprite =
+            fabsf(entity->velY) < 0.05 ? 8 :
+            fabsf(entity->velY) < 0.15 ? 7 : 6;
+        *srcX = sprite * 16;
+        *srcY = 0;
+        *srcW = 16;
+        *srcH = 16;
+        *w = 16;
+        *h = 16 * (flip ? -1 : 1);
+        return GET_ASSET(struct GfxResource, "images/entities/player.png");
+    }
     int sprite = 0;
     LE_EntityProperty facing_left = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "facing_left");
     if (fabs(entity->velX) > 0) {
@@ -47,6 +65,10 @@ entity_update(player_spawner) {
 }
 
 entity_update(player) {
+    if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt) {
+        if (entity->velY >= 1) start_transition(reload_level, 60, LE_Direction_Up, cubic_in_out);
+        return;
+    }
     bool l = is_button_down(BUTTON_MOVE_LEFT);
     bool r = is_button_down(BUTTON_MOVE_RIGHT);
     if (entity->flags & LE_EntityFlags_OnGround) {
@@ -82,6 +104,15 @@ entity_update(player) {
     LE_EntityProperty prev_in_air = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool  = false        }, "prev_in_air");
     if (prev_in_air.asBool && (entity->flags & LE_EntityFlags_OnGround) && entity->posY - peak_height.asFloat > 5) {
         entity_spawn_dust(entity, true, true, 0.2f);
+    }
+    if (is_button_pressed(BUTTON_MOUSE_LEFT)) {
+        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = 1 }, "dead");
+        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = entity->posX }, "xpos");
+        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = entity->posY }, "ypos");
+        entity->velX =  0.0f;
+        entity->velY = -0.7f;
+        entity->flags |= LE_EntityFlags_DisableCollision;
+        return;
     }
     hud_update(entity);
     camera_set_focus(camera, entity->posX, 8);
