@@ -155,9 +155,12 @@ struct GfxResource* graphics_load_texture(unsigned char* buf, size_t len) {
 }
 
 void graphics_init(const char* window_name, int width, int height) {
-    SDL_SetHint("SDL_VIDEODRIVER", "wayland");
+    if (getenv("WAYLAND_DISPLAY")) SDL_SetHint("SDL_VIDEODRIVER", "wayland"); // run in native wayland when on wayland
     SDL_Init(SDL_INIT_VIDEO);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     window = SDL_CreateWindow(window_name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
     gl_context = SDL_GL_CreateContext(window);
     glewInit();
