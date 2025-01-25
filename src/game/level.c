@@ -85,9 +85,7 @@ uint32_t get_unique_entity_id() {
     return unique_entity_id++;
 }
 
-static int a = 0;
 struct Level* parse_level(unsigned char* data, int datalen) {
-    a++;
     struct Level* level = malloc(sizeof(struct Level));
     struct BinaryStream* stream = binary_stream_create(data);
 

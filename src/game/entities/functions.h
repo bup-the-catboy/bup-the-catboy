@@ -15,7 +15,7 @@ void entity_spawn_dust(LE_Entity* entity, bool left, bool right, float speed);
 bool entity_should_squish(LE_Entity* entity, LE_Entity* collider);
 
 LE_Entity* find_entity_with_tag(const char* tag);
-LE_Entity* find_nearest_entity_with_tag(LE_Entity* self, const char* tag);
+LE_Entity* find_nearest_entity_with_tag(LE_Entity* self, const char* tag, float* distance);
 
 #define entity_update(name) void name##_update(LE_Entity* entity)
 #define entity_texture(name) void* name##_texture(LE_Entity* entity, float* w, float* h, int* srcX, int* srcY, int* srcW, int* srcH)

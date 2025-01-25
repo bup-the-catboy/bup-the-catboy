@@ -144,7 +144,7 @@ LE_Entity* find_entity_with_tag(const char* tag) {
     return NULL;
 }
 
-LE_Entity* find_nearest_entity_with_tag(LE_Entity* self, const char* tag) {
+LE_Entity* find_nearest_entity_with_tag(LE_Entity* self, const char* tag, float* distance) {
     LE_EntityList* list = LE_EntityGetList(self);
     LE_Entity* nearest = NULL;
     float nearest_dist = FLT_MAX;
@@ -165,5 +165,6 @@ LE_Entity* find_nearest_entity_with_tag(LE_Entity* self, const char* tag) {
         }
         iter = LE_EntityListNext(iter);
     }
+    if (distance) *distance = nearest_dist;
     return nearest;
 }
