@@ -38,6 +38,7 @@ entity_update(turtle_shell) {
         LE_Entity* player = find_nearest_entity_with_tag(entity, "player", NULL);
         if (player->posX < entity->posX) entity->velX =  walk_speed.asFloat;
         else                             entity->velX = -walk_speed.asFloat;
+        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asPtr = "turtle_shell" }, "tag");
     }
     if (entity_collided(entity, &dir)) {
         if (dir == LE_Direction_Left || dir == LE_Direction_Right) {

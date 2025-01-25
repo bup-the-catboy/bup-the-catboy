@@ -48,6 +48,10 @@ entity_update(friction) {
 
 entity_collision(squash) {
     const char* tag = LE_EntityGetPropertyOrDefault(collider, (LE_EntityProperty){ .asPtr = (void*)"" }, "tag").asPtr;
+    if (strcmp(tag, "turtle_shell") == 0) {
+        LE_DeleteEntity(entity);
+        return;
+    }
     if (strcmp(tag, "player") != 0) return;
     if (!entity_should_squish(entity, collider)) {
         LE_EntitySetProperty(collider, (LE_EntityProperty){ .asInt = 1 }, "dead");
