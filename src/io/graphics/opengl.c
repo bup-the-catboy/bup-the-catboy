@@ -6,6 +6,10 @@
 
 #include <SDL2/SDL.h>
 
+#ifdef WINDOWS
+#define GLEW_STATIC
+#endif
+
 #include <GL/glew.h>
 #include <GL/gl.h>
 
