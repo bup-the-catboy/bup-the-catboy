@@ -25,6 +25,12 @@ LIBRARIES ?= sdl2 glew
 ### APPLY COMPILER CONFIG ###
 #############################
 
+ifeq ($(MACOS_CROSS),1)
+	ifeq ($(RENDERER),OPENGL)
+		RENDERER := OPENGL_LEGACY
+	endif
+endif
+
 ifeq ($(OS),Windows_NT)
 	EXE := .exe
 	WINDOWS := 1
