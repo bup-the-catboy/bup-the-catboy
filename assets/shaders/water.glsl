@@ -7,6 +7,7 @@ uniform sampler2D u_texture;
 uniform int u_timer;
 uniform int u_width;
 uniform int u_height;
+uniform float u_rng;
 
 uniform float u_noise_strength = 0.1;
 uniform float u_wave_strength = 0.05;

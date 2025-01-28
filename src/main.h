@@ -11,7 +11,12 @@
 
 extern uint64_t global_timer;
 extern float delta_time;
-extern LE_DrawList* drawlist;
 extern float render_interpolation;
+
+void drawlist_append(void* cmd);
+void drawlist_append_rect(void* cmd,
+    float dstX, float dstY, float dstW, float dstH,
+    int   srcX, int   srcY, int   srcW, int   srcH
+);
 
 #endif

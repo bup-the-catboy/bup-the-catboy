@@ -88,7 +88,7 @@ void graphics_update_shader_params() {
     graphics_shader_set_int("u_timer",  global_timer + render_interpolation);
     graphics_shader_set_int("u_width",  res_width);
     graphics_shader_set_int("u_height", res_height);
-    graphics_shader_set_float("rng", random_float());
+    graphics_shader_set_float("u_rng", random_float());
 }
 
 void graphics_init_framebuffer() {
@@ -312,6 +312,8 @@ struct GfxResource* graphics_load_shader(const char* shader) {
     glDeleteShader(vertex);
     glDeleteShader(fragment);
 
+    printf("creating shader: %d\n", program);
+
     res->shader_id = program;
     return res;
 }
@@ -326,11 +328,19 @@ void graphics_select_shader(struct GfxResource* shader) {
 }
 
 void graphics_shader_set_int(const char* name, int value) {
+    GLint last_shader;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &last_shader);
+    glUseProgram(current_shader->shader_id);
     glUniform1i(glGetUniformLocation(current_shader->shader_id, name), value);
+    glUseProgram(last_shader);
 }
 
 void graphics_shader_set_float(const char* name, float value) {
+    GLint last_shader;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &last_shader);
+    glUseProgram(current_shader->shader_id);
     glUniform1f(glGetUniformLocation(current_shader->shader_id, name), value);
+    glUseProgram(last_shader);
 }
 
 struct GfxResource* graphics_dummy_shader() {

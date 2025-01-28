@@ -138,6 +138,7 @@ void LE_EntityCollision(LE_Entity* entity, LE_Entity* collider);
 void LE_UpdateEntities(LE_EntityList* list, float delta_time);
 void LE_UpdateEntity(LE_Entity* entity, float delta_time);
 void LE_DrawEntity(LE_Entity* entity, float x, float y, float scaleW, float scaleH, LE_DrawList* dl);
+void LE_EntityLastDrawnPos(LE_Entity* entity, float* x, float* y);
 void LE_DeleteEntity(LE_Entity* entity);
 void LE_DestroyEntity(LE_Entity* entity);
 void LE_DestroyEntityList(LE_EntityList* list);

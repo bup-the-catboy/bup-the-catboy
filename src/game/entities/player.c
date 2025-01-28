@@ -10,11 +10,26 @@
 #include "game/camera.h"
 #include "game/level.h"
 #include "game/overlay/hud.h"
+#include "io/io.h"
 
 #define arrsize(x) (sizeof(x) / sizeof(*(x)))
 
-entity_texture(dead_player) {
-    return GET_ASSET(struct GfxResource, "images/entities/player.png");
+static void draw_iris(void* param) {
+    LE_Entity* entity = param;
+    float timer = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "dead_timer").asFloat;
+    float xpos  = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "xpos").asFloat;
+    float ypos  = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "ypos").asFloat;
+    float radius = quad_out(1 - timer / 30.f) * max(WIDTH, HEIGHT);
+    float color  = quad_out(1 - timer / 20.f);
+    graphics_select_shader(GET_ASSET(struct GfxResource, "shaders/iris.glsl"));
+    graphics_shader_set_float("u_xpos", xpos);
+    graphics_shader_set_float("u_ypos", ypos);
+    graphics_shader_set_float("u_radius", radius);
+    graphics_shader_set_float("u_bgcol_r", 1);
+    graphics_shader_set_float("u_bgcol_g", color);
+    graphics_shader_set_float("u_bgcol_b", color);
+    graphics_shader_set_float("u_bgcol_a", 1);
+    graphics_apply_shader();
 }
 
 entity_texture(player) {
@@ -29,6 +44,7 @@ entity_texture(player) {
         *srcH = 16;
         *w = 16;
         *h = 16 * (flip ? -1 : 1);
+        drawlist_append(gfxcmd_custom(draw_iris, entity));
         return GET_ASSET(struct GfxResource, "images/entities/player.png");
     }
     int sprite = 0;
@@ -66,6 +82,14 @@ entity_update(player_spawner) {
 
 entity_update(player) {
     if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt == 2) {
+        LE_EntitySetProperty(entity,
+            (LE_EntityProperty){
+                .asFloat = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){
+                    .asFloat = 0
+                }, "dead_timer").asFloat + delta_time
+            },
+            "dead_timer"
+        );
         if (entity->velY >= 1) start_transition(reload_level, 60, LE_Direction_Up, cubic_in_out);
         return;
     }
@@ -106,9 +130,12 @@ entity_update(player) {
         entity_spawn_dust(entity, true, true, 0.2f);
     }
     if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt == 1) {
+        float xpos, ypos;
+        set_pause_state(PAUSE_STATE_SOFT_PAUSED | PAUSE_FLAG_NO_UPDATE_CAMERA);
+        LE_EntityLastDrawnPos(entity, &xpos, &ypos);
         LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = 2 }, "dead");
-        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = entity->posX }, "xpos");
-        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = entity->posY }, "ypos");
+        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = xpos }, "xpos");
+        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = ypos }, "ypos");
         entity->velX =  0.0f;
         entity->velY = -0.7f;
         entity->flags |= LE_EntityFlags_DisableCollision;
