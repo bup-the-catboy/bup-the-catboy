@@ -16,6 +16,19 @@ float win_width, win_height;
 float view_width, view_height;
 int scissor_x, scissor_y, scissor_w, scissor_h;
 
+static void draw_quad(float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2) {
+    glBegin(GL_QUADS);
+    glTexCoord2f(u1, v1);
+    glVertex2f(x1, y1);
+    glTexCoord2f(u2, v1);
+    glVertex2f(x2, y1);
+    glTexCoord2f(u2, v2);
+    glVertex2f(x2, y2);
+    glTexCoord2f(u1, v2);
+    glVertex2f(x1, y2);
+    glEnd();
+}
+
 struct GfxResource* graphics_load_texture(unsigned char* buf, size_t len) {
     struct GfxResource* res = malloc(sizeof(struct GfxResource));
     unsigned char* image = stbi_load_from_memory(buf, len, &res->texture.width, &res->texture.height, NULL, STBI_rgb_alpha);
@@ -36,7 +49,6 @@ struct GfxResource* graphics_load_texture(unsigned char* buf, size_t len) {
 
 void graphics_init(const char* window_name, int width, int height) {
     sdl_window_init(window_name, width, height, SDL_GFX_API_OPENGL, &window, &gl_context);
-    glEnable(GL_SCISSOR_TEST);
 }
 
 void graphics_set_resolution(float width, float height) {
@@ -62,7 +74,6 @@ void graphics_start_frame() {
     view_width  /= win_width;
     view_height /= win_height;
     glViewport(0, 0, width, height);
-    glScissor(scissor_x, scissor_y, scissor_w, scissor_h);
     glClearColor(.5f, .5f, .5f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_BLEND);
@@ -70,6 +81,13 @@ void graphics_start_frame() {
 }
 
 void graphics_end_frame() {
+    float x = scissor_x / win_width  * 2 - 1;
+    float y = scissor_y / win_height * 2 - 1;
+    glColor4ub(0, 0, 0, 255);
+    draw_quad(-1, -1,  1,  y, 0, 0, 0, 0);
+    draw_quad(-1,  1,  1, -y, 0, 0, 0, 0);
+    draw_quad(-1, -1,  x,  1, 0, 0, 0, 0);
+    draw_quad( 1, -1, -x,  1, 0, 0, 0, 0);
     glFlush();
     sdl_opengl_flush(window);
 }
@@ -92,16 +110,7 @@ void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, f
     y1 = ((y1 / res_height) * view_height + (1 - view_height) / 2) * -2 + 1;
     y2 = ((y2 / res_height) * view_height + (1 - view_height) / 2) * -2 + 1;
     glColor4ub(color >> 24, color >> 16, color >> 8, color >> 0);
-    glBegin(GL_QUADS);
-    glTexCoord2f(u1, v1);
-    glVertex2f(x1, y1);
-    glTexCoord2f(u2, v1);
-    glVertex2f(x2, y1);
-    glTexCoord2f(u2, v2);
-    glVertex2f(x2, y2);
-    glTexCoord2f(u1, v2);
-    glVertex2f(x1, y2);
-    glEnd();
+    draw_quad(x1, y1, x2, y2, u1, v1, u2, v2);
 }
 
 void graphics_deinit() {

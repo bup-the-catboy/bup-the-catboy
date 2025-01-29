@@ -181,7 +181,7 @@ void sdl_renderer_clear(void* renderer) {
 }
 
 void sdl_renderer_fill_rect(void* renderer, float x, float y, float w, float h) {
-    SDL_FRect rect = (SDL_FRect){ .x = x, .y = y, .w = h, .h = h };
+    SDL_FRect rect = (SDL_FRect){ .x = x, .y = y, .w = w, .h = h };
     SDL_RenderFillRectF(renderer, &rect);
 }
 
@@ -191,6 +191,10 @@ void sdl_renderer_draw_texture(void* renderer, void* texture, int srcX, int srcY
     if (flip_y) flip |= SDL_FLIP_VERTICAL;
     SDL_Rect  src = (SDL_Rect) { .x = srcX, .y = srcY, .w = srcW, .h = srcH };
     SDL_FRect dst = (SDL_FRect){ .x = dstX, .y = dstY, .w = dstW, .h = dstH };
+    Uint8 r, g, b, a;
+    SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+    SDL_SetTextureColorMod(texture, r, g, b);
+    SDL_SetTextureAlphaMod(texture, a);
     SDL_RenderCopyExF(renderer, texture, &src, &dst, 0, NULL, flip);
 }
 

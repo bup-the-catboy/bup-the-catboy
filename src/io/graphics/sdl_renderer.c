@@ -22,9 +22,9 @@ float target_fps;
 struct GfxResource* graphics_load_texture(unsigned char* buf, size_t len) {
     struct GfxResource* res = malloc(sizeof(struct GfxResource));
     unsigned char* image = stbi_load_from_memory(buf, len, &res->texture.width, &res->texture.height, NULL, STBI_rgb_alpha);
-    stbi_image_free(image);
     res->type = GfxResType_Texture;
     res->texture.texture_handle = sdl_texture_create(renderer, image, res->texture.width, res->texture.height);
+    stbi_image_free(image);
     return res;
 }
 
@@ -87,16 +87,14 @@ void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, f
     }
     else {
         int tex_w, tex_h;
-        bool flip_x, flip_y;
-        if (w < 0) {
+        bool flip_x = w < 0, flip_y = h < 0;
+        if (flip_x) {
             w = -w;
             x -= w;
-            flip_x = true;
         }
-        if (h < 0) {
+        if (flip_y) {
             h = -h;
             y -= h;
-            flip_y = true;
         }
         void* tex = current_texture->texture.texture_handle;
         sdl_texture_size(tex, &tex_w, &tex_h);

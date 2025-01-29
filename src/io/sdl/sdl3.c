@@ -190,7 +190,7 @@ void sdl_renderer_clear(void* renderer) {
 }
 
 void sdl_renderer_fill_rect(void* renderer, float x, float y, float w, float h) {
-    SDL_FRect rect = (SDL_FRect){ .x = x, .y = y, .w = h, .h = h };
+    SDL_FRect rect = (SDL_FRect){ .x = x, .y = y, .w = w, .h = h };
     SDL_RenderFillRect(renderer, &rect);
 }
 
@@ -200,6 +200,10 @@ void sdl_renderer_draw_texture(void* renderer, void* texture, int srcX, int srcY
     if (flip_y) flip |= SDL_FLIP_VERTICAL;
     SDL_FRect src = (SDL_FRect){ .x = srcX, .y = srcY, .w = srcW, .h = srcH };
     SDL_FRect dst = (SDL_FRect){ .x = dstX, .y = dstY, .w = dstW, .h = dstH };
+    Uint8 r, g, b, a;
+    SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+    SDL_SetTextureColorMod(texture, r, g, b);
+    SDL_SetTextureAlphaMod(texture, a);
     SDL_RenderTextureRotated(renderer, texture, &src, &dst, 0, NULL, flip);
 }
 
@@ -208,8 +212,15 @@ void sdl_renderer_flush(void* renderer) {
 }
 
 void* sdl_texture_create(void* renderer, void* texture_data, int width, int height) {
-    SDL_Surface* surface = SDL_CreateSurfaceFrom(width, height, SDL_PIXELFORMAT_RGBA8888, texture_data, 4 * width);
+    // uncomment for funny results
+    /*SDL_Surface* surface = SDL_CreateSurfaceFrom(width, height, SDL_PIXELFORMAT_RGBA8888, texture_data, 4 * width);
     SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_DestroySurface(surface);
+    return tex;*/
+
+    SDL_Surface* surface = SDL_CreateSurfaceFrom(width, height, SDL_PIXELFORMAT_ABGR8888, texture_data, 4 * width);
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_SetTextureScaleMode(tex, SDL_SCALEMODE_NEAREST);
     SDL_DestroySurface(surface);
     return tex;
 }
