@@ -7,12 +7,10 @@
 #include "game/camera.h"
 #include "main.h"
 
-#define PAUSE_FLAG_NO_UPDATE_CAMERA (1<<0)
-#define PAUSE_FLAG_USER_PAUSED      (1<<1)
-#define PAUSE_STATE_UNPAUSED        (0<<2)
-#define PAUSE_STATE_SOFT_PAUSED     (1<<2)
-#define PAUSE_STATE_HARD_PAUSED     (2<<2)
-#define PAUSE_STATE_MASK            (0xFF & 0b11)
+#define PAUSE_FLAG_NO_UPDATE_CAMERA   (1<<0)
+#define PAUSE_FLAG_NO_UPDATE_ENTITIES (1<<1)
+#define PAUSE_FLAG_USER_PAUSED        (1<<2)
+#define UNPAUSED 0
 
 enum EntityPropertyType {
     EntityPropertyType_Int,

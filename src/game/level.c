@@ -9,7 +9,6 @@
 #include "io/audio/audio.h"
 #include "camera.h"
 #include "data.h"
-#include "input.h"
 #include "overlay/manager.h"
 #include "overlay/transition.h"
 #include "game/entities/functions.h"
@@ -22,7 +21,7 @@ uint32_t unique_entity_id = 2;
 Camera* camera;
 int curr_audio_track = -1;
 int curr_theme = -1;
-int pause_state = PAUSE_STATE_UNPAUSED;
+int pause_state = UNPAUSED;
 
 int find_tileset_id(LE_Tileset* tileset) {
     for (int i = 0; i < TILESET_TYPE_COUNT; i++) {
@@ -279,7 +278,7 @@ void load_level_impl(unsigned char* data, int datalen) {
 }
 
 void reload_level() {
-    pause_state = PAUSE_STATE_UNPAUSED;
+    pause_state = UNPAUSED;
     unsigned char* leveldata = malloc(current_level->raw_length);
     memcpy(leveldata, current_level->raw, current_level->raw_length);
     load_level_impl(leveldata, current_level->raw_length);
@@ -293,17 +292,10 @@ void set_pause_state(int state) {
 void update_level(float delta_time) {
     LE_UpdateLayerList(current_level->layers);
     LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
-    if ((pause_state & PAUSE_STATE_MASK) != PAUSE_STATE_HARD_PAUSED) while (iter) {
+    if (!(pause_state & PAUSE_FLAG_NO_UPDATE_ENTITIES)) while (iter) {
         LE_Layer* layer = LE_LayerListGet(iter);
         enum LE_LayerType type = LE_LayerGetType(layer);
-        if (type == LE_LayerType_Entity) {
-            LE_EntityListIter* entity_iter = LE_EntityListGetIter(LE_LayerGetDataPointer(layer));
-            while (entity_iter) {
-                LE_Entity* entity = LE_EntityListGet(entity_iter);
-                LE_UpdateEntity(entity, delta_time);
-                entity_iter = LE_EntityListNext(entity_iter);
-            }
-        }
+        if (type == LE_LayerType_Entity) LE_UpdateEntities(LE_LayerGetDataPointer(layer), delta_time);
         iter = LE_LayerListNext(iter);
     }
     if (!(pause_state & PAUSE_FLAG_NO_UPDATE_CAMERA)) {
