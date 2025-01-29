@@ -52,6 +52,10 @@ tools         - Programs used during compilation
 
 ## Building
 
+If you want to target SDL 3 and your package manager has SDL 3 packaged, rename the packages accordingly, then change `SDL_VERSION` to `3` in `config.mk`
+
+Make sure to check out the full `config.mk` file if you want to customize your build
+
 ### Windows
 
 1. Install the [MSYS2 Toolchain](https://msys2.org)
