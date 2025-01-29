@@ -37,7 +37,7 @@ else
 	LIBS += $(shell pkg-config --libs $(LIBRARIES)) -lm $(LIBS_FLAGS)
 endif
 
-CFLAGS += -DNO_VSCODE -DRENDERER_$(RENDERER)
+CFLAGS += -DNO_VSCODE -DRENDERER_$(RENDERER) -DSDL_VERSION_$(SDL_VERSION)
 
 .PHONY: all clean compile-libs compile-tools run-tools tools compile
 

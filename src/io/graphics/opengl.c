@@ -1,10 +1,9 @@
 #ifdef RENDERER_OPENGL
 
 #include "io/io.h"
+#include "io/sdlgfx.h"
 #include "main.h"
 #include "rng.h"
-
-#include <SDL2/SDL.h>
 
 #ifdef WINDOWS
 #define GLEW_STATIC
@@ -16,8 +15,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-SDL_Window* window;
-SDL_GLContext* gl_context;
+void* window;
+void* gl_context;
 struct GfxResource* current_texture;
 float res_width, res_height;
 float win_width, win_height;
@@ -159,14 +158,7 @@ struct GfxResource* graphics_load_texture(unsigned char* buf, size_t len) {
 }
 
 void graphics_init(const char* window_name, int width, int height) {
-    if (getenv("WAYLAND_DISPLAY")) SDL_SetHint("SDL_VIDEODRIVER", "wayland"); // run in native wayland when on wayland
-    SDL_Init(SDL_INIT_VIDEO);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    window = SDL_CreateWindow(window_name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
-    gl_context = SDL_GL_CreateContext(window);
+    sdl_window_init(window_name, width, height, SDL_GFX_API_OPENGL, &window, &gl_context);
     glewInit();
     for (int i = 0; i < MAX_QUADS; i++) {
         int vindex = i * 4;
@@ -211,7 +203,7 @@ void graphics_set_resolution(float width, float height) {
 
 void graphics_start_frame() {
     int width, height;
-    SDL_GetWindowSize(window, &width, &height);
+    sdl_window_size(window, &width, &height);
     win_width  = width;
     win_height = height;
     view_width  = win_width;
@@ -240,11 +232,11 @@ void graphics_end_frame() {
     graphics_draw_framebuffer();
     graphics_deinit_framebuffer();
     glFlush();
-    SDL_GL_SwapWindow(window);
+    sdl_opengl_flush(window);
 }
 
 void graphics_get_size(int* width, int* height) {
-    SDL_GetWindowSize(window, width, height);
+    sdl_window_size(window, width, height);
 }
 
 void graphics_select_texture(struct GfxResource* texture) {
@@ -272,8 +264,7 @@ void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, f
 }
 
 void graphics_deinit() {
-    SDL_GL_DeleteContext(gl_context);
-    SDL_DestroyWindow(window);
+    sdl_window_deinit(window);
 }
 
 #define check_error(handle, get, attr, log, msg) { \

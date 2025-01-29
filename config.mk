@@ -18,8 +18,11 @@ COMPILER_CXX ?= clang++
 # The ar command
 AR ?= ar
 
+# SDL version (only 2 and 3 is supported)
+SDL_VERSION ?= 3
+
 # External libraries to link against
-LIBRARIES ?= sdl2 glew
+LIBRARIES ?= sdl$(SDL_VERSION) glew
 
 #############################
 ### APPLY COMPILER CONFIG ###

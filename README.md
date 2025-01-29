@@ -36,6 +36,7 @@ src
     assets    - Reading & parsing assets
     audio     - Audio engine
     graphics  - Different graphics API implementations for the RENDERER config option
+    sdl       - SDL2 and SDL3 wrappers
   font        - Text/font renderer
   game        - Core game source code
     data      - Game data (tile, tileset and entity metadata)
