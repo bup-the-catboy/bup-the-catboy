@@ -131,7 +131,7 @@ entity_update(player) {
     }
     if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt == 1) {
         float xpos, ypos;
-        set_pause_state(PAUSE_STATE_SOFT_PAUSED | PAUSE_FLAG_NO_UPDATE_CAMERA);
+        set_pause_state(PAUSE_FLAG_NO_UPDATE_CAMERA);
         LE_EntityLastDrawnPos(entity, &xpos, &ypos);
         LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = 2 }, "dead");
         LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = xpos }, "xpos");
