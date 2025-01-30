@@ -12,6 +12,7 @@
 #include "overlay/manager.h"
 #include "overlay/transition.h"
 #include "game/entities/functions.h"
+#include "threadlock.h"
 
 struct AudioInstance* music_instance;
 struct Level* current_level = NULL;
@@ -86,6 +87,8 @@ uint32_t get_unique_entity_id() {
 }
 
 struct Level* parse_level(unsigned char* data, int datalen) {
+    threadlock_io_write_lock(THREADLOCK_LEVEL_UPDATE);
+
     struct Level* level = malloc(sizeof(struct Level));
     struct BinaryStream* stream = binary_stream_create(data);
 
@@ -235,6 +238,8 @@ struct Level* parse_level(unsigned char* data, int datalen) {
         }
         iter = LE_LayerListNext(iter);
     }
+
+    threadlock_io_unlock(THREADLOCK_LEVEL_UPDATE);
     return level;
 }
 
@@ -290,6 +295,7 @@ void set_pause_state(int state) {
 }
 
 void update_level(float delta_time) {
+    threadlock_io_read_lock(THREADLOCK_LEVEL_UPDATE);
     LE_UpdateLayerList(current_level->layers);
     LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
     if (!(pause_state & PAUSE_FLAG_NO_UPDATE_ENTITIES)) while (iter) {
@@ -304,8 +310,11 @@ void update_level(float delta_time) {
         camera_get(camera, &x, &y);
         LE_ScrollCamera(current_level->layers, x, y);
     }
+    threadlock_io_unlock(THREADLOCK_LEVEL_UPDATE);
 }
 
 void render_level(LE_DrawList* drawlist, int width, int height, float interpolation) {
+    threadlock_io_read_lock(THREADLOCK_LEVEL_UPDATE);
     LE_Draw(current_level->layers, width, height, interpolation, drawlist);
+    threadlock_io_unlock(THREADLOCK_LEVEL_UPDATE);
 }
