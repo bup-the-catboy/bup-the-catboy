@@ -125,8 +125,11 @@ void io_deinit() {
 }
 
 bool requested_quit() {
-    SDL_PumpEvents();
-    return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, SDL_QUIT, SDL_QUIT) > 0;
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) return true;
+    }
+    return false;
 }
 
 void sdl_window_init(const char* title, int width, int height, enum SDL_GFX_API gfx_api, void** window, void** gfx_handle) {
