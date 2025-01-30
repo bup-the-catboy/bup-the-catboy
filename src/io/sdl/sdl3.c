@@ -147,6 +147,7 @@ void sdl_window_init(const char* title, int width, int height, enum SDL_GFX_API 
         case SDL_GFX_API_SDLRENDERER:
             w->gfx_handle = SDL_CreateRenderer(w->window, NULL);
             SDL_SetRenderDrawBlendMode(w->gfx_handle, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderVSync(w->gfx_handle, 1);
             printf("Currently using render driver: %s\n", SDL_GetRendererName(w->gfx_handle));
             printf("There is/are %d available:\n", SDL_GetNumRenderDrivers());
             for (int i = 0; i < SDL_GetNumRenderDrivers(); i++) {
@@ -155,6 +156,7 @@ void sdl_window_init(const char* title, int width, int height, enum SDL_GFX_API 
             break;
         case SDL_GFX_API_OPENGL:
             w->gfx_handle = SDL_GL_CreateContext(w->window);
+            SDL_GL_SetSwapInterval(1);
             break;
     }
     *gfx_handle = w->gfx_handle;

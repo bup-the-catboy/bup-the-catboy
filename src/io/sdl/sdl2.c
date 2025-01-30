@@ -144,11 +144,12 @@ void sdl_window_init(const char* title, int width, int height, enum SDL_GFX_API 
     w->window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
     switch (gfx_api) {
         case SDL_GFX_API_SDLRENDERER:
-            w->gfx_handle = SDL_CreateRenderer(w->window, -1, SDL_RENDERER_ACCELERATED);
+            w->gfx_handle = SDL_CreateRenderer(w->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
             SDL_SetRenderDrawBlendMode(w->gfx_handle, SDL_BLENDMODE_BLEND);
             break;
         case SDL_GFX_API_OPENGL:
             w->gfx_handle = SDL_GL_CreateContext(w->window);
+            SDL_GL_SetSwapInterval(1);
             break;
     }
     *gfx_handle = w->gfx_handle;
