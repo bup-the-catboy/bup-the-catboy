@@ -32,12 +32,14 @@ static void draw_iris(void* param) {
     graphics_apply_shader();
 }
 
+static int idle_anim_table[] = { 0, 1, 2, 3, 2, 1 };
+
 entity_texture(player) {
     if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt) {
         bool flip = entity->velY > 0;
         int sprite =
-            fabsf(entity->velY) < 0.05 ? 8 :
-            fabsf(entity->velY) < 0.15 ? 7 : 6;
+            fabsf(entity->velY) < 0.05 ? 11 :
+            fabsf(entity->velY) < 0.15 ? 10 : 9;
         *srcX = sprite * 16;
         *srcY = 0;
         *srcW = 16;
@@ -47,19 +49,19 @@ entity_texture(player) {
         drawlist_append(gfxcmd_custom(draw_iris, entity));
         return GET_ASSET(struct GfxResource, "images/entities/player.png");
     }
-    int sprite = 0;
+    int sprite = idle_anim_table[(global_timer / 10) % 6];
     LE_EntityProperty facing_left = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "facing_left");
     if (fabs(entity->velX) > 0) {
         if (entity->velX < 0) facing_left.asBool = true;
         if (entity->velX > 0) facing_left.asBool = false;
-        sprite = (int)(entity->posX) % 2 + 1;
+        sprite = (int)(entity->posX) % 2 + 4;
     }
     if (
         ( facing_left.asBool && is_button_down(BUTTON_MOVE_RIGHT)) ||
         (!facing_left.asBool && is_button_down(BUTTON_MOVE_LEFT))
-    ) sprite = 5;
-    if (entity->velY > 0) sprite = 4;
-    if (entity->velY < 0) sprite = 3;
+    ) sprite = 8;
+    if (entity->velY > 0) sprite = 7;
+    if (entity->velY < 0) sprite = 6;
     LE_EntitySetProperty(entity, facing_left, "facing_left");
     *srcX = sprite * 16;
     *srcY = 0;
