@@ -132,6 +132,7 @@ entity_update(player) {
             entity_spawn_dust(entity, true, true, 0.2f);
         }
         if (is_button_pressed(BUTTON_POUNCE)) {
+            LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 1.75f }, "squish");
             LE_EntityProperty facing_left = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "facing_left");
             pouncing.asBool = true;
             pounce_timer.asFloat = 5;
