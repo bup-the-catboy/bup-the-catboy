@@ -125,8 +125,9 @@ entity_update(player) {
                 if (entity->velX < 0) entity->velX = 0;
             }
         }
-        if ((entity->flags & LE_EntityFlags_OnGround) && is_button_pressed(BUTTON_JUMP)) {
+        if (entity_jump_requested(entity, is_button_pressed(BUTTON_JUMP)) & entity_can_jump(entity)) {
             LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 1.5f }, "squish");
+            LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 999  }, "coyote");
             entity->velY = -0.5f;
             if (!l && !r) entity->velX *= 0.6f;
             entity_spawn_dust(entity, true, true, 0.2f);

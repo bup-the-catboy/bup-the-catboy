@@ -47,19 +47,19 @@ void entity_fall_squish(LE_Entity* entity, float max_distance, float max_squish,
 }
 
 bool entity_can_jump(LE_Entity* entity) {
-    LE_EntityProperty coyote = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 999 }, "coyote");
-    if (entity->flags & LE_EntityFlags_OnGround) coyote.asInt = 0;
-    else coyote.asInt++;
+    LE_EntityProperty coyote = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 999 }, "coyote");
+    if (entity->flags & LE_EntityFlags_OnGround) coyote.asFloat = 0;
+    else coyote.asFloat += delta_time;
     LE_EntitySetProperty(entity, coyote, "coyote");
-    return coyote.asInt < 3;
+    return coyote.asFloat < 5;
 }
 
 bool entity_jump_requested(LE_Entity* entity, bool jump_pressed) {
-    LE_EntityProperty jump_timer = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 999 }, "jump_timer");
-    if (jump_pressed) jump_timer.asInt = 0;
-    else jump_timer.asInt++;
+    LE_EntityProperty jump_timer = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 999 }, "jump_timer");
+    if (jump_pressed) jump_timer.asFloat = 0;
+    else jump_timer.asFloat += delta_time;
     LE_EntitySetProperty(entity, jump_timer, "jump_timer");
-    return jump_timer.asInt < 5;
+    return jump_timer.asFloat < 5;
 }
 
 bool entity_flip_texture(LE_Entity* entity) {
