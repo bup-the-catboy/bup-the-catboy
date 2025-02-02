@@ -104,3 +104,15 @@ ENTITY(death_barrier,
     LVLEDIT_TEXTURE("images/lvledit/deathbarrier.png")
     LVLEDIT_CROP(0, 0, 16, 16)
 )
+
+ENTITY(crate_fragment,
+    UPDATE(despawn_update)
+    UPDATE(gravity_update)
+    UPDATE(friction_update)
+    TEXTURE(crate_fragment_texture)
+    SIZE(0.5f, 0.5f)
+    DEFAULT_PROPERTY("despawn_timer", Float, 300)
+    DEFAULT_PROPERTY("gravity", Float, 0.03)
+    DEFAULT_PROPERTY("friction", Float, 100)
+    LVLEDIT_HIDE()
+)
