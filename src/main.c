@@ -19,6 +19,7 @@
 
 #define STEPS_PER_SECOND 60
 #define STEP_TIME (TICKS_PER_SEC / STEPS_PER_SECOND)
+#define TIME_SCALE 0.1
 
 double internal_global_timer = 0;
 uint64_t global_timer = 0;
@@ -61,14 +62,14 @@ void* game_loop(void* _) {
     while (running) {
         uint64_t num_ticks = ticks();
         if (game_start_ticks == 0) game_start_ticks = num_ticks;
-        delta_time = (num_ticks - game_start_ticks) / TICKS_PER_SEC * STEPS_PER_SECOND;
+        delta_time = (num_ticks - game_start_ticks) / TICKS_PER_SEC * STEPS_PER_SECOND * TIME_SCALE;
         game_start_ticks = num_ticks;
         update_input();
         if (current_level != NULL) {
             update_transition();
             update_level(delta_time);
         }
-        sync(game_start_ticks, STEP_TIME);
+        sync(game_start_ticks, STEP_TIME / TIME_SCALE);
         internal_global_timer += delta_time;
         global_timer = internal_global_timer;
     }
@@ -89,7 +90,7 @@ int main(int argc, char** argv) {
         if (requested_quit()) break;
         graphics_get_size(&windoww, &windowh);
         graphics_start_frame();
-        render_interpolation = min((ticks() - game_start_ticks) / STEP_TIME, 1);
+        render_interpolation = min((ticks() - game_start_ticks) / STEP_TIME * TIME_SCALE, 1);
         render_level(drawlist, WIDTH, HEIGHT, render_interpolation);
         drawlist_append(graphics_dummy_shader());
         LE_Render(drawlist, gfxcmd_process);
