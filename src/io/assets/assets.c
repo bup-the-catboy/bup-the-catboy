@@ -71,7 +71,7 @@ void load_assets() {
     struct BinaryStream* stream = binary_stream_create(asset_data);
     while (true) {
         memset(buf, 0, PATH_MAX);
-        struct Asset* asset = malloc(sizeof(struct Asset));
+        struct Asset* asset = calloc(sizeof(struct Asset), 1);
         binary_stream_read_string(stream, buf, PATH_MAX);
         if (!buf[0]) break;
         int datasize;
