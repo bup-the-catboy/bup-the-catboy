@@ -142,6 +142,7 @@ entity_update(player) {
             if (entity->velX >  0.35f) entity->velX =  0.35f;
             if (entity->velX < -0.35f) entity->velX = -0.35f;
             entity_spawn_dust(entity, true, true, 0.2f);
+            camera_screenshake(camera, 10, 0.5, 0.5);
         }
     }
     else pounce_timer.asFloat -= delta_time;
