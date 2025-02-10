@@ -9,7 +9,7 @@ entity_update(walk) {
     LE_Entity* player = find_nearest_entity_with_tag(entity, "player", &distance);
     if (player && distance > 256) return;
     LE_EntityProperty walk_speed = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "walk_speed");
-    enum LE_Direction dir;
+    LE_Direction dir;
     if (entity->velX == 0) entity->velX = -walk_speed.asFloat;
     if (entity_collided(entity, &dir)) {
         if (dir == LE_Direction_Left ) entity->velX = -walk_speed.asFloat;

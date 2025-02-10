@@ -10,7 +10,7 @@ bool entity_flip_texture(LE_Entity* entity);
 void entity_animate(int* srcX, int* srcY, int* srcW, int* srcH, int width, int height, int delay, int frames, bool loop, int curr_frame);
 int  entity_advance_anim_frame(LE_Entity* entity);
 int  entity_get_anim_frame(LE_Entity* entity);
-bool entity_collided(LE_Entity* entity, enum LE_Direction* dir);
+bool entity_collided(LE_Entity* entity, LE_Direction* dir);
 void entity_spawn_dust(LE_Entity* entity, bool left, bool right, float speed);
 bool entity_should_squish(LE_Entity* entity, LE_Entity* collider);
 

@@ -49,7 +49,7 @@ void load_level_impl(unsigned char* data, int datalen);
 void change_level_music(int track);
 void change_level_theme(int theme);
 void activate_warp_no_transition(struct Warp* warp);
-void activate_warp(struct Warp* warp, enum LE_Direction direction);
+void activate_warp(struct Warp* warp, LE_Direction direction);
 void reload_level();
 void set_pause_state(int pause_state);
 void update_level(float delta_time);

@@ -32,7 +32,7 @@ entity_texture(turtle_shell_fragment) {
 }
 
 entity_update(turtle_shell) {
-    enum LE_Direction dir;
+    LE_Direction dir;
     if (entity_init(entity)) {
         LE_EntityProperty walk_speed = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "walk_speed");
         LE_Entity* player = find_nearest_entity_with_tag(entity, "player", NULL);

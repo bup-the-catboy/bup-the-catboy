@@ -18,25 +18,30 @@ typedef struct {} LE_EntityList;
 typedef struct {} LE_EntityListIter;
 typedef struct {} LE_LayerListIter;
 
-enum LE_EntityFlags {
+typedef enum {
     LE_EntityFlags_SolidHitbox      = 1 << 0,
     LE_EntityFlags_ShouldDelete     = 1 << 1,
     LE_EntityFlags_DisableCollision = 1 << 2,
     LE_EntityFlags_OnGround         = 1 << 3,
-};
+} LE_EntityFlags;
 
-enum LE_Direction {
+typedef enum {
     LE_Direction_Up,
     LE_Direction_Left,
     LE_Direction_Down,
     LE_Direction_Right
-};
+} LE_Direction;
 
-enum LE_LayerType {
+typedef enum {
     LE_LayerType_Tilemap,
     LE_LayerType_Entity,
     LE_LayerType_Custom
-};
+} LE_LayerType;
+
+typedef enum {
+    LE_TilemapType_Square,
+    LE_TilemapType_Hexagonal,
+} LE_TilemapType;
 
 typedef union LE_EntityProperty {
     int asInt;
@@ -49,7 +54,7 @@ typedef struct {
     float posX, posY;
     float velX, velY;
     float width, height;
-    enum LE_EntityFlags flags;
+    LE_EntityFlags flags;
 } LE_Entity;
 
 typedef struct {
@@ -73,7 +78,7 @@ typedef int(*TileTextureCallback)(LE_TileData* tile);
 typedef void(*TileCollisionCallback)(
     LE_TileData* tile, LE_Tilemap* tilemap, LE_Entity* entity,
     int tileX, int tileY,
-    enum LE_Direction direction
+    LE_Direction direction
 );
 typedef void(*CustomLayer)(
     LE_DrawList* dl,
@@ -90,7 +95,7 @@ void LE_MoveLayer(LE_Layer* layer, int index);
 int  LE_IndexOfLayer(LE_Layer* layer);
 void LE_ScrollCamera(LE_LayerList* layers, float camX, float camY);
 void LE_GetCameraPos(LE_LayerList* layers, float* camX, float* camY);
-enum LE_LayerType LE_LayerGetType(LE_Layer* layer);
+LE_LayerType LE_LayerGetType(LE_Layer* layer);
 void* LE_LayerGetDataPointer(LE_Layer* layer);
 void LE_UpdateLayerList(LE_LayerList* layers);
 void LE_Draw(LE_LayerList* layers, int screenW, int screenH, float interpolation, LE_DrawList* dl);
@@ -117,9 +122,9 @@ void LE_EntityBuilderAddTextureCallback(LE_EntityBuilder* builder, EntityTexture
 void LE_EntityBuilderAddUpdateCallback(LE_EntityBuilder* builder, EntityUpdateCallback callback);
 void LE_EntityBuilderAddCollisionCallback(LE_EntityBuilder* builder, EntityCollisionCallback callback);
 void LE_EntityBuilderSetHitboxSize(LE_EntityBuilder* builder, float width, float height);
-void LE_EntityBuilderSetFlags(LE_EntityBuilder* builder, enum LE_EntityFlags flags);
-void LE_EntityBuilderAppendFlags(LE_EntityBuilder* builder, enum LE_EntityFlags flags);
-void LE_EntityBuilderClearFlags(LE_EntityBuilder* builder, enum LE_EntityFlags flags);
+void LE_EntityBuilderSetFlags(LE_EntityBuilder* builder, LE_EntityFlags flags);
+void LE_EntityBuilderAppendFlags(LE_EntityBuilder* builder, LE_EntityFlags flags);
+void LE_EntityBuilderClearFlags(LE_EntityBuilder* builder, LE_EntityFlags flags);
 void LE_EntityBuilderSetProperty(LE_EntityBuilder* builder, LE_EntityProperty property, const char* name);
 void LE_DestroyEntityBuilder(LE_EntityBuilder* builder);
 
@@ -153,7 +158,7 @@ LE_Entity* LE_EntityListGet(LE_EntityListIter* iter);
 LE_TileData* LE_CreateTileData();
 void LE_TileAddTextureCallback(LE_TileData* tile, TileTextureCallback callback);
 void LE_TileAddCollisionCallback(LE_TileData* tile, TileCollisionCallback callback);
-void LE_TileCollisionEvent(LE_TileData* tile, LE_Tilemap* tilemap, LE_Entity* entity, int tileX, int tileY, enum LE_Direction direction);
+void LE_TileCollisionEvent(LE_TileData* tile, LE_Tilemap* tilemap, LE_Entity* entity, int tileX, int tileY, LE_Direction direction);
 void LE_TileSetSolid(LE_TileData* tile, bool solid);
 void LE_DrawTileAt(LE_TileData* tile, LE_Tileset* tileset, float x, float y, float scaleW, float scaleH, LE_DrawList* dl);
 bool LE_TileIsSolid(LE_TileData* tile);

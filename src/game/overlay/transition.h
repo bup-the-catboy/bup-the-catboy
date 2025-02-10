@@ -6,7 +6,7 @@
 #include "math_util.h"
 
 bool is_transition_active();
-void start_transition(void(*action)(), int length, enum LE_Direction direction, Easing easing);
+void start_transition(void(*action)(), int length, LE_Direction direction, Easing easing);
 void render_transition(LE_DrawList* drawlist);
 void update_transition();
 

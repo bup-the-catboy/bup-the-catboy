@@ -225,7 +225,7 @@ struct Level* parse_level(unsigned char* data, int datalen) {
     LE_LayerListIter* iter = LE_LayerListGetIter(level->layers);
     while (iter) {
         LE_Layer* layer = LE_LayerListGet(iter);
-        enum LE_LayerType type = LE_LayerGetType(layer);
+        LE_LayerType type = LE_LayerGetType(layer);
         if (type == LE_LayerType_Entity) {
             LE_EntityList* entitylist = LE_LayerGetDataPointer(layer);
             int tilemap_index = (int)(uintptr_t)LE_EntityGetTilemap(entitylist);
@@ -264,7 +264,7 @@ void activate_warp_no_transition(struct Warp* warp) {
     do_warp();
 }
 
-void activate_warp(struct Warp* warp, enum LE_Direction direction) {
+void activate_warp(struct Warp* warp, LE_Direction direction) {
     if (is_transition_active()) return;
     current_warp = warp;
     start_transition(do_warp, 60, direction, quad_in_out);
@@ -300,7 +300,7 @@ void update_level(float delta_time) {
     LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
     if (!(pause_state & PAUSE_FLAG_NO_UPDATE_ENTITIES)) while (iter) {
         LE_Layer* layer = LE_LayerListGet(iter);
-        enum LE_LayerType type = LE_LayerGetType(layer);
+        LE_LayerType type = LE_LayerGetType(layer);
         if (type == LE_LayerType_Entity) LE_UpdateEntities(LE_LayerGetDataPointer(layer), delta_time);
         iter = LE_LayerListNext(iter);
     }

@@ -95,7 +95,7 @@ int entity_get_anim_frame(LE_Entity* entity) {
     return anim_timer.asFloat;
 }
 
-bool entity_collided(LE_Entity* entity, enum LE_Direction* dir) {
+bool entity_collided(LE_Entity* entity, LE_Direction* dir) {
     LE_EntityProperty collision;
     if (!LE_EntityGetProperty(entity, &collision, "collision")) return false;
     LE_EntityDelProperty(entity, "collision");
