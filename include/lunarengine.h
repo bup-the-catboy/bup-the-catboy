@@ -38,11 +38,6 @@ typedef enum {
     LE_LayerType_Custom
 } LE_LayerType;
 
-typedef enum {
-    LE_TilemapType_Square,
-    LE_TilemapType_Hexagonal,
-} LE_TilemapType;
-
 typedef union LE_EntityProperty {
     int asInt;
     bool asBool;

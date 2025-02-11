@@ -19,7 +19,7 @@ COMPILER_CXX ?= clang++
 AR ?= ar
 
 # SDL version (only 2 and 3 is supported)
-SDL_VERSION ?= 2
+SDL_VERSION ?= 3
 
 # External libraries to link against
 LIBRARIES ?= sdl$(SDL_VERSION) glew

@@ -52,7 +52,7 @@ tools         - Programs used during compilation
 
 ## Building
 
-If you want to target SDL 3 and your package manager has SDL 3 packaged, rename the packages accordingly, then change `SDL_VERSION` to `3` in `config.mk`
+If you want to target SDL 2 and your package manager has SDL 2 packaged, rename the packages accordingly, then change `SDL_VERSION` to `2` in `config.mk`
 
 Make sure to check out the full `config.mk` file if you want to customize your build
 
@@ -62,7 +62,7 @@ Make sure to check out the full `config.mk` file if you want to customize your b
 2. Launch the **MINGW64** shell
 3. Install dependencies
 ```sh
-pacman -S git make mingw-w64-x86_64-clang mingw-w64-x86_64-SDL2 mingw-w64-x86_64-glew
+pacman -S git make mingw-w64-x86_64-clang mingw-w64-x86_64-sdl3 mingw-w64-x86_64-glew pkgconf
 ```
 4. Follow the [General compile steps](#general-compile-steps)
 
@@ -72,11 +72,11 @@ pacman -S git make mingw-w64-x86_64-clang mingw-w64-x86_64-SDL2 mingw-w64-x86_64
 
 **Debian**
 ```sh
-sudo apt install git make clang libsdl2-dev libglew-dev pkgconf
+sudo apt install git make clang libsdl3-dev libglew-dev pkgconf
 ```
 **Arch**
 ```sh
-sudo pacman -S git make clang sdl2 glew pkgconf
+sudo pacman -S git make clang sdl3 glew pkgconf
 ```
 2. Follow the [General compile steps](#general-compile-steps)
 
@@ -85,7 +85,7 @@ sudo pacman -S git make clang sdl2 glew pkgconf
 1. Install [Homebrew](https://brew.sh/)
 2. Install dependencies
 ```sh
-brew install clang make sdl2 glew pkgconf
+brew install clang make sdl3 glew pkgconf
 ```
 3. Follow the [General compile steps](#general-compile-steps)
 
@@ -98,7 +98,7 @@ curl https://raw.githubusercontent.com/bup-the-catboy/bup-the-catboy/main/quasi-
 2. After that, run `~/quasi-msys2/env/shell.sh`
 3. Install dependencies
 ```sh
-pacmake install _clang _SDL2 _glew _pkgconf
+pacmake install _clang _sdl3 _glew _pkgconf
 ```
 4. Follow the [General compile steps](#general-compile-steps)
 
@@ -111,7 +111,7 @@ curl https://raw.githubusercontent.com/bup-the-catboy/bup-the-catboy/main/osxcro
 ```
 3. Install dependencies
 ```sh
-omp install libsdl2 glew mesa mesa-glu pkgconf
+omp install SDL3 glew mesa mesa-glu pkgconf
 ```
 4. Turn on macOS cross compile mode for the `Makefile`
 ```sh
@@ -130,7 +130,7 @@ git clone --recursive https://github.com/bup-the-catboy/bup-the-catboy && cd bup
 3. Compile the game using the `make -j$(nproc)` command
 4. The executable should be located at `build/btcb`
 
-*Assets aren't required for the game to compile, but it won't be able to run correctly as level, texture and sound data is missing. 
+*Assets aren't required for the game to compile, but it won't be able to run correctly as level, texture and sound data is missing.
 
 ## Acquiring assets
 
