@@ -24,6 +24,9 @@ SDL_VERSION ?= 3
 # External libraries to link against
 LIBRARIES ?= sdl$(SDL_VERSION) glew
 
+# Compile a stripped compressed version
+COMPRESS ?= 0
+
 #############################
 ### APPLY COMPILER CONFIG ###
 #############################

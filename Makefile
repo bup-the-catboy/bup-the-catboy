@@ -83,6 +83,10 @@ $(EXECUTABLE): $(OBJS)
 	@printf "\033[1m\033[32mLinking \033[36m$(OBJ_DIR) \033[32m-> \033[34m$(EXECUTABLE)\033[0m\n"
 	@mkdir -p $(BIN_DIR)
 	@$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
+	@if [ $(COMPRESS) == 1 ]; then \
+		strip $(EXECUTABLE); \
+		upx --best --lzma $(EXECUTABLE); \
+	fi
 	@if [ $(MACOS_CROSS) == 1 ]; then \
 		printf "\033[1m\033[32mBundling \033[36m$(EXECUTABLE) \033[32m-> \033[34m$(EXECUTABLE).app\033[0m\n"; \
 		mkdir -p $(EXECUTABLE).app/Contents/MacOS; \

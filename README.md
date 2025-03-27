@@ -62,7 +62,7 @@ Make sure to check out the full `config.mk` file if you want to customize your b
 2. Launch the **MINGW64** shell
 3. Install dependencies
 ```sh
-pacman -S git make mingw-w64-x86_64-clang mingw-w64-x86_64-sdl3 mingw-w64-x86_64-glew pkgconf
+pacman -S git make mingw-w64-x86_64-clang mingw-w64-x86_64-sdl3 mingw-w64-x86_64-glew pkgconf mingw-w64-x86_64-upx
 ```
 4. Follow the [General compile steps](#general-compile-steps)
 
@@ -72,11 +72,11 @@ pacman -S git make mingw-w64-x86_64-clang mingw-w64-x86_64-sdl3 mingw-w64-x86_64
 
 **Debian**
 ```sh
-sudo apt install git make clang libsdl3-dev libglew-dev pkgconf
+sudo apt install git make clang libsdl3-dev libglew-dev pkgconf upx-ucl
 ```
 **Arch**
 ```sh
-sudo pacman -S git make clang sdl3 glew pkgconf
+sudo pacman -S git make clang sdl3 glew pkgconf upx
 ```
 2. Follow the [General compile steps](#general-compile-steps)
 
@@ -85,7 +85,7 @@ sudo pacman -S git make clang sdl3 glew pkgconf
 1. Install [Homebrew](https://brew.sh/)
 2. Install dependencies
 ```sh
-brew install clang make sdl3 glew pkgconf
+brew install clang make sdl3 glew pkgconf upx
 ```
 3. Follow the [General compile steps](#general-compile-steps)
 
@@ -128,7 +128,8 @@ git clone --recursive https://github.com/bup-the-catboy/bup-the-catboy && cd bup
 ```
 2. [Acquire assets](#acquiring-assets)*
 3. Compile the game using the `make -j$(nproc)` command
-4. The executable should be located at `build/btcb`
+4. You can run `make COMPRESS=1 -j$(nproc)` to build a compressed version
+5. The executable should be located at `build/btcb`
 
 *Assets aren't required for the game to compile, but it won't be able to run correctly as level, texture and sound data is missing.
 
