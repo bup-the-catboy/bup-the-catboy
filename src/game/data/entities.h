@@ -116,3 +116,22 @@ ENTITY(crate_fragment,
     DEFAULT_PROPERTY("friction", Float, 100)
     LVLEDIT_HIDE()
 )
+
+ENTITY(sparkles,
+    UPDATE(animable_update)
+    UPDATE(despawn_update)
+    TEXTURE(sparkles_texture)
+    DEFAULT_PROPERTY("despawn_timer", Float, 16)
+    LVLEDIT_HIDE()
+)
+
+ENTITY(coin_particle,
+    UPDATE(despawn_update)
+    UPDATE(gravity_update)
+    UPDATE(coin_particle_update)
+    TEXTURE(coin_particle_texture)
+    FLAGS(LE_EntityFlags_DisableCollision)
+    DEFAULT_PROPERTY("despawn_timer", Float, 300)
+    DEFAULT_PROPERTY("gravity", Float, 0.03)
+    LVLEDIT_HIDE()
+)
