@@ -135,3 +135,22 @@ ENTITY(coin_particle,
     DEFAULT_PROPERTY("gravity", Float, 0.03)
     LVLEDIT_HIDE()
 )
+
+ENTITY(trail_spawner,
+    UPDATE(trail_spawner_update)
+    UPDATE(gravity_update)
+    UPDATE(despawn_update)
+    FLAGS(LE_EntityFlags_DisableCollision)
+    DEFAULT_PROPERTY("despawn_timer", Float, 60)
+    DEFAULT_PROPERTY("gravity", Float, 0.03)
+    LVLEDIT_HIDE()
+)
+
+ENTITY(trail,
+    UPDATE(animable_update)
+    UPDATE(despawn_update)
+    TEXTURE(trail_texture)
+    FLAGS(LE_EntityFlags_DisableCollision)
+    DEFAULT_PROPERTY("despawn_timer", Float, 40)
+    LVLEDIT_HIDE()
+)

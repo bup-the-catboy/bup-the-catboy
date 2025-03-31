@@ -2,6 +2,9 @@
 #include "io/assets/assets.h"
 #include "rng.h"
 
+// haha funny robot game
+// 🪙💥🔫
+
 entity_texture(sparkles) {
     entity_animate(srcX, srcY, srcW, srcH, 16, 16, 4, 4, false, entity_get_anim_frame(entity));
     *w = 16;
