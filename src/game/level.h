@@ -54,6 +54,7 @@ void reload_level();
 void set_pause_state(int pause_state);
 void update_level(float delta_time);
 void render_level(LE_DrawList* drawlist, int width, int height, float interpolation);
+void post_update(void(*func)(void*), void* user_data);
 uint32_t get_unique_entity_id();
 
 #endif

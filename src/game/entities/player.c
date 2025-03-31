@@ -36,6 +36,7 @@ static void draw_iris(void* param) {
 static int idle_anim_table[] = { 0, 1, 2, 3, 2, 1 };
 
 entity_texture(player) {
+    bool disable_input = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "disable_input").asBool;
     if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt) {
         bool flip = entity->velY > 0;
         int sprite =
@@ -59,8 +60,8 @@ entity_texture(player) {
         sprite = (int)(entity->posX) % 2 + 4;
     }
     if (
-        ( facing_left.asBool && is_button_down(BUTTON_MOVE_RIGHT)) ||
-        (!facing_left.asBool && is_button_down(BUTTON_MOVE_LEFT))
+        ( facing_left.asBool && is_button_down(BUTTON_MOVE_RIGHT) && !disable_input) ||
+        (!facing_left.asBool && is_button_down(BUTTON_MOVE_LEFT)  && !disable_input)
     ) sprite = 8;
     if (entity->velY > 0) sprite = 7;
     if (entity->velY < 0) sprite = 6;
@@ -86,6 +87,7 @@ entity_update(player_spawner) {
 }
 
 entity_update(player) {
+    bool disable_input = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "disable_input").asBool;
     if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt == 2) {
         LE_EntitySetProperty(entity,
             (LE_EntityProperty){
@@ -101,11 +103,11 @@ entity_update(player) {
     LE_EntityProperty pouncing = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "pouncing");
     LE_EntityProperty pounce_timer = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "pounce_timer");
     if (!pouncing.asBool) {
-        bool l = is_button_down(BUTTON_MOVE_LEFT);
-        bool r = is_button_down(BUTTON_MOVE_RIGHT);
+        bool l = is_button_down(BUTTON_MOVE_LEFT) && !disable_input;
+        bool r = is_button_down(BUTTON_MOVE_RIGHT) && !disable_input;
         if (entity->flags & LE_EntityFlags_OnGround) {
-            if (is_button_pressed(BUTTON_MOVE_LEFT )) entity_spawn_dust(entity, false, true, 0.2f + entity->velX);
-            if (is_button_pressed(BUTTON_MOVE_RIGHT)) entity_spawn_dust(entity, true, false, 0.2f - entity->velX);
+            if (is_button_pressed(BUTTON_MOVE_LEFT ) && !disable_input) entity_spawn_dust(entity, false, true, 0.2f + entity->velX);
+            if (is_button_pressed(BUTTON_MOVE_RIGHT) && !disable_input) entity_spawn_dust(entity, true, false, 0.2f - entity->velX);
         }
         if (l && !r && entity->velX >= -0.2f) entity->velX -= 0.02f * delta_time;
         else if (!l && r && entity->velX <= 0.2f) entity->velX += 0.02f * delta_time;
@@ -123,10 +125,10 @@ entity_update(player) {
         if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "jumping").asBool) {
             float height = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = entity->posY }, "jumping_from").asFloat - entity->posY;
             LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 999 }, "coyote");
-            if (height > 3 || !is_button_down(BUTTON_JUMP)) LE_EntitySetProperty(entity, (LE_EntityProperty){ .asBool = false }, "jumping");
+            if (height > 3 || !(is_button_down(BUTTON_JUMP) || disable_input)) LE_EntitySetProperty(entity, (LE_EntityProperty){ .asBool = false }, "jumping");
             else entity->velY = -0.3f;
         }
-        if (entity_jump_requested(entity, is_button_pressed(BUTTON_JUMP)) & entity_can_jump(entity)) {
+        if (entity_jump_requested(entity, is_button_pressed(BUTTON_JUMP) && !disable_input) & entity_can_jump(entity)) {
             LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 1.5f }, "squish");
             LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 999  }, "coyote");
             LE_EntitySetProperty(entity, (LE_EntityProperty){ .asBool = true  }, "jumping");
@@ -134,7 +136,7 @@ entity_update(player) {
             if (!l && !r) entity->velX *= 0.6f;
             entity_spawn_dust(entity, true, true, 0.2f);
         }
-        if (is_button_pressed(BUTTON_POUNCE)) {
+        if (is_button_pressed(BUTTON_POUNCE) && !disable_input) {
             LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 1.75f }, "squish");
             LE_EntityProperty facing_left = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "facing_left");
             pouncing.asBool = true;
@@ -167,7 +169,7 @@ entity_update(player) {
         return;
     }
     hud_update(entity);
-    camera_set_focus(camera, entity->posX, 8);
+    if (!disable_input) camera_set_focus(camera, entity->posX, 8);
     entity_fall_squish(entity, 10, .5f, .25f);
     entity_update_squish(entity, 5);
     LE_EntitySetProperty(entity, pouncing, "pouncing");

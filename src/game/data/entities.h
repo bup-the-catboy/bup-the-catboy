@@ -154,3 +154,9 @@ ENTITY(trail,
     DEFAULT_PROPERTY("despawn_timer", Float, 40)
     LVLEDIT_HIDE()
 )
+
+ENTITY(level_finish,
+    UPDATE(level_finish_update)
+    TEXTURE(level_finish_texture)
+    LVLEDIT_HIDE()
+)

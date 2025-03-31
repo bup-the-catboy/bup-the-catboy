@@ -30,5 +30,7 @@
 
 void render_text (LE_DrawList* dl, float x, float y, const char* fmt, ...);
 void render_textv(LE_DrawList* dl, float x, float y, const char* fmt, va_list args);
+void text_size (float* w, float* h, const char* fmt, ...);
+void text_sizev(float* w, float* h, const char* fmt, va_list args);
 
 #endif

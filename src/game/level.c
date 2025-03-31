@@ -24,6 +24,14 @@ int curr_audio_track = -1;
 int curr_theme = -1;
 int pause_state = UNPAUSED;
 
+struct PostUpdate {
+    void(*func)(void*);
+    void *user_data;
+    struct PostUpdate* next;
+};
+
+struct PostUpdate *post_update_list, *post_update_list_head;
+
 int find_tileset_id(LE_Tileset* tileset) {
     for (int i = 0; i < TILESET_TYPE_COUNT; i++) {
         if (get_theme(curr_theme)[i] == tileset) return i;
@@ -87,8 +95,6 @@ uint32_t get_unique_entity_id() {
 }
 
 struct Level* parse_level(unsigned char* data, int datalen) {
-    threadlock_io_write_lock(THREADLOCK_LEVEL_UPDATE);
-
     struct Level* level = malloc(sizeof(struct Level));
     struct BinaryStream* stream = binary_stream_create(data);
 
@@ -238,8 +244,6 @@ struct Level* parse_level(unsigned char* data, int datalen) {
         }
         iter = LE_LayerListNext(iter);
     }
-
-    threadlock_io_unlock(THREADLOCK_LEVEL_UPDATE);
     return level;
 }
 
@@ -275,11 +279,13 @@ void load_level(struct Binary* binary) {
 }
 
 void load_level_impl(unsigned char* data, int datalen) {
+    threadlock_io_write_lock(THREADLOCK_LEVEL_UPDATE);
     if (current_level) destroy_level(current_level);
     unique_entity_id = 0;
     current_level = parse_level(data, datalen);
     curr_theme = current_level->default_theme;
     change_level_music(current_level->default_music);
+    threadlock_io_unlock(THREADLOCK_LEVEL_UPDATE);
 }
 
 void reload_level() {
@@ -294,8 +300,31 @@ void set_pause_state(int state) {
     pause_state = state;
 }
 
+void init_post_update_list() {
+    post_update_list = post_update_list_head = calloc(sizeof(struct PostUpdate), 1);
+}
+
+void process_post_update() {
+    struct PostUpdate* curr = post_update_list;
+    init_post_update_list();
+    while (curr) {
+        if (curr->func) curr->func(curr->user_data);
+        struct PostUpdate* next = curr->next;
+        free(curr);
+        curr = next;
+    }
+}
+
+void post_update(void(*func)(void*), void* user_data) {
+    post_update_list_head->func = func;
+    post_update_list_head->user_data = user_data;
+    post_update_list_head->next = calloc(sizeof(struct PostUpdate), 1);
+    post_update_list_head = post_update_list_head->next;
+}
+
 void update_level(float delta_time) {
     threadlock_io_read_lock(THREADLOCK_LEVEL_UPDATE);
+    if (!post_update_list) init_post_update_list();
     LE_UpdateLayerList(current_level->layers);
     LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
     if (!(pause_state & PAUSE_FLAG_NO_UPDATE_ENTITIES)) while (iter) {
@@ -311,6 +340,7 @@ void update_level(float delta_time) {
         LE_ScrollCamera(current_level->layers, x, y);
     }
     threadlock_io_unlock(THREADLOCK_LEVEL_UPDATE);
+    process_post_update();
 }
 
 void render_level(LE_DrawList* drawlist, int width, int height, float interpolation) {

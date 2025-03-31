@@ -165,20 +165,22 @@ void free_text_graph(struct TextGraph* text) {
     free(text);
 }
 
-void render_text_graph(LE_DrawList* dl, float x, float y, struct TextGraph* text) {
+void render_text_graph_internal(LE_DrawList* dl, float* x, float* y, struct TextGraph* text) {
     struct GfxResource* texture = GET_ASSET(struct GfxResource, "images/font.png");
     struct TextGraph* curr = text;
     char c;
     int ptr;
     int curr_glyph = 0;
-    float orig_x = x;
+    float orig_x = *x;
+    float max_width = 0;
     while (curr) {
         ptr = 0;
         if (!curr->text) break;
         while ((c = curr->text[ptr++])) {
             if (c == '\n') {
-                x = orig_x;
-                y += curr->scale * curr->spacing;
+                if (*x > max_width) max_width = *x;
+                *x = orig_x;
+                *y += curr->scale * curr->spacing;
                 curr->spacing = 8;
                 continue;
             }
@@ -214,14 +216,29 @@ void render_text_graph(LE_DrawList* dl, float x, float y, struct TextGraph* text
             int index = (unsigned char)c - 32;
             int srcX = index % 12 * 10;
             int srcY = index / 12 * 10;
-            LE_DrawSetColor(dl, color);
-            LE_DrawListAppend(dl, texture, x, y + wave, curr->scale * 10, curr->scale * 10, srcX, srcY, 10, 10);
-            x += curr->scale * curr->spacing;
+            if (dl) {
+                LE_DrawSetColor(dl, color);
+                LE_DrawListAppend(dl, texture, *x, *y + wave, curr->scale * 10, curr->scale * 10, srcX, srcY, 10, 10);
+            }
+            *x += curr->scale * curr->spacing;
             curr->spacing = 8;
             curr_glyph++;
         }
         curr = curr->next;
     }
+    if (*x > max_width) max_width = *x;
+    *x = max_width;
+}
+
+void render_text_graph(LE_DrawList* dl, float x, float y, struct TextGraph* text) {
+    render_text_graph_internal(dl, &x, &y, text);
+}
+
+void get_text_graph_size(struct TextGraph* text, float* width, float* height) {
+    float tmp_x = 0, tmp_y = 0;
+    if (!width)  width  = &tmp_x;
+    if (!height) height = &tmp_y;
+    render_text_graph_internal(NULL, width, height, text);
 }
 
 void render_text(LE_DrawList* dl, float x, float y, const char* fmt, ...) {
@@ -234,11 +251,26 @@ void render_text(LE_DrawList* dl, float x, float y, const char* fmt, ...) {
 void render_textv(LE_DrawList* dl, float x, float y, const char* fmt, va_list args) {
     char formatted[8192];
     vsnprintf(formatted, 8192, fmt, args);
-    va_end(args);
 
     unsigned int prev = LE_DrawGetColor(dl);
     struct TextGraph* text = parse_text_graph(formatted);
     render_text_graph(dl, x, y, text);
     free_text_graph(text);
     LE_DrawSetColor(dl, prev);
+}
+
+void text_size(float* w, float* h, const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    text_sizev(w, h, fmt, args);
+    va_end(args);
+}
+
+void text_sizev(float* w, float* h, const char* fmt, va_list args) {
+    char formatted[8192];
+    vsnprintf(formatted, 8192, fmt, args);
+
+    struct TextGraph* text = parse_text_graph(formatted);
+    get_text_graph_size(text, w, h);
+    free_text_graph(text);
 }
