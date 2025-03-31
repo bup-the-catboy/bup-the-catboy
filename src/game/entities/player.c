@@ -11,6 +11,7 @@
 #include "game/level.h"
 #include "game/overlay/hud.h"
 #include "io/io.h"
+#include "main.h"
 
 #define arrsize(x) (sizeof(x) / sizeof(*(x)))
 
@@ -106,14 +107,8 @@ entity_update(player) {
             if (is_button_pressed(BUTTON_MOVE_LEFT )) entity_spawn_dust(entity, false, true, 0.2f + entity->velX);
             if (is_button_pressed(BUTTON_MOVE_RIGHT)) entity_spawn_dust(entity, true, false, 0.2f - entity->velX);
         }
-        if (l && !r) {
-            entity->velX -= 0.02f * delta_time;
-            if (entity->velX < -0.2f) entity->velX = -0.2f;
-        }
-        else if (!l && r) {
-            entity->velX += 0.02f * delta_time;
-            if (entity->velX > 0.2f) entity->velX = 0.2f;
-        }
+        if (l && !r && entity->velX >= -0.2f) entity->velX -= 0.02f * delta_time;
+        else if (!l && r && entity->velX <= 0.2f) entity->velX += 0.02f * delta_time;
         else {
             float decel = (entity->flags & LE_EntityFlags_OnGround) ? 0.02f : 0.01f;
             if (entity->velX < 0) {
@@ -125,10 +120,17 @@ entity_update(player) {
                 if (entity->velX < 0) entity->velX = 0;
             }
         }
+        if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "jumping").asBool) {
+            float height = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = entity->posY }, "jumping_from").asFloat - entity->posY;
+            LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 999 }, "coyote");
+            if (height > 3 || !is_button_down(BUTTON_JUMP)) LE_EntitySetProperty(entity, (LE_EntityProperty){ .asBool = false }, "jumping");
+            else entity->velY = -0.3f;
+        }
         if (entity_jump_requested(entity, is_button_pressed(BUTTON_JUMP)) & entity_can_jump(entity)) {
             LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 1.5f }, "squish");
             LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 999  }, "coyote");
-            entity->velY = -0.5f;
+            LE_EntitySetProperty(entity, (LE_EntityProperty){ .asBool = true  }, "jumping");
+            LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = entity->posY  }, "jumping_from");
             if (!l && !r) entity->velX *= 0.6f;
             entity_spawn_dust(entity, true, true, 0.2f);
         }
