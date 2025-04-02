@@ -279,13 +279,13 @@ void load_level(struct Binary* binary) {
 }
 
 void load_level_impl(unsigned char* data, int datalen) {
-    threadlock_io_write_lock(THREADLOCK_LEVEL_UPDATE);
+    threadlock_mutex_lock(THREADLOCK_LEVEL_UPDATE);
     if (current_level) destroy_level(current_level);
     unique_entity_id = 0;
     current_level = parse_level(data, datalen);
     curr_theme = current_level->default_theme;
     change_level_music(current_level->default_music);
-    threadlock_io_unlock(THREADLOCK_LEVEL_UPDATE);
+    threadlock_mutex_unlock(THREADLOCK_LEVEL_UPDATE);
 }
 
 void reload_level() {
@@ -323,7 +323,7 @@ void post_update(void(*func)(void*), void* user_data) {
 }
 
 void update_level(float delta_time) {
-    threadlock_io_read_lock(THREADLOCK_LEVEL_UPDATE);
+    threadlock_mutex_lock(THREADLOCK_LEVEL_UPDATE);
     if (!post_update_list) init_post_update_list();
     LE_UpdateLayerList(current_level->layers);
     LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
@@ -339,12 +339,12 @@ void update_level(float delta_time) {
         camera_get(camera, &x, &y);
         LE_ScrollCamera(current_level->layers, x, y);
     }
-    threadlock_io_unlock(THREADLOCK_LEVEL_UPDATE);
+    threadlock_mutex_unlock(THREADLOCK_LEVEL_UPDATE);
     process_post_update();
 }
 
 void render_level(LE_DrawList* drawlist, int width, int height, float interpolation) {
-    threadlock_io_read_lock(THREADLOCK_LEVEL_UPDATE);
+    threadlock_mutex_lock(THREADLOCK_LEVEL_UPDATE);
     LE_Draw(current_level->layers, width, height, interpolation, drawlist);
-    threadlock_io_unlock(THREADLOCK_LEVEL_UPDATE);
+    threadlock_mutex_unlock(THREADLOCK_LEVEL_UPDATE);
 }
