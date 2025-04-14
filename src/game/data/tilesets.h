@@ -16,3 +16,10 @@ TILESET(grass_bg,
     SIZE(512, 256)
     TILES_IN_ROW(2)
 )
+
+TILESET(grass_map,
+    PALETTE(map)
+    TEXTURE("images/tilesets/grass_map.png")
+    SIZE(384, 256)
+    TILES_IN_ROW(4)
+)

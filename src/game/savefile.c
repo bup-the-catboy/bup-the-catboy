@@ -63,18 +63,6 @@ struct SaveFile* savefile_get(int file) {
     return &savefiles[file];
 }
 
-bool savefile_map_event(int index) {
-    return (savefile->map_events[index / 8] >> (index % 8)) & 1;
-}
-
-void savefile_map_event_set(int index) {
-    savefile->map_events[index / 8] |=  (1 << (index % 8));
-}
-
-void savefile_map_event_clear(int index) {
-    savefile->map_events[index / 8] &= ~(1 << (index % 8));
-}
-
 void menubtn_file_select(int selected_index) {
     int file = selected_index - 1;
     switch (curr_context) {

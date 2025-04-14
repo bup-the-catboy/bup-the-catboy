@@ -33,7 +33,6 @@ TILE(brick,
 TILE(coin,
     SIMPLE_ANIMATED_TEXTURE(4, 10, 12, 13, 14, 15)
     COLLISION(tilecol_coin)
-    COLLISION(tilecol_finish)
 )
 
 TILE(block,
@@ -202,4 +201,10 @@ TILE_PALETTE(background,
     TILE(layer3, SIMPLE_STATIONARY_TEXTURE(3))
     TILE(layer4, SIMPLE_STATIONARY_TEXTURE(4))
     TILE(layer5, SIMPLE_STATIONARY_TEXTURE(5))
+)
+
+TILE_PALETTE(map,
+    TILE(map_null, SIMPLE_STATIONARY_TEXTURE(0) LVLEDIT_HIDE())
+    TILE(map_fg,   SIMPLE_ANIMATED_TEXTURE(4, 15, 0, 1, 2, 3))
+    TILE(map_bg,   SIMPLE_ANIMATED_TEXTURE(4, 15, 4, 5, 6, 7))
 )

@@ -160,3 +160,32 @@ ENTITY(level_finish,
     TEXTURE(level_finish_texture)
     LVLEDIT_HIDE()
 )
+
+ENTITY(worldmap_player,
+    UPDATE(worldmap_player_update)
+    TEXTURE(worldmap_player_texture)
+    SIZE(0.5f, 0.5f)
+    FLAGS(LE_EntityFlags_DisableCollision)
+    LVLEDIT_TEXTURE("images/entities/player.png")
+    LVLEDIT_CROP(0, 0, 16, 16)
+    LVLEDIT_PROPERTIES(
+        int(curr_node, 0)
+    )
+)
+
+ENTITY(worldmap_node,
+    SIZE(0.5f, 0.5f)
+    FLAGS(LE_EntityFlags_DisableCollision)
+    LVLEDIT_TEXTURE("images/lvledit/worldmap_node.png")
+    LVLEDIT_CROP(0, 0, 8, 8)
+    LVLEDIT_PROPERTIES(
+        int(id, 0)
+        int(up_node, -1)
+        int(left_node, -1)
+        int(down_node, -1)
+        int(right_node, -1)
+        int(level_id, -1)
+        int(requires_level, -1)
+        bool(secret_path, false)
+    )
+)

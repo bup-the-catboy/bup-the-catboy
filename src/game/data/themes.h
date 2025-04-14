@@ -7,4 +7,5 @@
 THEME(grass,
     THEME_TILESET(generic, grass)
     THEME_TILESET(background, grass_bg)
+    THEME_TILESET(map, grass_map)
 )

@@ -4,3 +4,4 @@
 
 TILESET_TYPE(generic)
 TILESET_TYPE(background)
+TILESET_TYPE(map)
