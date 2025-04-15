@@ -15,16 +15,18 @@
 
 #define SAVEFILE_FILENAME "btcb.sav"
 
-struct SaveFile savefiles[NUM_SAVEFILES];
+struct {
+    uint8_t selected_savefile;
+    struct SaveFile savefiles[NUM_SAVEFILES];
+} savedata;
 struct SaveFile* savefile = NULL;
 
-enum FileSelectContext {
+enum {
     Context_Select,
     Context_Erase,
     Context_CopyWhat,
     Context_CopyTo
-};
-enum FileSelectContext curr_context;
+} curr_context;
 int copy_what = -1;
 
 void savefile_load() {
@@ -36,31 +38,33 @@ void savefile_load() {
         savefile_save();
         return;
     }
-    fread(savefiles, sizeof(savefiles), 1, f);
+    fread(&savedata, sizeof(savedata), 1, f);
     fclose(f);
+    savefile_select(savedata.selected_savefile);
 }
 
 void savefile_select(int file) {
-    savefile = &savefiles[file];
+    savedata.selected_savefile = file;
+    savefile = &savedata.savefiles[file];
 }
 
 void savefile_erase(int file) {
-    memset(&savefiles[file], 0, sizeof(struct SaveFile));
-    savefiles[file].lives = 3;
+    memset(&savedata.savefiles[file], 0, sizeof(struct SaveFile));
+    savedata.savefiles[file].lives = 3;
 }
 
 void savefile_copy(int from, int to) {
-    memcpy(&savefiles[to], &savefiles[from], sizeof(struct SaveFile));
+    memcpy(&savedata.savefiles[to], &savedata.savefiles[from], sizeof(struct SaveFile));
 }
 
 void savefile_save() {
     FILE* f = fopen(SAVEFILE_FILENAME, "w" BINARY);
-    fwrite(savefiles, sizeof(savefiles), 1, f);
+    fwrite(&savedata, sizeof(savedata), 1, f);
     fclose(f);
 }
 
 struct SaveFile* savefile_get(int file) {
-    return &savefiles[file];
+    return &savedata.savefiles[file];
 }
 
 void menubtn_file_select(int selected_index) {

@@ -88,6 +88,8 @@ void destroy_level(struct Level* level) {
     LE_DestroyLayerList(level->layers);
     free(level->raw);
     free(level);
+    free(camera);
+    camera = NULL;
 }
 
 uint32_t get_unique_entity_id() {
@@ -334,10 +336,13 @@ void update_level(float delta_time) {
         iter = LE_LayerListNext(iter);
     }
     if (!(pause_state & PAUSE_FLAG_NO_UPDATE_CAMERA)) {
-        float x, y;
-        camera_update(camera);
-        camera_get(camera, &x, &y);
-        LE_ScrollCamera(current_level->layers, x, y);
+        if (camera) {
+            float x, y;
+            camera_update(camera);
+            camera_get(camera, &x, &y);
+            LE_ScrollCamera(current_level->layers, x, y);
+        }
+        else LE_ScrollCamera(current_level->layers, 12, 8);
     }
     threadlock_mutex_unlock(THREADLOCK_LEVEL_UPDATE);
     process_post_update();

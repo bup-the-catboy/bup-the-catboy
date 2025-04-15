@@ -53,8 +53,7 @@ void init_game() {
     init_data();
     menu_init();
     savefile_load();
-    savefile_select(0);
-    load_level(GET_ASSET(struct Binary, "levels/level101.lvl"));
+    load_level(GET_ASSET(struct Binary, "levels/level100.lvl"));
     load_menu(title_screen);
 }
 

@@ -4,11 +4,16 @@
 #include <string.h>
 
 #include "game/input.h"
+#include "game/level.h"
+#include "game/overlay/transition.h"
 #include "game/savefile.h"
+#include "game/entities/functions.h"
 #include "main.h"
 #include "io/assets/assets.h"
 #include "font/font.h"
 #include "math_util.h"
+
+#include <lunarengine.h>
 
 typedef void(*ButtonAction)(int selected_index);
 
@@ -140,8 +145,16 @@ int anim_arg = 0;
     curr->frst = curr;                                 \
     content
 
+static void start_game() {
+    load_menu(none);
+    char name[32];
+    snprintf(name, 32, "levels/level%d.lvl", 101 + savefile->map_id);
+    load_level(GET_ASSET(struct Binary, name));
+    LE_EntitySetProperty(find_entity_with_tag("player"), (LE_EntityProperty){ .asInt = savefile->map_node }, "curr_node");
+}
+
 void menubtn_start(int selected_index) {
-    push_menu(none);
+    start_transition(start_game, 60, LE_Direction_Up, cubic_in_out);
 }
 
 void menubtn_select_file(int selected_index) {
@@ -258,6 +271,11 @@ void pop_menu_impl() {
 }
 
 void _load_menu(int index) {
+    while (menu_stack) {
+        struct MenuStack* parent = menu_stack->parent;
+        free(menu_stack);
+        menu_stack = parent;
+    }
     struct MenuStack* stack = malloc(sizeof(struct MenuStack));
     stack->menu = index == -1 ? NULL : &menus[index];
     stack->parent = menu_stack;

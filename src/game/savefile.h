@@ -13,14 +13,12 @@
 #define NUM_SAVEFILES 4
 
 struct SaveFile {
-    uint8_t levels_completed;
     uint8_t coins;
     uint8_t lives;
-    uint8_t map_x;
-    uint8_t map_y;
+    uint8_t powerup;
+    uint8_t map_node;
     uint8_t map_id;
-    uint8_t padding[10];
-    uint8_t level_flags[256];
+    uint8_t level_flags[100];
 };
 
 extern struct SaveFile* savefile;

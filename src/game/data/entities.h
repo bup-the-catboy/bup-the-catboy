@@ -166,6 +166,7 @@ ENTITY(worldmap_player,
     TEXTURE(worldmap_player_texture)
     SIZE(0.5f, 0.5f)
     FLAGS(LE_EntityFlags_DisableCollision)
+    DEFAULT_PROPERTY("tag", Ptr, (void*)"player")
     LVLEDIT_TEXTURE("images/entities/player.png")
     LVLEDIT_CROP(0, 0, 16, 16)
     LVLEDIT_PROPERTIES(
