@@ -83,7 +83,7 @@ static int walk_anim_table[] = { 4, 5 };
 entity_texture(worldmap_player) {
     float prev_pos_x = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = entity->posX }, "prev_pos").asFloat;
     bool flipped = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "flipped").asBool;
-    bool walking = entity->posX == prev_pos_x;
+    bool walking = entity->posX != prev_pos_x;
     if (entity->posX < prev_pos_x) flipped = true;
     if (entity->posX > prev_pos_x) flipped = false;
     *srcX = (walking
@@ -127,7 +127,7 @@ entity_update(worldmap_player) {
         int down  = LE_EntityGetPropertyOrDefault(curr_node, (LE_EntityProperty){ .asInt = 0 },  "down_node").asInt;
         int right = LE_EntityGetPropertyOrDefault(curr_node, (LE_EntityProperty){ .asInt = 0 }, "right_node").asInt;
         int level = LE_EntityGetPropertyOrDefault(curr_node, (LE_EntityProperty){ .asInt = 0 }, "level_id"  ).asInt;
-        if (is_button_pressed(BUTTON_JUMP) && level != 0) {
+        if (is_button_pressed(BUTTON_JUMP) && level != -1) {
             activated_level = level;
             start_transition(start_level, 60, LE_Direction_Up, cubic_in_out);
         }
@@ -135,6 +135,7 @@ entity_update(worldmap_player) {
         if (is_button_pressed(BUTTON_MOVE_LEFT))  next_node_id = left;
         if (is_button_pressed(BUTTON_MOVE_DOWN))  next_node_id = down;
         if (is_button_pressed(BUTTON_MOVE_RIGHT)) next_node_id = right;
+        if (next_node_id == -1) next_node_id = curr_node_id;
     }
     LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = curr_node_id }, "curr_node");
     LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = next_node_id }, "next_node");
