@@ -37,7 +37,7 @@ static int idle_anim_table[] = { 0, 1, 2, 3, 2, 1 };
 
 entity_texture(player) {
     bool disable_input = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "disable_input").asBool;
-    if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt) {
+    if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = POWERUP_base }, "powerup_state").asInt == POWERUP_death) {
         bool flip = entity->velY > 0;
         int sprite =
             fabsf(entity->velY) < 0.05 ? 11 :
@@ -87,19 +87,46 @@ entity_update(player_spawner) {
 }
 
 entity_update(player) {
-    bool disable_input = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "disable_input").asBool;
-    if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt == 2) {
-        LE_EntitySetProperty(entity,
-            (LE_EntityProperty){
-                .asFloat = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){
-                    .asFloat = 0
-                }, "dead_timer").asFloat + delta_time
-            },
-            "dead_timer"
-        );
-        if (entity->velY >= 1) start_transition(reload_level, 60, LE_Direction_Up, cubic_in_out);
-        return;
+    int id = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = POWERUP_base }, "powerup_state").asInt;
+    if (id == -1) {
+        struct Powerup* parent = get_powerup(id)->parent;
+        if (parent == NULL) parent = get_powerup_by_id(death);
+        id = (int)((uintptr_t)parent - (uintptr_t)get_powerup(0)) / sizeof(struct Powerup);
+        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = id }, "powerup_state");
     }
+    struct Powerup* powerup = get_powerup(id);
+    while (powerup) {
+        if (!powerup->callback(entity)) break;
+        powerup = powerup->parent;
+    }
+}
+
+powerup(death) {
+    if (!(entity->flags & LE_EntityFlags_DisableCollision)) {
+        float xpos, ypos;
+        set_pause_state(PAUSE_FLAG_NO_UPDATE_CAMERA);
+        LE_EntityLastDrawnPos(entity, &xpos, &ypos);
+        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = xpos }, "xpos");
+        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = ypos }, "ypos");
+        entity->velX =  0.0f;
+        entity->velY = -0.7f;
+        entity->flags |= LE_EntityFlags_DisableCollision;
+        return true;
+    }
+    LE_EntitySetProperty(entity,
+        (LE_EntityProperty){
+            .asFloat = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){
+                .asFloat = 0
+            }, "dead_timer").asFloat + delta_time
+        },
+        "dead_timer"
+    );
+    if (entity->velY >= 1) start_transition(reload_level, 60, LE_Direction_Up, cubic_in_out);
+    return true;
+}
+
+powerup(base) {
+    bool disable_input = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "disable_input").asBool;
     LE_EntityProperty pouncing = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "pouncing");
     LE_EntityProperty pounce_timer = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "pounce_timer");
     if (!pouncing.asBool) {
@@ -156,22 +183,15 @@ entity_update(player) {
         entity_spawn_dust(entity, true, true, 0.2f);
     }
     if ((entity->flags & LE_EntityFlags_OnGround) && pounce_timer.asFloat <= 0) pouncing.asBool = false;
-    if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "dead").asInt == 1) {
-        float xpos, ypos;
-        set_pause_state(PAUSE_FLAG_NO_UPDATE_CAMERA);
-        LE_EntityLastDrawnPos(entity, &xpos, &ypos);
-        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = 2 }, "dead");
-        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = xpos }, "xpos");
-        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = ypos }, "ypos");
-        entity->velX =  0.0f;
-        entity->velY = -0.7f;
-        entity->flags |= LE_EntityFlags_DisableCollision;
-        return;
-    }
     hud_update(entity);
     if (!disable_input) camera_set_focus(camera, entity->posX, 8);
     entity_fall_squish(entity, 10, .5f, .25f);
     entity_update_squish(entity, 5);
     LE_EntitySetProperty(entity, pouncing, "pouncing");
     LE_EntitySetProperty(entity, pounce_timer, "pounce_timer");
+    return false;
+}
+
+powerup(test) {
+    return true;
 }

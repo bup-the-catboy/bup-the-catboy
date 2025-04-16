@@ -12,6 +12,7 @@ LE_EntityBuilder* entity_builders[256];
 LE_Tileset* tilesets[256];
 LE_Tileset* themes[256][256];
 LE_TileData* tile_data[256][256];
+struct Powerup powerups[256];
 
 #define NO_VSCODE
 
@@ -108,6 +109,11 @@ void init_data() {
 #define THEME_TILESET(type, id) themes[theme_index][TILESET_TYPE_##type] = tilesets[TILESET_##id];
 #include "game/data/themes.h"
 #undef THEME_TILESET
+
+    struct Powerup* powerup_ptr__ = NULL;
+#define POWERUP(name, extends) powerups[POWERUP_##name] = (struct Powerup){ .parent = powerup_ptr_##extends, .callback = powerup_##name##_update }; struct Powerup* powerup_ptr_##name = &powerups[POWERUP_##name];
+#include "game/data/powerup.h"
+#undef POWERUP
 }
 
 LE_EntityBuilder* get_entity_builder(enum EntityBuilderIDs id) {
@@ -124,4 +130,8 @@ LE_Tileset** get_theme(enum ThemeIDs id) {
 
 LE_TileData** get_tile_palette(enum TilePaletteIDs id) {
     return tile_data[id];
+}
+
+struct Powerup* get_powerup(enum PowerupIDs id) {
+    return &powerups[id];
 }

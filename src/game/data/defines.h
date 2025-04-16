@@ -102,4 +102,8 @@
 #define FOLLOW()
 #define IMAGE(path, srcx, srcy, srcw, srch, dstx, dsty, dstw, dsth) ITEM(path, IMGSIZE(srcx, srcy, srcw, srch, dstx, dsty, dstw, dsth))
 
+#define POWERUP(name, extends) GAME_ELEMENT(POWERUP, name, (void)(powerup_##name##_update); (void)(POWERUP_##extends);)
+
+static int POWERUP__ = -1;
+
 #endif

@@ -54,7 +54,7 @@ entity_collision(squash) {
     }
     if (strcmp(tag, "player") != 0) return;
     if (!entity_should_squish(entity, collider)) {
-        LE_EntitySetProperty(collider, (LE_EntityProperty){ .asInt = 1 }, "dead");
+        LE_EntitySetProperty(collider, (LE_EntityProperty){ .asInt = hurt }, "powerup_state");
         return;
     }
     collider->velY = -0.2f;

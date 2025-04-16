@@ -20,6 +20,7 @@ LE_Entity* find_nearest_entity_with_tag(LE_Entity* self, const char* tag, float*
 #define entity_update(name) void name##_update(LE_Entity* entity)
 #define entity_texture(name) void* name##_texture(LE_Entity* entity, float* w, float* h, int* srcX, int* srcY, int* srcW, int* srcH)
 #define entity_collision(name) void name##_collision(LE_Entity* entity, LE_Entity* collider)
+#define powerup(name) bool powerup_##name##_update(LE_Entity* entity)
 
 entity_update(player_spawner);
 entity_update(player);
@@ -53,3 +54,7 @@ entity_texture(coin_particle);
 entity_texture(trail);
 entity_texture(level_finish);
 entity_texture(worldmap_player);
+
+powerup(death);
+powerup(base);
+powerup(test);
