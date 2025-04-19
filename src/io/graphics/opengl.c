@@ -58,6 +58,13 @@ const char* dummy_shader_vertex =
     "}";
 
 const char* dummy_shader_fragment =
+    "void main() {"_
+    "    gl_FragColor = texture2D(u_texture, v_coord) * v_color;"_
+    "}";
+
+const char* shader_common =
+    "#version 330"_
+    ""_
     "varying vec2 v_coord;"_
     "varying vec4 v_color;"_
     ""_
@@ -65,9 +72,10 @@ const char* dummy_shader_fragment =
     "uniform int u_timer;"_
     "uniform int u_width;"_
     "uniform int u_height;"_
+    "uniform float u_rng;"_
     ""_
-    "void main() {"_
-    "    gl_FragColor = texture2D(u_texture, v_coord) * v_color;"_
+    "float random(inout float seed) {"_
+    "    return seed = fract(sin(dot(vec3(v_coord, seed), vec3(12.9898, 78.233, 37.719))) * 43758.5453);"_
     "}";
 
 #undef _
@@ -192,8 +200,7 @@ void graphics_init(const char* window_name, int width, int height) {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, u));
     glVertexAttribPointer(2, 4, GL_FLOAT, GL_TRUE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, r));
     glBindVertexArray(0);
-    dummy_shader = graphics_load_shader(dummy_shader_fragment);
-    graphics_select_shader(0);
+    current_shader = dummy_shader = graphics_load_shader(dummy_shader_fragment);
 }
 
 void graphics_set_resolution(float width, float height) {
@@ -284,13 +291,17 @@ struct GfxResource* graphics_load_shader(const char* shader) {
     struct GfxResource* res = malloc(sizeof(struct GfxResource));
     res->type = GfxResType_Shader;
 
+    char* code = malloc(strlen(shader_common) + strlen(shader) + 1);
+    strcpy(code, shader_common);
+    strcat(code, shader);
+
     int vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, &dummy_shader_vertex, NULL);
     glCompileShader(vertex);
     check_compile_error(vertex);
 
     int fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, &shader, NULL);
+    glShaderSource(fragment, 1, (const char**)&code, NULL);
     glCompileShader(fragment);
     check_compile_error(fragment);
 
@@ -303,18 +314,17 @@ struct GfxResource* graphics_load_shader(const char* shader) {
     glDeleteShader(vertex);
     glDeleteShader(fragment);
 
+    free(code);
+
     printf("creating shader: %d\n", program);
 
     res->shader_id = program;
     return res;
 }
 
-void graphics_apply_shader() {
+void graphics_set_shader(struct GfxResource* shader) {
     graphics_flush();
     graphics_draw_framebuffer();
-}
-
-void graphics_select_shader(struct GfxResource* shader) {
     current_shader = shader == NULL ? dummy_shader : shader;
 }
 

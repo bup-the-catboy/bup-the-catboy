@@ -84,8 +84,8 @@ void load_assets() {
         curr = asset;
         get_extension(ext, buf);
         bool binary_fallback = false;
-        if (!force_binary) {
-            _ EXT(png) {
+        if (!force_binary) {_
+            EXT(png) {
                 struct GfxResource* texture = graphics_load_texture(data, datasize);
                 free(data);
                 asset->data = texture;

@@ -13,13 +13,13 @@
 
 #define TICKS_PER_SEC 1000.
 
+typedef void(*GfxCmdCustom)(void* param, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color);
+
 enum GfxCmdType {
     GfxCmdType_SetTexture,
-    GfxCmdType_SelectAndDrawShader,
-    GfxCmdType_SelectShader,
+    GfxCmdType_SetShader,
     GfxCmdType_ShaderSetInt,
     GfxCmdType_ShaderSetFloat,
-    GfxCmdType_DrawShader,
     GfxCmdType_Custom,
 };
 
@@ -37,7 +37,7 @@ struct GfxCommand {
                     };
                 } shader_uniform;
                 struct {
-                    void(*callback)(void*);
+                    GfxCmdCustom callback;
                     void *param;
                 } custom;
             };
@@ -46,11 +46,9 @@ struct GfxCommand {
 };
 
 void gfxcmd_process(void* resource, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color);
-struct GfxCommand* gfxcmd_select_shader(struct GfxResource* resource);
 struct GfxCommand* gfxcmd_shader_set_int(const char* uniform, int value);
 struct GfxCommand* gfxcmd_shader_set_float(const char* uniform, float value);
-struct GfxCommand* gfxcmd_draw_shader();
-struct GfxCommand* gfxcmd_custom(void(*func)(void*), void* param);
+struct GfxCommand* gfxcmd_custom(GfxCmdCustom func, void* param);
 
 struct GfxResource* graphics_load_texture(unsigned char* buf, size_t len);
 struct GfxResource* graphics_load_shader(const char* shader);
@@ -62,8 +60,7 @@ void graphics_get_size(int* width, int* height);
 void graphics_select_texture(struct GfxResource* texture);
 void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, uint32_t color);
 void graphics_deinit();
-void graphics_apply_shader();
-void graphics_select_shader(struct GfxResource* shader);
+void graphics_set_shader(struct GfxResource* shader);
 void graphics_shader_set_float(const char* name, float value);
 void graphics_shader_set_int(const char* name, int value);
 struct GfxResource* graphics_dummy_shader();

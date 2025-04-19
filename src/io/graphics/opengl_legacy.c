@@ -125,7 +125,7 @@ struct GfxResource* graphics_load_shader(const char* shader) {
 }
 
 void graphics_apply_shader() {}
-void graphics_select_shader(struct GfxResource* shader) {}
+void graphics_set_shader(struct GfxResource* shader) {}
 void graphics_shader_set_int(const char* name, int value) {}
 void graphics_shader_set_float(const char* name, float value) {}
 

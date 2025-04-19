@@ -38,6 +38,7 @@ entity_update(coin_particle);
 entity_update(trail_spawner);
 entity_update(level_finish);
 entity_update(worldmap_player);
+entity_update(notified);
 entity_collision(squash);
 entity_texture(player);
 entity_texture(dead_player);
@@ -54,6 +55,7 @@ entity_texture(coin_particle);
 entity_texture(trail);
 entity_texture(level_finish);
 entity_texture(worldmap_player);
+entity_texture(notified);
 
 powerup(death);
 powerup(base);

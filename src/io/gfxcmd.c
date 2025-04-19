@@ -29,14 +29,9 @@ void gfxcmd_process(void* resource, float dstx, float dsty, float dstw, float ds
                 graphics_select_texture(&cmd->resource);
                 // we dont free since this is likely a GfxResource
                 break;
-            case GfxCmdType_SelectAndDrawShader:
-                graphics_select_shader(&cmd->resource);
-                graphics_apply_shader();
+            case GfxCmdType_SetShader:
+                graphics_set_shader(&cmd->resource);
                 // we dont free since this is likely a GfxResource
-                return;
-            case GfxCmdType_SelectShader:
-                graphics_select_shader(&cmd->resource);
-                free(cmd);
                 return;
             case GfxCmdType_ShaderSetInt:
                 graphics_shader_set_int(cmd->shader_uniform.uniform_name, cmd->shader_uniform.int_value);
@@ -46,25 +41,14 @@ void gfxcmd_process(void* resource, float dstx, float dsty, float dstw, float ds
                 graphics_shader_set_float(cmd->shader_uniform.uniform_name, cmd->shader_uniform.float_value);
                 free(cmd);
                 return;
-            case GfxCmdType_DrawShader:
-                graphics_apply_shader();
-                free(cmd);
-                return;
             case GfxCmdType_Custom:
-                cmd->custom.callback(cmd->custom.param);
+                cmd->custom.callback(cmd->custom.param, dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
                 free(cmd);
                 return;
         }
     }
     else graphics_select_texture(NULL);
     graphics_draw(dstX1, dstY1, dstX2, dstY2, texX1, texY1, texX2, texY2, color);
-}
-
-struct GfxCommand* gfxcmd_select_shader(struct GfxResource* resource) {
-    struct GfxCommand* cmd = calloc(sizeof(struct GfxCommand), 1);
-    memcpy(cmd, resource, sizeof(struct GfxResource));
-    cmd->type = GfxCmdType_SelectShader;
-    return cmd;
 }
 
 struct GfxCommand* gfxcmd_shader_set_int(const char* uniform, int value) {
@@ -83,13 +67,7 @@ struct GfxCommand* gfxcmd_shader_set_float(const char* uniform, float value) {
     return cmd;
 }
 
-struct GfxCommand* gfxcmd_draw_shader() {
-    struct GfxCommand* cmd = calloc(sizeof(struct GfxCommand), 1);
-    cmd->type = GfxCmdType_DrawShader;
-    return cmd;
-}
-
-struct GfxCommand* gfxcmd_custom(void(*func)(void*), void* param) {
+struct GfxCommand* gfxcmd_custom(GfxCmdCustom func, void* param) {
     struct GfxCommand* cmd = calloc(sizeof(struct GfxCommand), 1);
     cmd->type = GfxCmdType_Custom;
     cmd->custom.callback = func;

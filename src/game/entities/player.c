@@ -15,22 +15,31 @@
 
 #define arrsize(x) (sizeof(x) / sizeof(*(x)))
 
-static void draw_iris(void* param) {
+static void draw_iris(void* param, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
     LE_Entity* entity = param;
-    float timer = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "dead_timer").asFloat;
-    float xpos  = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "xpos").asFloat;
-    float ypos  = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "ypos").asFloat;
-    float radius = quad_out(1 - timer / 30.f) * max(WIDTH, HEIGHT);
-    float color  = quad_out(1 - timer / 20.f);
-    graphics_select_shader(GET_ASSET(struct GfxResource, "shaders/iris.glsl"));
+    float timer  = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "dead_timer").asFloat;
+    float xpos   = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "xpos").asFloat;
+    float ypos   = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "ypos").asFloat;
+    float radius = quad_out(1 - timer / 60.f) * max(WIDTH, HEIGHT);
+    float clr    = quad_out(1 - timer / 20.f);
+    if (clr < 0) clr = 0;
+    graphics_set_shader(GET_ASSET(struct GfxResource, "shaders/iris.glsl"));
     graphics_shader_set_float("u_xpos", xpos);
     graphics_shader_set_float("u_ypos", ypos);
     graphics_shader_set_float("u_radius", radius);
     graphics_shader_set_float("u_bgcol_r", 1);
-    graphics_shader_set_float("u_bgcol_g", color);
-    graphics_shader_set_float("u_bgcol_b", color);
+    graphics_shader_set_float("u_bgcol_g", clr);
+    graphics_shader_set_float("u_bgcol_b", clr);
     graphics_shader_set_float("u_bgcol_a", 1);
-    graphics_apply_shader();
+    graphics_set_shader(graphics_dummy_shader());
+}
+
+static void draw_player(void* param, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
+    LE_Entity* entity = param;
+    bool is_hidden = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "hidden").asBool;
+    if (is_hidden) graphics_set_shader(GET_ASSET(struct GfxResource, "shaders/noise.glsl"));
+    gfxcmd_process(GET_ASSET(struct GfxResource, "images/entities/player.png"), dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
+    graphics_set_shader(graphics_dummy_shader());
 }
 
 static int idle_anim_table[] = { 0, 1, 2, 3, 2, 1 };
@@ -74,7 +83,7 @@ entity_texture(player) {
     *w = facing_left.asBool ? -16 : 16;
     *h = 16;
     entity_apply_squish(entity, w, h);
-    return GET_ASSET(struct GfxResource, "images/entities/player.png");
+    return gfxcmd_custom(draw_player, entity);
 }
 
 entity_update(player_spawner) {
@@ -126,6 +135,10 @@ powerup(death) {
 }
 
 powerup(base) {
+    LE_EntityProperty hidden = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "hidden");
+    LE_EntitySetProperty(entity, hidden, "prev_hidden");
+    hidden.asBool = is_button_down(BUTTON_MOVE_DOWN);
+    LE_EntitySetProperty(entity, hidden, "hidden");
     bool disable_input = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "disable_input").asBool;
     LE_EntityProperty pouncing = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "pouncing");
     LE_EntityProperty pounce_timer = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "pounce_timer");
@@ -193,5 +206,9 @@ powerup(base) {
 }
 
 powerup(test) {
+    LE_EntityProperty hidden = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "hidden");
+    LE_EntitySetProperty(entity, hidden, "prev_hidden");
+    hidden.asBool = is_button_down(BUTTON_MOVE_DOWN);
+    LE_EntitySetProperty(entity, hidden, "hidden");
     return true;
 }
