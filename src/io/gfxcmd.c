@@ -33,6 +33,14 @@ void gfxcmd_process(void* resource, float dstx, float dsty, float dstw, float ds
                 graphics_set_shader(&cmd->resource);
                 // we dont free since this is likely a GfxResource
                 return;
+            case GfxCmdType_SelectShader:
+                graphics_select_shader(&cmd->resource);
+                free(cmd);
+                return;
+            case GfxCmdType_Render:
+                graphics_render();
+                free(cmd);
+                return;
             case GfxCmdType_ShaderSetInt:
                 graphics_shader_set_int(cmd->shader_uniform.uniform_name, cmd->shader_uniform.int_value);
                 free(cmd);
@@ -49,6 +57,19 @@ void gfxcmd_process(void* resource, float dstx, float dsty, float dstw, float ds
     }
     else graphics_select_texture(NULL);
     graphics_draw(dstX1, dstY1, dstX2, dstY2, texX1, texY1, texX2, texY2, color);
+}
+
+struct GfxCommand* gfxcmd_select_shader(struct GfxResource* shader) {
+    struct GfxCommand* cmd = calloc(sizeof(struct GfxCommand), 1);
+    cmd->type = GfxCmdType_SelectShader;
+    cmd->shader = shader;
+    return cmd;
+}
+
+struct GfxCommand* gfxcmd_render() {
+    struct GfxCommand* cmd = calloc(sizeof(struct GfxCommand), 1);
+    cmd->type = GfxCmdType_Render;
+    return cmd;
 }
 
 struct GfxCommand* gfxcmd_shader_set_int(const char* uniform, int value) {

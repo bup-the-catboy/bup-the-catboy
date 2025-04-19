@@ -322,10 +322,18 @@ struct GfxResource* graphics_load_shader(const char* shader) {
     return res;
 }
 
-void graphics_set_shader(struct GfxResource* shader) {
+void graphics_select_shader(struct GfxResource* shader) {
+    current_shader = shader == NULL ? dummy_shader : shader;
+}
+
+void graphics_render() {
     graphics_flush();
     graphics_draw_framebuffer();
-    current_shader = shader == NULL ? dummy_shader : shader;
+}
+
+void graphics_set_shader(struct GfxResource* shader) {
+    graphics_render();
+    graphics_select_shader(shader);
 }
 
 void graphics_shader_set_int(const char* name, int value) {

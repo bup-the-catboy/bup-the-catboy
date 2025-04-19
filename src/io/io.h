@@ -18,6 +18,8 @@ typedef void(*GfxCmdCustom)(void* param, float dstx, float dsty, float dstw, flo
 enum GfxCmdType {
     GfxCmdType_SetTexture,
     GfxCmdType_SetShader,
+    GfxCmdType_SelectShader,
+    GfxCmdType_Render,
     GfxCmdType_ShaderSetInt,
     GfxCmdType_ShaderSetFloat,
     GfxCmdType_Custom,
@@ -40,12 +42,15 @@ struct GfxCommand {
                     GfxCmdCustom callback;
                     void *param;
                 } custom;
+                struct GfxResource* shader;
             };
         };
     };
 };
 
 void gfxcmd_process(void* resource, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color);
+struct GfxCommand* gfxcmd_select_shader(struct GfxResource* shader);
+struct GfxCommand* gfxcmd_render();
 struct GfxCommand* gfxcmd_shader_set_int(const char* uniform, int value);
 struct GfxCommand* gfxcmd_shader_set_float(const char* uniform, float value);
 struct GfxCommand* gfxcmd_custom(GfxCmdCustom func, void* param);
@@ -60,6 +65,8 @@ void graphics_get_size(int* width, int* height);
 void graphics_select_texture(struct GfxResource* texture);
 void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, uint32_t color);
 void graphics_deinit();
+void graphics_render();
+void graphics_select_shader(struct GfxResource* shader);
 void graphics_set_shader(struct GfxResource* shader);
 void graphics_shader_set_float(const char* name, float value);
 void graphics_shader_set_int(const char* name, int value);

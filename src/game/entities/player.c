@@ -20,10 +20,10 @@ static void draw_iris(void* param, float dstx, float dsty, float dstw, float dst
     float timer  = get(entity, "dead_timer", Float, 0);
     float xpos   = get(entity, "xpos",       Float, 0);
     float ypos   = get(entity, "ypos",       Float, 0);
-    float radius = quad_out(1 - timer / 60.f) * max(WIDTH, HEIGHT);
-    float clr    = quad_out(1 - timer / 20.f);
+    float radius = quad_out(1 - timer / 30.f) * max(WIDTH, HEIGHT);
+    float clr    = quad_out(1 - timer / 30.f);
     if (clr < 0) clr = 0;
-    graphics_set_shader(GET_ASSET(struct GfxResource, "shaders/iris.glsl"));
+    graphics_select_shader(GET_ASSET(struct GfxResource, "shaders/iris.glsl"));
     graphics_shader_set_float("u_xpos", xpos);
     graphics_shader_set_float("u_ypos", ypos);
     graphics_shader_set_float("u_radius", radius);
