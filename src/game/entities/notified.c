@@ -3,7 +3,7 @@
 #include "io/assets/assets.h"
 
 entity_update(notified) {
-    if (entity_init(entity)) LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = 1.75f }, "squish");
+    if (entity_init(entity)) set(entity, "squish", Float, 1.75f);
     entity_update_squish(entity, 5);
 }
 

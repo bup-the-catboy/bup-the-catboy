@@ -4,9 +4,9 @@
 #include "io/assets/assets.h"
 
 entity_texture(crate_fragment) {
-    LE_EntityProperty timer = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "timer");
-    if (!(entity->flags & LE_EntityFlags_OnGround)) timer.asFloat += delta_time;
-    switch ((int)(timer.asFloat / 5) % 4) {
+    float timer = get(entity, "timer", Float, 0);
+    if (!(entity->flags & LE_EntityFlags_OnGround)) timer += delta_time;
+    switch ((int)(timer / 5) % 4) {
         case 0:
             *w =  8;
             *h =  8;
@@ -28,6 +28,6 @@ entity_texture(crate_fragment) {
     *srcY = 0;
     *srcW = 8;
     *srcH = 8;
-    LE_EntitySetProperty(entity, timer, "timer");
+    set(entity, "timer", Float, timer);
     return GET_ASSET(struct GfxResource, "images/entities/crate_fragment.png");
 }

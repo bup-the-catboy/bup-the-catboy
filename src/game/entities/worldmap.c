@@ -16,8 +16,8 @@ static void start_level() {
 }
 
 static bool can_go(LE_Entity* entity) {
-    int  level  = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt =  -1 }, "requires_level").asInt;
-    bool secret = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "secret_path").asBool;
+    int  level  = get(entity, "requires_level", Int, -1);
+    bool secret = get(entity, "secret_path", Bool, false);
     if (level == -1) return true;
     return savefile->level_flags[level] & (secret ? LEVEL_FLAG_SECRET_EXIT : LEVEL_FLAG_COMPLETED);
 }
@@ -38,7 +38,7 @@ static LE_Entity* get_worldmap_node(LE_Entity* entity, int id) {
     LE_EntityListIter* iter = LE_EntityListGetIter(list);
     while (iter) {
         LE_Entity* entity = LE_EntityListGet(iter);
-        if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = -1 }, "id").asInt == id) return entity;
+        if (get(entity, "id", Int, id) == id) return entity;
         iter = LE_EntityListNext(iter);
     }
     return NULL;
@@ -46,11 +46,11 @@ static LE_Entity* get_worldmap_node(LE_Entity* entity, int id) {
 
 static int continue_to(LE_Entity* entity, int prev, int curr) {
     LE_Entity* curr_node = get_worldmap_node(entity, curr);
-    int up    = LE_EntityGetPropertyOrDefault(curr_node, (LE_EntityProperty){ .asInt = 0 },    "up_node").asInt;
-    int left  = LE_EntityGetPropertyOrDefault(curr_node, (LE_EntityProperty){ .asInt = 0 },  "left_node").asInt;
-    int down  = LE_EntityGetPropertyOrDefault(curr_node, (LE_EntityProperty){ .asInt = 0 },  "down_node").asInt;
-    int right = LE_EntityGetPropertyOrDefault(curr_node, (LE_EntityProperty){ .asInt = 0 }, "right_node").asInt;
-    int level = LE_EntityGetPropertyOrDefault(curr_node, (LE_EntityProperty){ .asInt = 0 }, "level_id"  ).asInt;
+    int up    = get(curr_node,    "up_node", Int, 0);
+    int left  = get(curr_node,  "left_node", Int, 0);
+    int down  = get(curr_node,  "down_node", Int, 0);
+    int right = get(curr_node, "right_node", Int, 0);
+    int level = get(curr_node, "level_id"  , Int, 0);
     if (level != -1) return curr;
     int next = curr;
     if (up == prev) {
@@ -81,8 +81,8 @@ static int idle_anim_table[] = { 0, 1, 2, 3, 2, 1 };
 static int walk_anim_table[] = { 4, 5 };
 
 entity_texture(worldmap_player) {
-    float prev_pos_x = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = entity->posX }, "prev_pos").asFloat;
-    bool flipped = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "flipped").asBool;
+    float prev_pos_x = get(entity, "prev_pos", Int, entity->posX);
+    bool flipped = get(entity, "flipped", Bool, false);
     bool walking = entity->posX != prev_pos_x;
     if (entity->posX < prev_pos_x) flipped = true;
     if (entity->posX > prev_pos_x) flipped = false;
@@ -95,13 +95,13 @@ entity_texture(worldmap_player) {
     *srcH = 16;
     *w = flipped ? -16 : 16;
     *h = 16;
-    LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = entity->posX }, "prev_pos");
+    set(entity, "prev_pos", Float, entity->posX);
     return GET_ASSET(struct GfxResource, "images/entities/player.png");
 }
 
 entity_update(worldmap_player) {
-    int curr_node_id = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0            }, "curr_node").asInt;
-    int next_node_id = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = curr_node_id }, "next_node").asInt;
+    int curr_node_id = get(entity, "curr_node", Int, 0);
+    int next_node_id = get(entity, "next_node", Int, curr_node_id);
     LE_Entity* curr_node = get_worldmap_node(entity, curr_node_id);
     LE_Entity* next_node = get_worldmap_node(entity, next_node_id);
     if (!curr_node) return;
@@ -122,11 +122,11 @@ entity_update(worldmap_player) {
         }
     }
     else {
-        int up    = LE_EntityGetPropertyOrDefault(curr_node, (LE_EntityProperty){ .asInt = 0 },    "up_node").asInt;
-        int left  = LE_EntityGetPropertyOrDefault(curr_node, (LE_EntityProperty){ .asInt = 0 },  "left_node").asInt;
-        int down  = LE_EntityGetPropertyOrDefault(curr_node, (LE_EntityProperty){ .asInt = 0 },  "down_node").asInt;
-        int right = LE_EntityGetPropertyOrDefault(curr_node, (LE_EntityProperty){ .asInt = 0 }, "right_node").asInt;
-        int level = LE_EntityGetPropertyOrDefault(curr_node, (LE_EntityProperty){ .asInt = 0 }, "level_id"  ).asInt;
+        int up    = get(curr_node,    "up_node", Int, 0);
+        int left  = get(curr_node,  "left_node", Int, 0);
+        int down  = get(curr_node,  "down_node", Int, 0);
+        int right = get(curr_node, "right_node", Int, 0);
+        int level = get(curr_node, "level_id"  , Int, 0);
         if (is_button_pressed(BUTTON_JUMP) && level != -1) {
             activated_level = level;
             start_transition(start_level, 60, LE_Direction_Up, cubic_in_out);
@@ -137,6 +137,6 @@ entity_update(worldmap_player) {
         if (is_button_pressed(BUTTON_MOVE_RIGHT)) next_node_id = right;
         if (next_node_id == -1) next_node_id = curr_node_id;
     }
-    LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = curr_node_id }, "curr_node");
-    LE_EntitySetProperty(entity, (LE_EntityProperty){ .asInt = next_node_id }, "next_node");
+    get(entity, "curr_node", Int, curr_node_id);
+    get(entity, "next_node", Int, next_node_id);
 }

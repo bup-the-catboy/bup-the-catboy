@@ -12,8 +12,8 @@ entity_update(trail_spawner) {
         entity->velY = random_range(-0.1, -0.3);
         entity->velX = random_range(-0.2,  0.2);
     }
-    float prevPosX = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = entity->posX }, "prev_pos_x").asFloat;
-    float prevPosY = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = entity->posY }, "prev_pos_y").asFloat;
+    float prevPosX = get(entity, "prev_pos_x", Float, entity->posX);
+    float prevPosY = get(entity, "prev_pos_y", Float, entity->posY);
 
     int num_particles = sqrtf((entity->posX - prevPosX) * (entity->posX - prevPosX) + (entity->posY - prevPosY) * (entity->posY - prevPosY)) * 8;
     for (int i = 0; i < num_particles; i++) {
@@ -23,8 +23,8 @@ entity_update(trail_spawner) {
         LE_CreateEntity(LE_EntityGetList(entity), get_entity_builder_by_id(trail), x, y);
     }
 
-    LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = entity->posX }, "prev_pos_x");
-    LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = entity->posY }, "prev_pos_y");
+    set(entity, "prev_pos_x", Float, entity->posX);
+    set(entity, "prev_pos_y", Float, entity->posY);
 }
 
 entity_texture(trail) {

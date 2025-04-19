@@ -1,4 +1,5 @@
 #include "functions.h"
+#include "game/entities/functions.h"
 
 #include "game/data.h"
 #include "rng.h"
@@ -6,8 +7,8 @@
 #include <string.h>
 
 tile_collision(crate) {
-    char* tag = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asPtr = "" }, "tag").asPtr;
-    bool pouncing = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "pouncing").asBool;
+    char* tag = get(entity, "tag", Ptr, "");
+    bool pouncing = get(entity, "pouncing", Bool, false);
     if (strcmp(tag, "player") == 0 && pouncing) {
         LE_TilemapSetTile(tilemap, tileX, tileY, TILE_DATA_air);
         for (int i = 0; i < 8; i++) {

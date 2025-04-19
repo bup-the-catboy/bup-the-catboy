@@ -34,11 +34,11 @@ entity_texture(turtle_shell_fragment) {
 entity_update(turtle_shell) {
     LE_Direction dir;
     if (entity_init(entity)) {
-        LE_EntityProperty walk_speed = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "walk_speed");
+        float walk_speed = get(entity, "walk_speed", Float, 0);
         LE_Entity* player = find_nearest_entity_with_tag(entity, "player", NULL);
-        if (player->posX < entity->posX) entity->velX =  walk_speed.asFloat;
-        else                             entity->velX = -walk_speed.asFloat;
-        LE_EntitySetProperty(entity, (LE_EntityProperty){ .asPtr = "turtle_shell" }, "tag");
+        if (player->posX < entity->posX) entity->velX =  walk_speed;
+        else                             entity->velX = -walk_speed;
+        set(entity, "tag", Ptr, "turtle_shell");
     }
     if (entity_collided(entity, &dir)) {
         if (dir == LE_Direction_Left || dir == LE_Direction_Right) {

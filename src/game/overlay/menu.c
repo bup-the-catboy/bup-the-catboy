@@ -150,7 +150,7 @@ static void start_game() {
     char name[32];
     snprintf(name, 32, "levels/level%d.lvl", 101 + savefile->map_id);
     load_level(GET_ASSET(struct Binary, name));
-    LE_EntitySetProperty(find_entity_with_tag("player"), (LE_EntityProperty){ .asInt = savefile->map_node }, "curr_node");
+    set(find_entity_with_tag("player"), "curr_node", Int, savefile->map_node);
 }
 
 void menubtn_start(int selected_index) {

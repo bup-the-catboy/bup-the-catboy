@@ -8,14 +8,13 @@
 #include "rng.h"
 
 entity_update(level_finish) {
-    LE_EntityProperty timer = (LE_EntityProperty){ .asFloat = 0 };
-    timer = LE_EntityGetPropertyOrDefault(entity, timer, "timer");
-    timer.asFloat += delta_time;
-    LE_EntitySetProperty(entity, timer, "timer");
+    float timer = get(entity, "timer", Float, 0);
+    timer += delta_time;
+    set(entity, "timer", Float, timer);
 }
 
 entity_texture(level_finish) {
-    float timer = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "timer").asFloat;
+    float timer = get(entity, "timer", Float, 0);
     float shake = max(0, (30 - timer) / 30) * 16;
     float text_w, text_h;
     const char* text = "${^200}LEVEL CLEAR";

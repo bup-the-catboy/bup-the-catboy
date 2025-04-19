@@ -22,6 +22,11 @@ LE_Entity* find_nearest_entity_with_tag(LE_Entity* self, const char* tag, float*
 #define entity_collision(name) void name##_collision(LE_Entity* entity, LE_Entity* collider)
 #define powerup(name) bool powerup_##name##_update(LE_Entity* entity)
 
+#define get(ent, name, type, default) LE_EntityGetPropertyOrDefault(ent, (LE_EntityProperty){ .as##type = default }, name).as##type
+#define set(ent, name, type, value)   LE_EntitySetProperty         (ent, (LE_EntityProperty){ .as##type = value   }, name)
+#define delete(ent, name) LE_EntityDelProperty(ent,       name)
+#define exists(ent, name) LE_EntityGetProperty(ent, NULL, name)
+
 entity_update(player_spawner);
 entity_update(player);
 entity_update(dead_player);

@@ -8,38 +8,38 @@ entity_update(walk) {
     float distance = 0;
     LE_Entity* player = find_nearest_entity_with_tag(entity, "player", &distance);
     if (player && distance > 256) return;
-    LE_EntityProperty walk_speed = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "walk_speed");
-    LE_EntityProperty walk_timer = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "walk_timer");
+    float walk_speed = get(entity, "walk_speed", Float, 0);
+    float walk_timer = get(entity, "walk_timer", Float, 0);
     LE_Direction dir;
-    if (entity->velX == 0) entity->velX = -walk_speed.asFloat;
-    if (walk_timer.asFloat > 0) {
-        walk_timer.asFloat -= delta_time;
-        if (walk_timer.asFloat <= 0) {
-            if (entity->posX < player->posX) entity->velX =  walk_speed.asFloat;
-            if (player->posX < entity->posX) entity->velX = -walk_speed.asFloat;
-            walk_timer.asFloat = 0;
+    if (entity->velX == 0) entity->velX = -walk_speed;
+    if (walk_timer > 0) {
+        walk_timer -= delta_time;
+        if (walk_timer <= 0) {
+            if (entity->posX < player->posX) entity->velX =  walk_speed;
+            if (player->posX < entity->posX) entity->velX = -walk_speed;
+            walk_timer = 0;
         }
     }
     if (entity_collided(entity, &dir)) {
-        if (dir == LE_Direction_Left ) entity->velX = -walk_speed.asFloat;
-        if (dir == LE_Direction_Right) entity->velX =  walk_speed.asFloat;
+        if (dir == LE_Direction_Left ) entity->velX = -walk_speed;
+        if (dir == LE_Direction_Right) entity->velX =  walk_speed;
     }
-    if (LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool = false }, "has_vision").asBool) {
-        bool      hidden = LE_EntityGetPropertyOrDefault(player, (LE_EntityProperty){ .asBool = false },      "hidden").asBool;
-        bool prev_hidden = LE_EntityGetPropertyOrDefault(player, (LE_EntityProperty){ .asBool = false }, "prev_hidden").asBool;
+    if (get(entity, "has_vision", Bool, false)) {
+        bool      hidden = get(player,      "hidden", Bool, false);
+        bool prev_hidden = get(player, "prev_hidden", Bool, false);
         if (prev_hidden && !hidden) {
             if (entity->posX < player->posX) entity->velX =  0.001f;
             if (player->posX < entity->posX) entity->velX = -0.001f;
-            walk_timer.asFloat = 30;
+            walk_timer = 30;
             LE_CreateEntity(LE_EntityGetList(entity), get_entity_builder_by_id(notified), entity->posX, entity->posY - 1.25f);
-            LE_EntitySetProperty(entity, (LE_EntityProperty){ .asBool = player->posX < entity->posX }, "facing_left");
+            set(entity, "facing_left", Bool, player->posX < entity->posX);
         }
     }
-    LE_EntitySetProperty(entity, walk_timer, "walk_timer");
+    set(entity, "walk_timer", Float, walk_timer);
 }
 
 entity_update(gravity) {
-    entity->velY += LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "gravity").asFloat * delta_time;
+    entity->velY += get(entity, "gravity", Float, 0) * delta_time;
 }
 
 entity_update(animable) {
@@ -47,15 +47,14 @@ entity_update(animable) {
 }
 
 entity_update(despawn) {
-    LE_EntityProperty timer;
-    LE_EntityGetProperty(entity, &timer, "despawn_timer");
-    timer.asFloat -= delta_time;
-    if (timer.asFloat <= 0) LE_DeleteEntity(entity);
-    LE_EntitySetProperty(entity, timer, "despawn_timer");
+    float timer = get(entity, "despawn_timer", Float, 0);
+    timer -= delta_time;
+    if (timer <= 0) LE_DeleteEntity(entity);
+    set(entity, "despawn_timer", Float, timer);
 }
 
 entity_update(friction) {
-    float friction = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 0 }, "friction").asFloat;
+    float friction = get(entity, "friction", Float, 0);
     if (!(entity->flags & LE_EntityFlags_OnGround)) return;
     if (entity->velX > 0) {
         entity->velX -= friction * delta_time;
@@ -68,19 +67,19 @@ entity_update(friction) {
 }
 
 entity_collision(squash) {
-    const char* tag = LE_EntityGetPropertyOrDefault(collider, (LE_EntityProperty){ .asPtr = (void*)"" }, "tag").asPtr;
+    const char* tag = get(collider, "tag", Ptr, "");
     if (strcmp(tag, "turtle_shell") == 0) {
         LE_DeleteEntity(entity);
         return;
     }
     if (strcmp(tag, "player") != 0) return;
     if (!entity_should_squish(entity, collider)) {
-        if (LE_EntityGetPropertyOrDefault(collider, (LE_EntityProperty){ .asBool = false }, "hidden").asBool) return;
-        LE_EntitySetProperty(collider, (LE_EntityProperty){ .asInt = hurt }, "powerup_state");
+        if (get(collider, "hidden", Bool, false)) return;
+        set(collider, "powerup_state", Int, hurt);
         return;
     }
     collider->velY = -0.2f;
-    enum EntityBuilderIDs builder = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "squashed").asInt;
+    enum EntityBuilderIDs builder = get(entity, "squashed", Int, 0);
     LE_CreateEntity(LE_EntityGetList(entity), get_entity_builder(builder), entity->posX, entity->posY);
     LE_DeleteEntity(entity);
 }

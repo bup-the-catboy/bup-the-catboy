@@ -22,6 +22,6 @@ entity_texture(squashed_mouse) {
 }
 
 entity_update(squashed_mouse) {
-    if (entity_init(entity)) LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = .5f }, "squish");
+    if (entity_init(entity)) set(entity, "squish", Float, .5f);
     entity_update_squish(entity, 5);
 }

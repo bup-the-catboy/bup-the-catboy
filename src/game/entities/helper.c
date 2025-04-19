@@ -8,66 +8,66 @@
 #include <string.h>
 
 bool entity_init(LE_Entity* entity) {
-    if (LE_EntityGetProperty(entity, NULL, "init")) return false;
-    LE_EntitySetProperty(entity, (LE_EntityProperty){ .asBool = true }, "init");
+    if (exists(entity, "init")) return false;
+    set(entity, "init", Bool, true);
     return true;
 }
 
 void entity_apply_squish(LE_Entity* entity, float* w, float* h) {
-    LE_EntityProperty squish = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 1 }, "squish");
-    *w -= *w * (squish.asFloat - 1);
-    *h += *h * (squish.asFloat - 1);
+    float squish = get(entity, "squish", Float, 1);
+    *w -= *w * (squish - 1);
+    *h += *h * (squish - 1);
 }
 
 void entity_update_squish(LE_Entity* entity, float modifier) {
-    LE_EntityProperty squish = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 1 }, "squish");
-    squish.asFloat += (1 - squish.asFloat) / modifier * delta_time;
-    LE_EntitySetProperty(entity, squish, "squish");
+    float squish = get(entity, "squish", Float, 1);
+    squish += (1 - squish) / modifier * delta_time;
+    set(entity, "squish", Float, squish);
 }
 
 void entity_fall_squish(LE_Entity* entity, float max_distance, float max_squish, float offset) {
-    LE_EntityProperty peak_height = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = entity->posY }, "peak_height");
-    LE_EntityProperty prev_in_air = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool  = false        }, "prev_in_air");
+    float peak_height = get(entity, "peak_height", Float, entity->posY);
+    bool  prev_in_air = get(entity, "prev_in_air", Bool,  false);
     if (entity->flags & LE_EntityFlags_OnGround) {
-        if (prev_in_air.asBool) {
-            prev_in_air.asBool = false;
-            LE_EntitySetProperty(entity, prev_in_air, "prev_in_air");
-            float diff = entity->posY - peak_height.asFloat;
+        if (prev_in_air) {
+            prev_in_air = false;
+            set(entity, "prev_in_air", Bool,  prev_in_air);
+            float diff = entity->posY - peak_height;
             float squish = 1 - ((diff / max_distance) * max_squish + offset);
-            LE_EntitySetProperty(entity, (LE_EntityProperty){ .asFloat = squish }, "squish");
+            set(entity, "squish", Float, squish);
         }
-        peak_height.asFloat = entity->posY;
+        peak_height = entity->posY;
     }
     else {
-        if (peak_height.asFloat > entity->posY) peak_height.asFloat = entity->posY;
-        prev_in_air.asBool = true;
+        if (peak_height > entity->posY) peak_height = entity->posY;
+        prev_in_air = true;
     }
-    LE_EntitySetProperty(entity, peak_height, "peak_height");
-    LE_EntitySetProperty(entity, prev_in_air, "prev_in_air");
+    set(entity, "peak_height", Float, peak_height);
+    set(entity, "prev_in_air", Bool,  prev_in_air);
 }
 
 bool entity_can_jump(LE_Entity* entity) {
-    LE_EntityProperty coyote = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 999 }, "coyote");
-    if (entity->flags & LE_EntityFlags_OnGround) coyote.asFloat = 0;
-    else coyote.asFloat += delta_time;
-    LE_EntitySetProperty(entity, coyote, "coyote");
-    return coyote.asFloat < 5;
+    float coyote = get(entity, "coyote", Float, 99);
+    if (entity->flags & LE_EntityFlags_OnGround) coyote = 0;
+    else coyote += delta_time;
+    set(entity, "coyote", Float, coyote);
+    return coyote < 5;
 }
 
 bool entity_jump_requested(LE_Entity* entity, bool jump_pressed) {
-    LE_EntityProperty jump_timer = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asFloat = 999 }, "jump_timer");
-    if (jump_pressed) jump_timer.asFloat = 0;
-    else jump_timer.asFloat += delta_time;
-    LE_EntitySetProperty(entity, jump_timer, "jump_timer");
-    return jump_timer.asFloat < 5;
+    float jump_timer = get(entity, "jump_timer", Float, 999);
+    if (jump_pressed) jump_timer = 0;
+    else jump_timer += delta_time;
+    set(entity, "jump_timer", Float, jump_timer);
+    return jump_timer < 5;
 }
 
 bool entity_flip_texture(LE_Entity* entity) {
-    LE_EntityProperty flip = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asBool  = false }, "facing_left");
-    if (entity->velX < 0) flip.asBool = true;
-    if (entity->velX > 0) flip.asBool = false;
-    LE_EntitySetProperty(entity, flip, "facing_left");
-    return flip.asBool;
+    bool flip = get(entity, "facing_left", Bool, false);
+    if (entity->velX < 0) flip = true;
+    if (entity->velX > 0) flip = false;
+    set(entity, "facing_left", Bool, flip);
+    return flip;
 }
 
 void entity_animate(int* srcX, int* srcY, int* srcW, int* srcH, int width, int height, int delay, int frames, bool loop, int curr_frame) {
@@ -82,23 +82,20 @@ void entity_animate(int* srcX, int* srcY, int* srcW, int* srcH, int width, int h
 }
 
 int entity_advance_anim_frame(LE_Entity* entity) {
-    LE_EntityProperty anim_timer = (LE_EntityProperty){ .asFloat = -1 };
-    LE_EntityGetProperty(entity, &anim_timer, "anim_timer");
-    anim_timer.asFloat += delta_time;
-    LE_EntitySetProperty(entity, anim_timer, "anim_timer");
-    return anim_timer.asFloat;
+    float anim_timer = get(entity, "anim_timer", Float, -1);
+    anim_timer += delta_time;
+    set(entity, "anim_timer", Float, anim_timer);
+    return anim_timer;
 }
 
 int entity_get_anim_frame(LE_Entity* entity) {
-    LE_EntityProperty anim_timer = (LE_EntityProperty){ .asFloat = -1 };
-    LE_EntityGetProperty(entity, &anim_timer, "anim_timer");
-    return anim_timer.asFloat;
+    return get(entity, "anim_timer", Float, -1);
 }
 
 bool entity_collided(LE_Entity* entity, LE_Direction* dir) {
     LE_EntityProperty collision;
     if (!LE_EntityGetProperty(entity, &collision, "collision")) return false;
-    LE_EntityDelProperty(entity, "collision");
+    delete(entity, "collision");
     *dir = collision.asInt;
     return true;
 }
@@ -111,15 +108,15 @@ void entity_spawn_dust(LE_Entity* entity, bool left, bool right, float speed) {
 }
 
 bool entity_should_squish(LE_Entity* entity, LE_Entity* collider) {
-    LE_EntityProperty stomp_timer = LE_EntityGetPropertyOrDefault(entity, (LE_EntityProperty){ .asInt = 0 }, "stomp_timer");
+    int stomp_timer = get(entity, "stomp_timer", Int, 0);
     bool squish = false;
-    if (stomp_timer.asInt != 0) stomp_timer.asInt--;
+    if (stomp_timer != 0) stomp_timer--;
     else if (collider->velY > 0.05) {
-        stomp_timer.asInt = 5;
+        stomp_timer = 5;
         squish = true;
     }
-    LE_EntitySetProperty(entity, stomp_timer, "stomp_timer");
-    return squish || stomp_timer.asInt != 0;
+    set(entity, "stomp_timer", Int, stomp_timer);
+    return squish || stomp_timer != 0;
 }
 
 LE_Entity* find_entity_with_tag(const char* tag) {
@@ -132,9 +129,7 @@ LE_Entity* find_entity_with_tag(const char* tag) {
             LE_EntityListIter* j = LE_EntityListGetIter(list);
             while (j) {
                 LE_Entity* entity = LE_EntityListGet(j);
-                const char* entity_tag = LE_EntityGetPropertyOrDefault(
-                    entity, (LE_EntityProperty){ .asPtr = "" }, "tag"
-                ).asPtr;
+                const char* entity_tag = get(entity, "tag", Ptr, "");
                 if (strcmp(entity_tag, tag) == 0) return entity;
                 j = LE_EntityListNext(j);
             }
@@ -151,9 +146,7 @@ LE_Entity* find_nearest_entity_with_tag(LE_Entity* self, const char* tag, float*
     LE_EntityListIter* iter = LE_EntityListGetIter(list);
     while (iter) {
         LE_Entity* entity = LE_EntityListGet(iter);
-        const char* entity_tag = LE_EntityGetPropertyOrDefault(
-            entity, (LE_EntityProperty){ .asPtr = "" }, "tag"
-        ).asPtr;
+        const char* entity_tag = get(entity, "tag", Ptr, "");
         if (strcmp(entity_tag, tag) == 0) {
             float dx = self->posX - entity->posX;
             float dy = self->posY - entity->posY;

@@ -3,10 +3,9 @@
 #include "main.h"
 
 entity_update(dust) {
-    LE_EntityProperty initial_speed = (LE_EntityProperty){ .asFloat = entity->velX };
-    if (entity_init(entity)) LE_EntitySetProperty(entity, initial_speed, "initial_speed");
-    LE_EntityGetProperty(entity, &initial_speed, "intial_speed");
-    entity->velX -= initial_speed.asFloat / 8 * delta_time;
+    if (entity_init(entity)) set(entity, "initial_speed", Float, entity->velX);
+    float initial_speed = get(entity, "initial_speed", Float, entity->velX);
+    entity->velX -= initial_speed / 8 * delta_time;
     int frame = entity_advance_anim_frame(entity);
     if (frame >= 8 * 2) LE_DeleteEntity(entity);
 }

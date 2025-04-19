@@ -19,7 +19,7 @@ void finish_level_anim(void* _) {
     player->posY = data->pos_y + 8;
     player->velX = data->vel_x;
     player->velY = data->vel_y;
-    LE_EntitySetProperty(player, (LE_EntityProperty){ .asBool = true }, "disable_input");
+    set(player, "disable_input", Bool, true);
     LE_CreateEntity(LE_EntityGetList(player), get_entity_builder_by_id(level_finish), 0, 0);
     for (int i = 0; i < 8; i++) {
         LE_CreateEntity(LE_EntityGetList(player), get_entity_builder_by_id(trail_spawner), player->posX, player->posY);
