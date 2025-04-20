@@ -1,3 +1,4 @@
+#include "font/font.h"
 #include "functions.h"
 
 #include <lunarengine.h>
@@ -12,26 +13,34 @@
 #include "game/overlay/hud.h"
 #include "io/io.h"
 #include "main.h"
+#include "rng.h"
 
 #define arrsize(x) (sizeof(x) / sizeof(*(x)))
 
-static void draw_iris(void* param, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
+static void draw_dead_player(void* param, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
     LE_Entity* entity = param;
-    float timer  = get(entity, "dead_timer", Float, 0);
-    float xpos   = get(entity, "xpos",       Float, 0);
-    float ypos   = get(entity, "ypos",       Float, 0);
-    float radius = quad_out(1 - timer / 30.f) * max(WIDTH, HEIGHT);
-    float clr    = quad_out(1 - timer / 30.f);
-    if (clr < 0) clr = 0;
-    graphics_select_shader(GET_ASSET(struct GfxResource, "shaders/iris.glsl"));
-    graphics_shader_set_float("u_xpos", xpos);
-    graphics_shader_set_float("u_ypos", ypos);
-    graphics_shader_set_float("u_radius", radius);
-    graphics_shader_set_float("u_bgcol_r", 1);
-    graphics_shader_set_float("u_bgcol_g", clr);
-    graphics_shader_set_float("u_bgcol_b", clr);
-    graphics_shader_set_float("u_bgcol_a", 1);
+    float timer = get(entity, "dead_timer", Float, 0);
+    float shake_intensity = max(0, (30 - timer) / 30) * 8;
+    float x = random_range(-shake_intensity, shake_intensity);
+    float y = random_range(-shake_intensity, shake_intensity);
+    graphics_set_shader(GET_ASSET(struct GfxResource, "shaders/iris.glsl"));
+    graphics_shader_set_float("u_xpos", 0);
+    graphics_shader_set_float("u_ypos", 0);
+    graphics_shader_set_float("u_radius", 0);
+    gfxcmd_process(GET_ASSET(struct GfxResource, "images/entities/player.png"), dstx + x, dsty + y, dstw, dsth, srcx, srcy, srcw, srch, color);
     graphics_set_shader(graphics_dummy_shader());
+    if (timer >= 60) {
+        shake_intensity = max(0, (30 - (timer - 60)) / 30) * 8;
+        x = random_range(-shake_intensity, shake_intensity);
+        y = random_range(-shake_intensity, shake_intensity);
+        float width, height;
+        const char* msg = "${^200}DEFEAT";
+        LE_DrawList* dl = LE_CreateDrawList();
+        text_size(&width, &height, msg);
+        render_text(dl, (WIDTH - width) / 2 + x, 64 + y, msg);
+        LE_Render(dl, gfxcmd_process);
+        LE_DestroyDrawList(dl);
+    }
 }
 
 static void draw_player(void* param, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
@@ -47,18 +56,13 @@ static int idle_anim_table[] = { 0, 1, 2, 3, 2, 1 };
 entity_texture(player) {
     bool disable_input = get(entity, "disable_input", Bool, false);
     if (get(entity, "powerup_state", Int, POWERUP_base) == POWERUP_death) {
-        bool flip = entity->velY > 0;
-        int sprite =
-            fabsf(entity->velY) < 0.05 ? 11 :
-            fabsf(entity->velY) < 0.15 ? 10 : 9;
-        *srcX = sprite * 16;
+        *srcX = 9 * 16;
         *srcY = 0;
         *srcW = 16;
         *srcH = 16;
-        *w = 16;
-        *h = 16 * (flip ? -1 : 1);
-        drawlist_append(gfxcmd_custom(draw_iris, entity));
-        return GET_ASSET(struct GfxResource, "images/entities/player.png");
+        *w = 16 * (get(entity, "death_left", Bool, false) ? 1 : -1);
+        *h = 16;
+        return gfxcmd_custom(draw_dead_player, entity);
     }
     int sprite = idle_anim_table[(global_timer / 10) % 6];
     bool pouncing    = get(entity, "pouncing",    Bool, false);
@@ -117,15 +121,16 @@ powerup(death) {
         LE_EntityLastDrawnPos(entity, &xpos, &ypos);
         set(entity, "xpos", Float, xpos);
         set(entity, "ypos", Float, ypos);
-        entity->velX =  0.0f;
-        entity->velY = -0.7f;
+        set(entity, "gravity", Float, 0.001);
+        entity->velX =  0.05f * (get(entity, "death_left", Bool, false) ? -1 : 1);
+        entity->velY = -0.05f;
         entity->flags |= LE_EntityFlags_DisableCollision;
         return true;
     }
     float dead_timer = get(entity, "dead_timer", Float, 0);
     dead_timer += delta_time;
     set(entity, "dead_timer", Float, dead_timer);
-    if (entity->velY >= 1) start_transition(reload_level, 60, LE_Direction_Up, cubic_in_out);
+    if (dead_timer >= 120) start_transition(reload_level, 60, LE_Direction_Up, cubic_in_out);
     return true;
 }
 

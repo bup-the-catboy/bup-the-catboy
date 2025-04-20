@@ -1,6 +1,6 @@
-uniform float u_posx  = 192;
-uniform float u_posy  = 128;
-uniform float u_angle = 0.7853981634;
+uniform float u_posx;
+uniform float u_posy;
+uniform float u_angle;
 
 void main() {
     vec2 coord  = vec2(v_coord.x * u_width, v_coord.y * u_height);

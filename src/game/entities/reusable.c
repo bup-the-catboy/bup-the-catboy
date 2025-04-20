@@ -76,6 +76,7 @@ entity_collision(squash) {
     if (!entity_should_squish(entity, collider)) {
         if (get(collider, "hidden", Bool, false)) return;
         set(collider, "powerup_state", Int, hurt);
+        set(collider, "death_left", Bool, collider->posX < entity->posX);
         return;
     }
     collider->velY = -0.2f;
