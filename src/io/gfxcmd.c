@@ -30,7 +30,8 @@ void gfxcmd_process(void* resource, float dstx, float dsty, float dstw, float ds
                 // we dont free since this is likely a GfxResource
                 break;
             case GfxCmdType_SetShader:
-                graphics_set_shader(&cmd->resource);
+                graphics_select_shader(&cmd->resource);
+                graphics_render();
                 // we dont free since this is likely a GfxResource
                 return;
             case GfxCmdType_SelectShader:
