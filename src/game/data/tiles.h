@@ -18,7 +18,7 @@ TILE(dirt,
     SOLID()
 )
 
-TILE(question_block,
+TILE(crate,
     SIMPLE_ANIMATED_TEXTURE(8, 10, 8, 9, 10, 9, 8, 8, 8, 8)
     COLLISION(tilecol_crate)
     SOLID()
