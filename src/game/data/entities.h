@@ -201,3 +201,17 @@ ENTITY(notified,
     DEFAULT_PROPERTY("despawn_timer", Float, 60)
     LVLEDIT_HIDE()
 )
+
+ENTITY(crate_loot,
+    SIZE(1.f, 1.f)
+    FLAGS(LE_EntityFlags_DisableCollision)
+    DEFAULT_PROPERTY("is_warp", Bool, false)
+    DEFAULT_PROPERTY("entity_or_warp_id", Int, -1)
+    DEFAULT_PROPERTY("tag", Ptr, (void*)"crate_loot")
+    LVLEDIT_TEXTURE("images/lvledit/crate_loot.png")
+    LVLEDIT_CROP(0, 0, 16, 16)
+    LVLEDIT_PROPERTIES(
+        int(entity_or_warp_id, -1)
+        bool(is_warp, false)
+    )
+)
