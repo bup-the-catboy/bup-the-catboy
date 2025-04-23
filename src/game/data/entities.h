@@ -215,3 +215,13 @@ ENTITY(crate_loot,
         bool(is_warp, false)
     )
 )
+
+ENTITY(crate_coin,
+    UPDATE(gravity_update)
+    UPDATE(crate_coin_update)
+    COLLISION(crate_coin_collision)
+    TEXTURE(crate_coin_texture)
+    SIZE(.75f, .75f)
+    DEFAULT_PROPERTY("gravity", Float, 0.03)
+    LVLEDIT_HIDE()
+)

@@ -70,7 +70,7 @@ struct Powerup {
 void init_data();
 
 LE_EntityBuilder* get_entity_builder(enum EntityBuilderIDs id);
-LE_TileData*      get_tile_data     (enum      TileDataIDs id);
+LE_TileData**     get_tile_palette  (enum   TilePaletteIDs id);
 LE_Tileset*       get_tileset       (enum       TilesetIDs id);
 LE_Tileset**      get_theme         (enum         ThemeIDs id);
 struct Powerup*   get_powerup       (enum       PowerupIDs id);

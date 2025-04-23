@@ -21,6 +21,9 @@ tile_collision(crate) {
         if (!loot) return;
         int id = get(loot, "entity_or_warp_id", Int, -1);
         if (get(loot, "is_warp", Bool, false)) activate_warp(&current_level->warps[id], LE_Direction_Up);
-        else LE_CreateEntity(LE_EntityGetList(entity), get_entity_builder(id), tileX + .5f, tileY + 1);
+        else {
+            LE_Entity* loot = LE_CreateEntity(LE_EntityGetList(entity), get_entity_builder(id), tileX + .5f, tileY + 1);
+            set(loot, "from_crate", Bool, true);
+        }
     }
 }

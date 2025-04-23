@@ -1,7 +1,55 @@
 #include "functions.h"
 
+#include "game/data.h"
+#include "game/savefile.h"
+#include "io/io.h"
 #include "main.h"
 #include "io/assets/assets.h"
+
+#include <string.h>
+
+void draw_coin(void* context, float dstX, float dstY, float dstW, float dstH, int srcX, int srcY, int srcW, int srcH, unsigned int color) {
+    LE_Entity* entity = context;
+    LE_DrawList* dl = LE_CreateDrawList();
+    LE_DrawTileAt(get_tile_palette_by_id(generic)[TILE_DATA_coin], LE_TilemapGetTileset(LE_EntityGetTilemap(LE_EntityGetList(entity))), dstX, dstY, dstW / 16, dstH / 16, dl);
+    LE_Render(dl, gfxcmd_process);
+    LE_DestroyDrawList(dl);
+}
+
+entity_update(crate_coin) {
+    if (entity_init(entity)) {
+        entity->velY = -.4f;
+    }
+    LE_Direction dir;
+    if (entity_collided(entity, &dir) && dir == LE_Direction_Up) {
+        if (get(entity, "bounced", Bool, false) == false) {
+            set(entity, "bounced", Bool, true);
+            set(entity, "gravity", Float, 0.02);
+            entity->velY = -.2f;
+        }
+    }
+}
+
+entity_texture(crate_coin) {
+    *srcX = 0;
+    *srcY = 0;
+    *srcW = 16;
+    *srcH = 16;
+    *w = 16;
+    *h = 16;
+    return gfxcmd_custom(draw_coin, entity);
+}
+
+entity_collision(crate_coin) {
+    if (strcmp(get(collider, "tag", Ptr, ""), "player") != 0) return;
+    LE_EntityList* list = LE_EntityGetList(find_entity_with_tag("player"));
+    LE_CreateEntity(list, get_entity_builder_by_id(sparkles), entity->posX, entity->posY - 0.5f);
+    for (int i = 0; i < 8; i++) {
+        LE_CreateEntity(list, get_entity_builder_by_id(coin_particle), entity->posX, entity->posY - 0.5f);
+    }
+    savefile->coins++;
+    LE_DeleteEntity(entity);
+}
 
 entity_texture(crate_fragment) {
     float timer = get(entity, "timer", Float, 0);
