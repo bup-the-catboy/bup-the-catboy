@@ -78,6 +78,7 @@ void init_data() {
 #define TEXTURE(  func) LE_EntityBuilderAddTextureCallback  (builder, func );
 #define FLAGS(   flags) LE_EntityBuilderSetFlags            (builder, flags);
 #define SIZE(     w, h) LE_EntityBuilderSetHitboxSize       (builder, w, h );
+#define PRIORITY(prior) LE_EntityBuilderSetDrawPriority     (builder, prior);
 #define DEFAULT_PROPERTY(name, type, value) LE_EntityBuilderSetProperty(builder, (LE_EntityProperty){ .as##type = value }, name);
 #include "game/data/entities.h"
 #undef UPDATE

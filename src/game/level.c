@@ -147,7 +147,7 @@ struct Level* parse_level(unsigned char* data, int datalen) {
     unsigned int num_layers;
     BINARY_STREAM_READ(stream, num_layers);
     level->layers = LE_CreateLayerList();
-    LE_AddCustomLayer(level->layers, layer_overlay);
+    LE_AddCustomLayer(level->layers, layer_overlay, NULL);
     for (int i = 0; i < num_layers; i++) {
         stream = binary_stream_goto(stream);
         unsigned int type;

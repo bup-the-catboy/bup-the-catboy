@@ -23,3 +23,17 @@ TILESET(grass_map,
     SIZE(384, 256)
     TILES_IN_ROW(4)
 )
+
+TILESET(tutorial,
+    PALETTE(generic)
+    TEXTURE("images/tilesets/tutorial.png")
+    SIZE(16, 16)
+    TILES_IN_ROW(16)
+)
+
+TILESET(tutorial_bg,
+    PALETTE(background)
+    TEXTURE("images/tilesets/tutorial_bg.png")
+    SIZE(512, 256)
+    TILES_IN_ROW(2)
+)

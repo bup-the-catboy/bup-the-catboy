@@ -49,6 +49,7 @@ typedef struct {
     float posX, posY;
     float velX, velY;
     float width, height;
+    int drawPriority;
     LE_EntityFlags flags;
 } LE_Entity;
 
@@ -76,7 +77,7 @@ typedef void(*TileCollisionCallback)(
     LE_Direction direction
 );
 typedef void(*CustomLayer)(
-    LE_DrawList* dl,
+    LE_DrawList* dl, void* params,
     float scrollOffsetX, float scrollOffsetY,
     float scaleX, float scaleH
 );
@@ -84,7 +85,7 @@ typedef void(*CustomLayer)(
 LE_LayerList* LE_CreateLayerList();
 LE_Layer* LE_AddTilemapLayer(LE_LayerList* layers, LE_Tilemap* tilemap);
 LE_Layer* LE_AddEntityLayer(LE_LayerList* layers, LE_EntityList* entities);
-LE_Layer* LE_AddCustomLayer(LE_LayerList* layers, CustomLayer callback);
+LE_Layer* LE_AddCustomLayer(LE_LayerList* layers, CustomLayer callback, void* params);
 LE_Layer* LE_LayerGetByIndex(LE_LayerList* layers, int index);
 void LE_MoveLayer(LE_Layer* layer, int index);
 int  LE_IndexOfLayer(LE_Layer* layer);
@@ -121,6 +122,7 @@ void LE_EntityBuilderSetFlags(LE_EntityBuilder* builder, LE_EntityFlags flags);
 void LE_EntityBuilderAppendFlags(LE_EntityBuilder* builder, LE_EntityFlags flags);
 void LE_EntityBuilderClearFlags(LE_EntityBuilder* builder, LE_EntityFlags flags);
 void LE_EntityBuilderSetProperty(LE_EntityBuilder* builder, LE_EntityProperty property, const char* name);
+void LE_EntityBuilderSetDrawPriority(LE_EntityBuilder* builder, int priority);
 void LE_DestroyEntityBuilder(LE_EntityBuilder* builder);
 
 LE_EntityList* LE_CreateEntityList();

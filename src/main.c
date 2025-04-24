@@ -17,9 +17,9 @@
 #include <string.h>
 #include <pthread.h>
 
-#define STEPS_PER_SECOND 30
+#define STEPS_PER_SECOND 60
 #define STEP_TIME (TICKS_PER_SEC / STEPS_PER_SECOND)
-#define TIME_SCALE 2
+#define TIME_SCALE 1
 
 double internal_global_timer = 0;
 uint64_t global_timer = 0;

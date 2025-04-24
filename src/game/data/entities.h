@@ -15,6 +15,7 @@ ENTITY(player,
     UPDATE(player_update)
     TEXTURE(player_texture)
     SIZE(0.75f, 0.75f)
+    PRIORITY(10)
     DEFAULT_PROPERTY("gravity", Float, 0.03)
     DEFAULT_PROPERTY("tag", Ptr, (void*)"player")
     LVLEDIT_HIDE()
