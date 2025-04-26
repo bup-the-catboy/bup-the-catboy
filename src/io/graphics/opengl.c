@@ -72,6 +72,7 @@ const char* shader_common =
     "uniform int u_timer;"_
     "uniform int u_width;"_
     "uniform int u_height;"_
+    "uniform float u_scale;"_
     "uniform float u_rng;"_
     ""_
     "float random(inout float seed) {"_
@@ -95,6 +96,7 @@ void graphics_update_shader_params() {
     graphics_shader_set_int("u_timer",  global_timer + render_interpolation);
     graphics_shader_set_int("u_width",  res_width);
     graphics_shader_set_int("u_height", res_height);
+    graphics_shader_set_float("u_scale", scissor_w / res_width);
     graphics_shader_set_float("u_rng", random_float());
 }
 

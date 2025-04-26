@@ -1,5 +1,6 @@
 #include "functions.h"
 #include "game/level.h"
+#include "io/io.h"
 #include "main.h"
 #include "math_util.h"
 #include "game/data.h"
@@ -117,6 +118,31 @@ bool entity_should_squish(LE_Entity* entity, LE_Entity* collider) {
     }
     set(entity, "stomp_timer", Int, stomp_timer);
     return squish || stomp_timer != 0;
+}
+
+struct DitherContext {
+    LE_Entity* entity;
+    void* gfxcmd;
+};
+
+void entity_dither(void* _context, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
+    struct DitherContext* context = _context;
+    float timer = get(context->entity, "despawn_timer", Float, 0);
+    int dither_amount = round(max(0, 16 - timer / 2));
+    graphics_set_shader(GET_ASSET(struct GfxResource, "shaders/dither.glsl"));
+    graphics_shader_set_int("u_dither_amount", dither_amount);
+    graphics_shader_set_float("u_offset_x", remainder(-dstx, 1));
+    graphics_shader_set_float("u_offset_y", remainder(-dsty, 1));
+    gfxcmd_process(context->gfxcmd, dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
+    graphics_set_shader(graphics_dummy_shader());
+    free(context);
+}
+
+void* dither_context(LE_Entity* entity, void* gfxcmd) {
+    struct DitherContext* context = malloc(sizeof(struct DitherContext));
+    context->entity = entity;
+    context->gfxcmd = gfxcmd;
+    return context;
 }
 
 LE_Entity* find_entity_with_tag(const char* tag) {

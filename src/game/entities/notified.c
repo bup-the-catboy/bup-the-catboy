@@ -1,6 +1,7 @@
 #include "functions.h"
 
 #include "io/assets/assets.h"
+#include "io/io.h"
 
 entity_update(notified) {
     if (entity_init(entity)) set(entity, "squish", Float, 1.75f);
@@ -15,5 +16,5 @@ entity_texture(notified) {
     *w = 16;
     *h = 16;
     entity_apply_squish(entity, w, h);
-    return GET_ASSET(struct GfxResource, "images/entities/notified.png");
+    return gfxcmd_custom(entity_dither, dither_context(entity, GET_ASSET(struct GfxResource, "images/entities/notified.png")));
 }

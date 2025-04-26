@@ -78,7 +78,7 @@ entity_texture(player) {
     ) sprite = 8;
     if (entity->velY > 0) sprite = 7;
     if (entity->velY < 0) sprite = 6;
-    if (pouncing)         sprite = 12;
+    if (pouncing)         sprite = 10;
     set(entity, "facing_left", Bool, facing_left);
     *srcX = sprite * 16;
     *srcY = 0;

@@ -1,5 +1,6 @@
 #include "functions.h"
 #include "io/assets/assets.h"
+#include "io/io.h"
 #include "rng.h"
 
 // haha funny robot game
@@ -26,5 +27,5 @@ entity_texture(coin_particle) {
     *srcH = 4;
     *w = 4;
     *h = 4;
-    return GET_ASSET(struct GfxResource, "images/entities/coin_particle.png");
+    return gfxcmd_custom(entity_dither, dither_context(entity, GET_ASSET(struct GfxResource, "images/entities/coin_particle.png")));
 }

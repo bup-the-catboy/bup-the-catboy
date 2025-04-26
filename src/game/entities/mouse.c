@@ -1,5 +1,6 @@
 #include "functions.h"
 #include "io/assets/assets.h"
+#include "io/io.h"
 #include "main.h"
 
 entity_texture(mouse) {
@@ -18,7 +19,7 @@ entity_texture(squashed_mouse) {
     *w = 16;
     *h = 16;
     entity_apply_squish(entity, w, h);
-    return GET_ASSET(struct GfxResource, "images/entities/mouse.png");
+    return gfxcmd_custom(entity_dither, dither_context(entity, GET_ASSET(struct GfxResource, "images/entities/mouse.png")));
 }
 
 entity_update(squashed_mouse) {

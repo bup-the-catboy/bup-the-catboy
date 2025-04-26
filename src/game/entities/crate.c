@@ -77,5 +77,5 @@ entity_texture(crate_fragment) {
     *srcW = 8;
     *srcH = 8;
     set(entity, "timer", Float, timer);
-    return GET_ASSET(struct GfxResource, "images/entities/crate_fragment.png");
+    return gfxcmd_custom(entity_dither, dither_context(entity, GET_ASSET(struct GfxResource, "images/entities/crate_fragment.png")));
 }
