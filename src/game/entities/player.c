@@ -67,8 +67,12 @@ entity_texture(player) {
     int sprite = idle_anim_table[(global_timer / 10) % 6];
     bool pouncing    = get(entity, "pouncing",    Bool, false);
     bool facing_left = get(entity, "facing_left", Bool, false);
-    if (!disable_input && is_button_pressed(BUTTON_MOVE_LEFT))  facing_left = true;
-    if (!disable_input && is_button_pressed(BUTTON_MOVE_RIGHT)) facing_left = false;
+    if (!disable_input) {
+        if (is_button_pressed(BUTTON_MOVE_LEFT))  facing_left = true;
+        if (is_button_pressed(BUTTON_MOVE_RIGHT)) facing_left = false;
+        if (is_button_released(BUTTON_MOVE_RIGHT) && is_button_down(BUTTON_MOVE_LEFT)) facing_left = true;
+        if (is_button_released(BUTTON_MOVE_LEFT) && is_button_down(BUTTON_MOVE_RIGHT)) facing_left = false;
+    }
     if (fabs(entity->velX) > 0) sprite = (int)(entity->posX) % 2 + 4;
     if (
         (entity->velX < 0 && is_button_down(BUTTON_MOVE_RIGHT)) ||
