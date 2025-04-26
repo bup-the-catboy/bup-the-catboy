@@ -164,7 +164,7 @@ powerup(base) {
             if (height > 3 || !(is_button_down(BUTTON_JUMP) || disable_input)) set(entity, "jumping", Bool, false);
             else entity->velY = -0.3f;
         }
-        if (entity_jump_requested(entity, is_button_pressed(BUTTON_JUMP) && !disable_input) & entity_can_jump(entity)) {
+        if (entity_jump_requested(entity, is_button_pressed(BUTTON_JUMP) && !disable_input) & (int)entity_can_jump(entity)) {
             set(entity, "squish", Float, 1.5f);
             set(entity, "coyote", Float, 999);
             set(entity, "jumping", Bool, true);

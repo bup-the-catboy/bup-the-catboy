@@ -112,7 +112,7 @@ void init_data() {
 #undef THEME_TILESET
 
     struct Powerup* powerup_ptr__ = NULL;
-#define POWERUP(name, extends) powerups[POWERUP_##name] = (struct Powerup){ .parent = powerup_ptr_##extends, .callback = powerup_##name##_update }; struct Powerup* powerup_ptr_##name = &powerups[POWERUP_##name];
+#define POWERUP(name, extends) powerups[POWERUP_##name] = (struct Powerup){ .parent = powerup_ptr_##extends, .callback = powerup_##name##_update }; struct Powerup* powerup_ptr_##name = &powerups[POWERUP_##name]; (void)powerup_ptr_##name;
 #include "game/data/powerup.h"
 #undef POWERUP
 }
