@@ -109,14 +109,14 @@ void entity_spawn_dust(LE_Entity* entity, bool left, bool right, float speed) {
 }
 
 bool entity_should_squish(LE_Entity* entity, LE_Entity* collider) {
-    int stomp_timer = get(entity, "stomp_timer", Int, 0);
+    float stomp_timer = get(entity, "stomp_timer", Float, 0);
     bool squish = false;
-    if (stomp_timer != 0) stomp_timer--;
+    if (stomp_timer != 0) stomp_timer -= delta_time;
     else if (collider->velY > 0.05) {
         stomp_timer = 5;
         squish = true;
     }
-    set(entity, "stomp_timer", Int, stomp_timer);
+    set(entity, "stomp_timer", Float, stomp_timer);
     return squish || stomp_timer != 0;
 }
 

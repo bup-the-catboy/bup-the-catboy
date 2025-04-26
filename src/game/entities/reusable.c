@@ -1,6 +1,7 @@
 #include "functions.h"
 #include "game/data.h"
 #include "main.h"
+#include "rng.h"
 
 #include <string.h>
 
@@ -48,6 +49,11 @@ entity_update(animable) {
 
 entity_update(despawn) {
     float timer = get(entity, "despawn_timer", Float, 0);
+    if (timer == 0) {
+        float min = get(entity, "despawn_timer_min", Float, 0);
+        float max = get(entity, "despawn_timer_max", Float, 0);
+        timer = random_range(min, max);
+    }
     timer -= delta_time;
     if (timer <= 0) LE_DeleteEntity(entity);
     set(entity, "despawn_timer", Float, timer);
