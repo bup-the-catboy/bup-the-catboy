@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "game/overlay/transition.h"
+#include "game/savefile.h"
 #include "io/assets/assets.h"
 #include "game/data.h"
 #include "game/input.h"
@@ -102,13 +103,38 @@ entity_update(player_spawner) {
 }
 
 entity_update(player) {
+    int prev_id = get(entity, "prev_powerup_state", Int, POWERUP_base);
     int id = get(entity, "powerup_state", Int, POWERUP_base);
-    if (id == -1) {
-        struct Powerup* parent = get_powerup(id)->parent;
-        if (parent == NULL) parent = get_powerup_by_id(death);
-        id = (int)((uintptr_t)parent - (uintptr_t)get_powerup(0)) / sizeof(struct Powerup);
+    float iframes = get(entity, "iframes", Float, 0);
+    if (id == hurt) {
+        if (iframes > 0) id = prev_id;
+        else {
+            if (savefile->hearts > 0) {
+                savefile->hearts--;
+                camera_screenshake(camera, 30, .5f, .5f);
+                LE_Entity* heart1 = LE_CreateEntity(LE_EntityGetList(entity), get_entity_builder_by_id(broken_heart), entity->posX, entity->posY);
+                LE_Entity* heart2 = LE_CreateEntity(LE_EntityGetList(entity), get_entity_builder_by_id(broken_heart), entity->posX, entity->posY);
+                set(heart1, "sprite", Int, 0);
+                set(heart2, "sprite", Int, 1);
+                heart1->velY = heart2->velY = -.3f;
+                heart1->velX = -.1f;
+                heart2->velX =  .1f;
+                id = prev_id;
+            }
+            else {
+                struct Powerup* parent = get_powerup(prev_id)->parent;
+                if (parent == NULL) parent = get_powerup_by_id(death);
+                id = (int)((uintptr_t)parent - (uintptr_t)get_powerup(0)) / sizeof(struct Powerup);
+            }
+            iframes = 300;
+        }
         set(entity, "powerup_state", Int, id);
     }
+    iframes -= delta_time;
+    if (iframes < 0) iframes = 0;
+    set(entity, "iframes", Float, iframes);
+
+    set(entity, "prev_powerup_state", Int, id);
     struct Powerup* powerup = get_powerup(id);
     while (powerup) {
         if (!powerup->callback(entity)) break;

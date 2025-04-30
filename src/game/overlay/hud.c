@@ -60,9 +60,10 @@ const char* cat_coin_glint[] = {
 };
 
 struct HUDElement hud_elements[] = {
-    { { -100,       -100, 156, 144 }, 0x00FF00,          HIDDEN_POS, INIT },
-    { { -100,       -100, 156, 144 }, 0xFFFF00,          HIDDEN_POS, INIT },
-    { { WIDTH - 80, -100, 180, 140 }, 0xFFFFFF, CAT_COIN_HIDDEN_POS, INIT }
+    { { 0,          0, 56, 52 }, 0x00FF00,          HIDDEN_POS, INIT },
+    { { 0,          0, 56, 52 }, 0xFFFF00,          HIDDEN_POS, INIT },
+    { { 0,          0, 56, 52 }, 0xFF3F3F,          HIDDEN_POS, INIT },
+    { { WIDTH - 80, 0, 80, 40 }, 0xFFFFFF, CAT_COIN_HIDDEN_POS, INIT }
 };
 
 #define HUD_COLOR_MOD "${#%%06x}"
@@ -107,6 +108,22 @@ float suggest_y_pos(struct HUDElement* element) {
     return DISTANCE_FROM_TOP + shown * SPACING;
 }
 
+bool should_hide_element(LE_Entity* player, struct HUDElement* element) {
+    float x, y;
+    LE_EntityLastDrawnPos(player, &x, &y);
+    float x1a = x, y1a = y, x2a = x + 16, y2a = y + 16;
+    float x1b = element->box.x, y1b = element->box.y, x2b = element->box.x + element->box.w, y2b = element->box.y + element->box.h;
+    return
+        (x1a >= x1b && x1a <= x2b && y1a >= y1b && y1a <= y2b) ||
+        (x1a >= x1b && x1a <= x2b && y2a >= y1b && y2a <= y2b) ||
+        (x2a >= x1b && x2a <= x2b && y1a >= y1b && y1a <= y2b) ||
+        (x2a >= x1b && x2a <= x2b && y2a >= y1b && y2a <= y2b) ||
+        (x1b >= x1a && x1b <= x2a && y1b >= y1a && y1b <= y2a) ||
+        (x1b >= x1a && x1b <= x2a && y2b >= y1a && y2b <= y2a) ||
+        (x2b >= x1a && x2b <= x2a && y1b >= y1a && y1b <= y2a) ||
+        (x2b >= x1a && x2b <= x2a && y2b >= y1a && y2b <= y2a);
+}
+
 void _show_hud_element(struct HUDElement* element) {
     element->show_timer = 0;
     element->dst_x = SHOWN_POS;
@@ -114,7 +131,7 @@ void _show_hud_element(struct HUDElement* element) {
 }
 
 void hud_update_element(LE_Entity* player, struct HUDElement* element, int target_value) {
-    bool hide = false; // todo
+    bool hide = should_hide_element(player, element);
     int target_opacity = hide ? HIDDEN_OPACITY : SHOWN_OPACITY;
     element->dst_y = suggest_y_pos(element);
     if (element->init) {
@@ -151,7 +168,8 @@ void hud_update(LE_Entity* player) {
     }
     hud_update_element(player, &hud_elements[0], savefile->lives);
     hud_update_element(player, &hud_elements[1], savefile->coins);
-    hud_update_element(player, &hud_elements[2], 0);
+    hud_update_element(player, &hud_elements[2], savefile->hearts);
+    hud_update_element(player, &hud_elements[3], 0);
 }
 
 void render_hud_element(LE_DrawList* drawlist, struct HUDElement* element, const char* fmt, ...) {
@@ -203,6 +221,7 @@ void render_cat_coins(LE_DrawList* drawlist) {
 void render_hud(LE_DrawList* drawlist) {
     render_hud_element(drawlist, &hud_elements[0], HUD_OPAC CHAR_LIVES HUD_COLOR_MOD "*%02d",                                      savefile->lives);
     render_hud_element(drawlist, &hud_elements[1], HUD_OPAC "%c"       HUD_COLOR_MOD "*%02d", CHAR_COINS[(global_timer / 10) % 4], savefile->coins);
+    render_hud_element(drawlist, &hud_elements[2], HUD_OPAC CHAR_HEART HUD_COLOR_MOD "*%02d",                                      savefile->hearts);
     render_cat_coins(drawlist);
 }
 

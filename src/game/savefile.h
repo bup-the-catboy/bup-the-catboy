@@ -15,6 +15,7 @@
 struct SaveFile {
     uint8_t coins;
     uint8_t lives;
+    uint8_t hearts;
     uint8_t powerup;
     uint8_t map_node;
     uint8_t map_id;

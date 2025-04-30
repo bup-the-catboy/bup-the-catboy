@@ -1,6 +1,7 @@
 #include "functions.h"
 
 #include "game/data.h"
+#include "game/level.h"
 #include "game/savefile.h"
 #include "io/io.h"
 #include "main.h"
@@ -16,7 +17,7 @@ void draw_coin(void* context, float dstX, float dstY, float dstW, float dstH, in
     LE_DestroyDrawList(dl);
 }
 
-entity_update(crate_coin) {
+entity_update(crate_loot) {
     if (entity_init(entity)) {
         entity->velY = -.4f;
     }
@@ -40,14 +41,32 @@ entity_texture(crate_coin) {
     return gfxcmd_custom(draw_coin, entity);
 }
 
+entity_texture(crate_heart) {
+    *srcX = 0;
+    *srcY = 0;
+    *srcW = 16;
+    *srcH = 16;
+    *w = 16;
+    *h = 16;
+    return GET_ASSET(struct GfxResource, "images/entities/heart.png");
+}
+
 entity_collision(crate_coin) {
     if (strcmp(get(collider, "tag", Ptr, ""), "player") != 0) return;
-    LE_EntityList* list = LE_EntityGetList(find_entity_with_tag("player"));
-    LE_CreateEntity(list, get_entity_builder_by_id(sparkles), entity->posX, entity->posY - 0.5f);
+    LE_EntityList* list = LE_EntityGetList(collider);
+    LE_CreateEntity(list, get_entity_builder_by_id(sparkles), entity->posX, entity->posY);
     for (int i = 0; i < 8; i++) {
         LE_CreateEntity(list, get_entity_builder_by_id(coin_particle), entity->posX, entity->posY - 0.5f);
     }
     savefile->coins++;
+    LE_DeleteEntity(entity);
+}
+
+entity_collision(crate_heart) {
+    if (strcmp(get(collider, "tag", Ptr, ""), "player") != 0) return;
+    LE_EntityList* list = LE_EntityGetList(collider);
+    // todo: some fancy effect or some shit idk
+    savefile->hearts++;
     LE_DeleteEntity(entity);
 }
 

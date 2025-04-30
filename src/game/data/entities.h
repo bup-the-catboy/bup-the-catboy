@@ -221,12 +221,30 @@ ENTITY(crate_loot,
     )
 )
 
+ENTITY(crate_heart,
+    UPDATE(gravity_update)
+    UPDATE(crate_loot_update)
+    COLLISION(crate_heart_collision)
+    TEXTURE(crate_heart_texture)
+    SIZE(.75f, .75f)
+    DEFAULT_PROPERTY("gravity", Float, 0.03)
+    LVLEDIT_HIDE()
+)
+
 ENTITY(crate_coin,
     UPDATE(gravity_update)
-    UPDATE(crate_coin_update)
+    UPDATE(crate_loot_update)
     COLLISION(crate_coin_collision)
     TEXTURE(crate_coin_texture)
     SIZE(.75f, .75f)
+    DEFAULT_PROPERTY("gravity", Float, 0.03)
+    LVLEDIT_HIDE()
+)
+
+ENTITY(broken_heart,
+    UPDATE(gravity_update)
+    TEXTURE(broken_heart_texture)
+    FLAGS(LE_EntityFlags_DisableCollision)
     DEFAULT_PROPERTY("gravity", Float, 0.03)
     LVLEDIT_HIDE()
 )
