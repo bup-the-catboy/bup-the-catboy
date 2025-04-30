@@ -48,11 +48,15 @@ static void draw_dead_player(void* param, float dstx, float dsty, float dstw, fl
 static void draw_player(void* param, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
     LE_Entity* entity = param;
     bool is_hidden = get(entity, "hidden", Bool, false);
+    float iframes = get(entity, "iframes", Float, 0);
     graphics_flush();
     if (is_hidden) graphics_push_shader("noise");
     else graphics_push_shader(NULL);
+    graphics_push_shader("dither");
+    graphics_shader_set_int("u_dither_amount", min(8, iframes / 180 * 8));
     gfxcmd_process(gfxcmd_texture("images/entities/player.png"), dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
     graphics_flush();
+    graphics_pop_shader();
     graphics_pop_shader();
 }
 
