@@ -4,8 +4,8 @@
 #include <math.h>
 #include <string.h>
 
+#include "io/io.h"
 #include "main.h"
-#include "io/assets/assets.h"
 #include "math_util.h"
 
 #define M_2PI 6.283185307179586
@@ -166,7 +166,6 @@ void free_text_graph(struct TextGraph* text) {
 }
 
 void render_text_graph_internal(LE_DrawList* dl, float* x, float* y, struct TextGraph* text) {
-    struct GfxResource* texture = GET_ASSET(struct GfxResource, "images/font.png");
     struct TextGraph* curr = text;
     char c;
     int ptr;
@@ -218,7 +217,7 @@ void render_text_graph_internal(LE_DrawList* dl, float* x, float* y, struct Text
             int srcY = index / 12 * 10;
             if (dl) {
                 LE_DrawSetColor(dl, color);
-                LE_DrawListAppend(dl, texture, *x, *y + wave, curr->scale * 10, curr->scale * 10, srcX, srcY, 10, 10);
+                LE_DrawListAppend(dl, gfxcmd_texture("images/font.png"), *x, *y + wave, curr->scale * 10, curr->scale * 10, srcX, srcY, 10, 10);
             }
             *x += curr->scale * curr->spacing;
             curr->spacing = 8;

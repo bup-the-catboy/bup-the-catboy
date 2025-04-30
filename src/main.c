@@ -32,17 +32,6 @@ float render_interpolation = 0;
 
 int windoww, windowh;
 
-void drawlist_append(void* cmd) {
-    drawlist_append_rect(cmd, 0, 0, 0, 0, 0, 0, 0, 0);
-}
-
-void drawlist_append_rect(void* cmd,
-    float dstX, float dstY, float dstW, float dstH,
-    int   srcX, int   srcY, int   srcW, int   srcH
-) {
-    LE_DrawListAppend(drawlist, cmd, dstX, dstY, dstW, dstH, srcX, srcY, srcW, srcH);
-}
-
 void init_game() {
     random_init();
     graphics_init("Bup the Catboy", WIDTH * 2, HEIGHT * 2);
@@ -91,8 +80,9 @@ int main(int argc, char** argv) {
         graphics_start_frame();
         render_interpolation = min((ticks() - game_start_ticks) / STEP_TIME * TIME_SCALE, 1);
         render_level(drawlist, WIDTH, HEIGHT, render_interpolation);
-        drawlist_append(graphics_dummy_shader());
         LE_Render(drawlist, gfxcmd_process);
+        graphics_pop_all_shaders();
+        graphics_flush();
         LE_ClearDrawList(drawlist);
         graphics_end_frame();
     }

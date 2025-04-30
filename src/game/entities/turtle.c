@@ -1,6 +1,5 @@
 #include "functions.h"
 #include "game/data.h"
-#include "io/assets/assets.h"
 #include "io/io.h"
 #include "main.h"
 #include "rng.h"
@@ -10,7 +9,7 @@ entity_texture(turtle) {
     entity_animate(srcX, srcY, srcW, srcH, 16, 16, 10, 2, true, global_timer);
     *w = 16 * (do_flip ? -1 : 1);
     *h = 16;
-    return GET_ASSET(struct GfxResource, "images/entities/turtle.png");
+    return gfxcmd_texture("images/entities/turtle.png");
 }
 
 entity_texture(turtle_shell) {
@@ -19,7 +18,7 @@ entity_texture(turtle_shell) {
     *srcX += 48;
     *w = 16;
     *h = 16;
-    return GET_ASSET(struct GfxResource, "images/entities/turtle.png");
+    return gfxcmd_texture("images/entities/turtle.png");
 }
 
 entity_texture(turtle_shell_fragment) {
@@ -29,7 +28,7 @@ entity_texture(turtle_shell_fragment) {
     *srcH = 8;
     *w = 8;
     *h = 8;
-    return gfxcmd_custom(entity_dither, dither_context(entity, GET_ASSET(struct GfxResource, "images/entities/turtle_shell_fragment.png")));
+    return gfxcmd_custom(entity_dither, dither_context(entity, gfxcmd_texture("images/entities/turtle_shell_fragment.png")));
 }
 
 entity_update(turtle_shell) {

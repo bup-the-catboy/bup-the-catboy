@@ -17,7 +17,7 @@
 
 void* window;
 void* gl_context;
-struct GfxResource* current_texture;
+struct Texture* current_texture;
 float res_width, res_height;
 float win_width, win_height;
 float view_width, view_height;
@@ -38,12 +38,26 @@ GLuint rendertexture_id, framebuffer_id;
 struct Vertex vertices[4 * MAX_QUADS];
 int indices[6 * MAX_QUADS];
 int vertex_ptr = 0;
-struct GfxResource* current_shader = 0;
-struct GfxResource* dummy_shader = 0;
+
+struct ShaderResource {
+    const char* name;
+    const char* content;
+    struct ShaderResource* next;
+};
+
+#define SHADER_STACK_SIZE 32
+
+struct ShaderResource* registered_shaders;
+struct ShaderResource* registered_shaders_head;
+int shader_stack[SHADER_STACK_SIZE];
+int shader_stack_len;
+GLuint shader_id, basic_shader_id;
 
 #define _ "\n"
+#define _STR(x) #x
+#define STR(x) _STR(x)
 
-const char* dummy_shader_vertex =
+const char* shader_vertex =
     "attribute vec2 a_pos;"_
     "attribute vec2 a_coord;"_
     "attribute vec4 a_color;"_
@@ -57,10 +71,17 @@ const char* dummy_shader_vertex =
     "    v_color = a_color;"_
     "}";
 
-const char* dummy_shader_fragment =
+const char* shader_basic =
+    "#version 330"_
+    ""_
+    "varying vec2 v_coord;"_
+    "varying vec4 v_color;"_
+    ""_
+    "uniform sampler2D u_texture;"_
+    ""_
     "void main() {"_
-    "    gl_FragColor = texture2D(u_texture, v_coord) * v_color;"_
-    "}";
+        "gl_FragColor = texture2D(u_texture, v_coord) * v_color;"_
+    "}"_;
 
 const char* shader_common =
     "#version 330"_
@@ -75,13 +96,14 @@ const char* shader_common =
     "uniform float u_scale;"_
     "uniform float u_rng;"_
     ""_
+    "uniform int shader_stack[" STR(SHADER_STACK_SIZE) "];"_
+    "uniform int shader_stack_len;"
+    ""_
     "float random(inout float seed) {"_
     "    return seed = fract(sin(dot(vec3(v_coord, seed), vec3(12.9898, 78.233, 37.719))) * 43758.5453);"_
     "}";
 
-#undef _
-
-void graphics_flush() {
+void graphics_render() {
     if (vertex_ptr == 0) return;
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertex_ptr * sizeof(struct Vertex), vertices);
@@ -100,6 +122,88 @@ void graphics_update_shader_params() {
     graphics_shader_set_float("u_rng", random_float());
 }
 
+#define check_error(handle, get, attr, log, msg) { \
+    GLint success;                                  \
+    get(handle, attr, &success);                     \
+    if (!success) {                                   \
+        char infolog[512];                             \
+        log(handle, 512, NULL, infolog);                \
+        fprintf(stderr, "%s:\n%s\n", msg, infolog);      \
+    }                                                     \
+}
+
+#define check_compile_error(handle) check_error(handle, glGetShaderiv,  GL_COMPILE_STATUS, glGetShaderInfoLog,  "Shader failed to compile")
+#define check_link_error(   handle) check_error(handle, glGetProgramiv, GL_LINK_STATUS,    glGetProgramInfoLog, "Shader failed to link")
+
+int graphics_compile_shader(const char* code) {
+    int vertex = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex, 1, &shader_vertex, NULL);
+    glCompileShader(vertex);
+    check_compile_error(vertex);
+
+    int fragment = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment, 1, (const char**)&code, NULL);
+    glCompileShader(fragment);
+    check_compile_error(fragment);
+
+    int program = glCreateProgram();
+    glAttachShader(program, vertex);
+    glAttachShader(program, fragment);
+    glLinkProgram(program);
+    check_link_error(program);
+
+    glDeleteShader(vertex);
+    glDeleteShader(fragment);
+
+    return program;
+}
+
+void graphics_build_shader() {
+    const char* header =
+        "void main() {"_
+        "    vec4 color = texture2D(u_texture, v_coord) * v_color;"_
+        "    for (int i = 0; i < shader_stack_len; i++) {"_
+        "        switch (shader_stack[i]) {"_;
+    const char* footer =
+        "        }"_
+        "    }"_
+        "    gl_FragColor = color;"_
+        "}";
+    const char* case_template = "            case %d: color = %s(color); break;\n";
+
+    char case_statement[256];
+    int length = strlen(shader_common);
+    struct ShaderResource* curr = registered_shaders;
+    int iter = 1;
+    while (curr) {
+        snprintf(case_statement, 256, case_template, iter++, curr->name);
+        length += strlen(curr->content) + strlen(case_statement);
+        curr = curr->next;
+    }
+    length += strlen(header) + strlen(footer);
+
+    char* code = malloc(length + 1);
+    code[0] = 0;
+    curr = registered_shaders;
+    strcat(code, shader_common);
+    while (curr) {
+        strcat(code, curr->content);
+        curr = curr->next;
+    }
+    strcat(code, header);
+    curr = registered_shaders;
+    iter = 1;
+    while (curr) {
+        snprintf(case_statement, 256, case_template, iter++, curr->name);
+        strcat(code, case_statement);
+        curr = curr->next;
+    }
+    strcat(code, footer);
+
+    shader_id = graphics_compile_shader(code);
+    free(code);
+}
+
 void graphics_init_framebuffer() {
     glGenFramebuffers(1, &framebuffer_id);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
@@ -116,8 +220,10 @@ void graphics_init_framebuffer() {
 void graphics_draw_framebuffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, rendertexture_id);
-    glUseProgram(current_shader->shader_id);
+    glUseProgram(shader_id);
     graphics_update_shader_params();
+    glUniform1iv(glGetUniformLocation(shader_id, "shader_stack"), SHADER_STACK_SIZE, shader_stack);
+    glUniform1i (glGetUniformLocation(shader_id, "shader_stack_len"), shader_stack_len);
     float x1 = ((scissor_x + 0)         / (float)win_width)  * 2 - 1;
     float y1 = ((scissor_y + 0)         / (float)win_height) * 2 - 1;
     float x2 = ((scissor_x + scissor_w) / (float)win_width)  * 2 - 1;
@@ -135,10 +241,10 @@ void graphics_draw_framebuffer() {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
-    glUseProgram(dummy_shader->shader_id);
+    glUseProgram(basic_shader_id);
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
-    struct GfxResource* tex = current_texture;
+    struct Texture* tex = current_texture;
     current_texture = NULL;
     graphics_select_texture(tex);
 }
@@ -149,9 +255,9 @@ void graphics_deinit_framebuffer() {
     glDeleteTextures(1, &rendertexture_id);
 }
 
-struct GfxResource* graphics_load_texture(unsigned char* buf, size_t len) {
-    struct GfxResource* res = malloc(sizeof(struct GfxResource));
-    unsigned char* image = stbi_load_from_memory(buf, len, &res->texture.width, &res->texture.height, NULL, STBI_rgb_alpha);
+struct Texture* graphics_load_texture(unsigned char* buf, size_t len) {
+    struct Texture* tex = malloc(sizeof(struct Texture));
+    unsigned char* image = stbi_load_from_memory(buf, len, &tex->width, &tex->height, NULL, STBI_rgb_alpha);
     GLuint handle;
     glGenTextures(1, &handle);
     glBindTexture(GL_TEXTURE_2D, handle);
@@ -159,12 +265,11 @@ struct GfxResource* graphics_load_texture(unsigned char* buf, size_t len) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, res->texture.width, res->texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->width, tex->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
     glBindTexture(GL_TEXTURE_2D, 0);
     stbi_image_free(image);
-    res->type = GfxResType_Texture;
-    res->texture.texture_handle = (void*)(uintptr_t)handle;
-    return res;
+    tex->texture_handle = (void*)(uintptr_t)handle;
+    return tex;
 }
 
 void graphics_init(const char* window_name, int width, int height) {
@@ -202,7 +307,7 @@ void graphics_init(const char* window_name, int width, int height) {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, u));
     glVertexAttribPointer(2, 4, GL_FLOAT, GL_TRUE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, r));
     glBindVertexArray(0);
-    current_shader = dummy_shader = graphics_load_shader(dummy_shader_fragment);
+    basic_shader_id = graphics_compile_shader(shader_basic);
 }
 
 void graphics_set_resolution(float width, float height) {
@@ -228,7 +333,11 @@ void graphics_start_frame() {
     view_width  /= win_width;
     view_height /= win_height;
     glViewport(0, 0, win_width, win_height);
-    current_shader = dummy_shader;
+    if (shader_id == 0) {
+        graphics_build_shader();
+        glUseProgram(shader_id);
+    }
+    graphics_pop_all_shaders();
     glClearColor(0.f, 0.f, 0.f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_BLEND);
@@ -237,7 +346,7 @@ void graphics_start_frame() {
 }
 
 void graphics_end_frame() {
-    graphics_flush();
+    graphics_render();
     graphics_draw_framebuffer();
     graphics_deinit_framebuffer();
     glFlush();
@@ -248,11 +357,11 @@ void graphics_get_size(int* width, int* height) {
     sdl_window_size(window, width, height);
 }
 
-void graphics_select_texture(struct GfxResource* texture) {
+void graphics_select_texture(struct Texture* texture) {
     if (current_texture == texture) return;
     current_texture = texture;
-    graphics_flush();
-    if (texture) glBindTexture(GL_TEXTURE_2D, (uintptr_t)texture->texture.texture_handle);
+    graphics_render();
+    if (texture) glBindTexture(GL_TEXTURE_2D, (uintptr_t)texture->texture_handle);
     else glBindTexture(GL_TEXTURE_2D, empty_texture);
 }
 
@@ -261,7 +370,7 @@ void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, f
     x2 = (x2 / res_width)  *  2 - 1;
     y1 = (y1 / res_height) * -2 + 1;
     y2 = (y2 / res_height) * -2 + 1;
-    if (vertex_ptr == MAX_QUADS * 4) graphics_flush();
+    if (vertex_ptr == MAX_QUADS * 4) graphics_render();
     float r = ((color >> 24) & 0xFF) / 255.f;
     float g = ((color >> 16) & 0xFF) / 255.f;
     float b = ((color >>  8) & 0xFF) / 255.f;
@@ -276,86 +385,60 @@ void graphics_deinit() {
     sdl_window_deinit(window);
 }
 
-#define check_error(handle, get, attr, log, msg) { \
-    GLint success;                                  \
-    get(handle, attr, &success);                     \
-    if (!success) {                                   \
-        char infolog[512];                             \
-        log(handle, 512, NULL, infolog);                \
-        fprintf(stderr, "%s:\n%s\n", msg, infolog);      \
-    }                                                     \
+void graphics_register_shader(const char* name, const char* shader) {
+    struct ShaderResource* res = malloc(sizeof(struct ShaderResource));
+    res->name = strdup(name);
+    res->content = strdup(shader);
+    res->next = NULL;
+    if (!registered_shaders) registered_shaders = registered_shaders_head = res;
+    else {
+        registered_shaders_head->next = res;
+        registered_shaders_head = res;
+    }
 }
 
-#define check_compile_error(handle) check_error(handle, glGetShaderiv,  GL_COMPILE_STATUS, glGetShaderInfoLog,  "Shader failed to compile")
-#define check_link_error(   handle) check_error(handle, glGetProgramiv, GL_LINK_STATUS,    glGetProgramInfoLog, "Shader failed to link")
-
-struct GfxResource* graphics_load_shader(const char* shader) {
-    struct GfxResource* res = malloc(sizeof(struct GfxResource));
-    res->type = GfxResType_Shader;
-
-    char* code = malloc(strlen(shader_common) + strlen(shader) + 1);
-    strcpy(code, shader_common);
-    strcat(code, shader);
-
-    int vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, &dummy_shader_vertex, NULL);
-    glCompileShader(vertex);
-    check_compile_error(vertex);
-
-    int fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, (const char**)&code, NULL);
-    glCompileShader(fragment);
-    check_compile_error(fragment);
-
-    int program = glCreateProgram();
-    glAttachShader(program, vertex);
-    glAttachShader(program, fragment);
-    glLinkProgram(program);
-    check_link_error(program);
-
-    glDeleteShader(vertex);
-    glDeleteShader(fragment);
-
-    free(code);
-
-    printf("creating shader: %d\n", program);
-
-    res->shader_id = program;
-    return res;
-}
-
-void graphics_select_shader(struct GfxResource* shader) {
-    current_shader = shader == NULL ? dummy_shader : shader;
-}
-
-void graphics_render() {
-    graphics_flush();
+void graphics_flush() {
+    graphics_render();
     graphics_draw_framebuffer();
 }
 
-void graphics_set_shader(struct GfxResource* shader) {
-    graphics_render();
-    graphics_select_shader(shader);
+void graphics_push_shader(const char* name) {
+    int id = 0;
+    if (name) {
+        int iter = 1;
+        struct ShaderResource* curr = registered_shaders;
+        while (curr) {
+            if (strcmp(name, curr->name) == 0) id = iter;
+            iter++;
+            curr = curr->next;
+        }
+    }
+    if (shader_stack_len < SHADER_STACK_SIZE) shader_stack[shader_stack_len] = id;
+    shader_stack_len++;
+}
+
+void graphics_pop_shader() {
+    shader_stack_len--;
+}
+
+void graphics_pop_all_shaders() {
+    shader_stack_len = 0;
 }
 
 void graphics_shader_set_int(const char* name, int value) {
     GLint last_shader;
     glGetIntegerv(GL_CURRENT_PROGRAM, &last_shader);
-    glUseProgram(current_shader->shader_id);
-    glUniform1i(glGetUniformLocation(current_shader->shader_id, name), value);
+    glUseProgram(shader_id);
+    glUniform1i(glGetUniformLocation(shader_id, name), value);
     glUseProgram(last_shader);
 }
 
 void graphics_shader_set_float(const char* name, float value) {
     GLint last_shader;
     glGetIntegerv(GL_CURRENT_PROGRAM, &last_shader);
-    glUseProgram(current_shader->shader_id);
-    glUniform1f(glGetUniformLocation(current_shader->shader_id, name), value);
+    glUseProgram(shader_id);
+    glUniform1f(glGetUniformLocation(shader_id, name), value);
     glUseProgram(last_shader);
-}
-
-struct GfxResource* graphics_dummy_shader() {
-    return dummy_shader;
 }
 
 #endif

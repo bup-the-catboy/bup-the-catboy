@@ -51,6 +51,13 @@ void get_extension(char* out, const char* in) {
     strcpy(out, in);
 }
 
+void get_stem(char* out, const char* in) {
+    in += strlen(in);
+    while (*(--in) != '/');
+    while (*(++in) != 0 && *in != '.') *(out++) = *in;
+    *out = 0;
+}
+
 bool starts_with(const char* a, const char* b) {
     for (int i = 0; i < strlen(b); i++) {
         if (a[i] != b[i]) return false;
@@ -79,14 +86,15 @@ void load_assets() {
         void* data = malloc(datasize);
         binary_stream_read(stream, data, datasize);
         memcpy(asset->name, buf, PATH_MAX);
-        char ext[PATH_MAX];
+        char ext[PATH_MAX], stem[PATH_MAX];
         curr->next = asset;
         curr = asset;
         get_extension(ext, buf);
+        get_stem(stem, buf);
         bool binary_fallback = false;
         if (!force_binary) {_
             EXT(png) {
-                struct GfxResource* texture = graphics_load_texture(data, datasize);
+                struct Texture* texture = graphics_load_texture(data, datasize);
                 free(data);
                 asset->data = texture;
             }
@@ -100,7 +108,8 @@ void load_assets() {
                 char* shader = malloc(datasize + 1);
                 memcpy(shader, data, datasize);
                 shader[datasize] = 0;
-                asset->data = graphics_load_shader(shader);
+                graphics_register_shader(stem, shader);
+                asset->data = NULL;
                 free(shader);
                 free(data);
             }

@@ -4,7 +4,7 @@
 #include "math_util.h"
 
 #include "game/data.h"
-#include "io/assets/assets.h"
+#include "io/io.h"
 #include "rng.h"
 
 entity_update(trail_spawner) {
@@ -31,5 +31,5 @@ entity_texture(trail) {
     entity_animate(srcX, srcY, srcW, srcH, 8, 8, 5, 8, false, entity_get_anim_frame(entity));
     *w = 8;
     *h = 8;
-    return GET_ASSET(struct GfxResource, "images/entities/trail.png");
+    return gfxcmd_texture("images/entities/trail.png");
 }

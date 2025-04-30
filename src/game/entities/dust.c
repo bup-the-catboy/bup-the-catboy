@@ -1,5 +1,5 @@
 #include "functions.h"
-#include "io/assets/assets.h"
+#include "io/io.h"
 #include "main.h"
 
 entity_update(dust) {
@@ -14,5 +14,5 @@ entity_texture(dust) {
     entity_animate(srcX, srcY, srcW, srcH, 8, 8, 2, 8, false, entity_get_anim_frame(entity));
     *w = 8;
     *h = 8;
-    return GET_ASSET(struct GfxResource, "images/entities/dust.png");
+    return gfxcmd_texture("images/entities/dust.png");
 }

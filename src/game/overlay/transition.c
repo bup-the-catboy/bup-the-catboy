@@ -1,6 +1,6 @@
 #include "transition.h"
 
-#include "io/assets/assets.h"
+#include "io/io.h"
 #include "math_util.h"
 #include "main.h"
 
@@ -36,7 +36,7 @@ void render_transition(LE_DrawList* drawlist) {
     if (!curr_transition.active) return;
     int w = TRANSITION_PADDING * 2 + WIDTH;
     int h = TRANSITION_PADDING * 2 + HEIGHT;
-    LE_DrawListAppend(drawlist, GET_ASSET(struct GfxResource, "images/transition.png"), curr_transition.x, curr_transition.y, w, h, 0, 0, w, h);
+    LE_DrawListAppend(drawlist, gfxcmd_texture("images/transition.png"), curr_transition.x, curr_transition.y, w, h, 0, 0, w, h);
 }
 
 void update_transition() {

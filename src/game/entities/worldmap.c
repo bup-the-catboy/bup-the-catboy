@@ -6,6 +6,7 @@
 #include "game/overlay/transition.h"
 #include "game/level.h"
 #include "game/savefile.h"
+#include "io/io.h"
 #include "math_util.h"
 
 static int activated_level = 0;
@@ -96,7 +97,7 @@ entity_texture(worldmap_player) {
     *w = flipped ? -16 : 16;
     *h = 16;
     set(entity, "prev_pos", Float, entity->posX);
-    return GET_ASSET(struct GfxResource, "images/entities/player.png");
+    return gfxcmd_texture("images/entities/player.png");
 }
 
 entity_update(worldmap_player) {

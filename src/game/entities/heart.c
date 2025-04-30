@@ -1,6 +1,6 @@
 #include "functions.h"
 
-#include "io/assets/assets.h"
+#include "io/io.h"
 
 entity_texture(broken_heart) {
     int sprite = get(entity, "sprite", Int, 0);
@@ -10,5 +10,5 @@ entity_texture(broken_heart) {
     *srcH = 16;
     *w = 16;
     *h = 16;
-    return GET_ASSET(struct GfxResource, "images/entities/broken_heart.png");
+    return gfxcmd_texture("images/entities/broken_heart.png");
 }

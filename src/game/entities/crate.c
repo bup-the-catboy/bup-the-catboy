@@ -1,11 +1,9 @@
 #include "functions.h"
 
 #include "game/data.h"
-#include "game/level.h"
 #include "game/savefile.h"
 #include "io/io.h"
 #include "main.h"
-#include "io/assets/assets.h"
 
 #include <string.h>
 
@@ -48,7 +46,7 @@ entity_texture(crate_heart) {
     *srcH = 16;
     *w = 16;
     *h = 16;
-    return GET_ASSET(struct GfxResource, "images/entities/heart.png");
+    return gfxcmd_texture("images/entities/heart.png");
 }
 
 entity_collision(crate_coin) {
@@ -96,5 +94,5 @@ entity_texture(crate_fragment) {
     *srcW = 8;
     *srcH = 8;
     set(entity, "timer", Float, timer);
-    return gfxcmd_custom(entity_dither, dither_context(entity, GET_ASSET(struct GfxResource, "images/entities/crate_fragment.png")));
+    return gfxcmd_custom(entity_dither, dither_context(entity, gfxcmd_texture("images/entities/crate_fragment.png")));
 }

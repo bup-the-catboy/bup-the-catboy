@@ -6,6 +6,11 @@
 
 void gfxcmd_process(void* resource, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
     struct GfxCommand* cmd = resource;
+    cmd->callback(cmd->param, dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
+    if (!cmd->eternal) free(cmd);
+}
+
+static void gfxcmd_draw_texture(void* param, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
     float texX1 = 0, texX2 = 0, texY1 = 0, texY2 = 0;
     float dstX1 = dstx;
     float dstY1 = dsty;
@@ -19,80 +24,32 @@ void gfxcmd_process(void* resource, float dstx, float dsty, float dstw, float ds
         dstY1 -= dsth;
         dstY2 -= dsth;
     }
-    if (cmd) {
-        switch (cmd->type) {
-            case GfxCmdType_SetTexture:
-                texX1 = (float)(srcx       ) / cmd->resource.texture.width;
-                texY1 = (float)(srcy       ) / cmd->resource.texture.height;
-                texX2 = (float)(srcx + srcw) / cmd->resource.texture.width;
-                texY2 = (float)(srcy + srch) / cmd->resource.texture.height;
-                graphics_select_texture(&cmd->resource);
-                // we dont free since this is likely a GfxResource
-                break;
-            case GfxCmdType_SetShader:
-                graphics_select_shader(&cmd->resource);
-                graphics_render();
-                // we dont free since this is likely a GfxResource
-                return;
-            case GfxCmdType_SelectShader:
-                graphics_select_shader(&cmd->resource);
-                free(cmd);
-                return;
-            case GfxCmdType_Render:
-                graphics_render();
-                free(cmd);
-                return;
-            case GfxCmdType_ShaderSetInt:
-                graphics_shader_set_int(cmd->shader_uniform.uniform_name, cmd->shader_uniform.int_value);
-                free(cmd);
-                return;
-            case GfxCmdType_ShaderSetFloat:
-                graphics_shader_set_float(cmd->shader_uniform.uniform_name, cmd->shader_uniform.float_value);
-                free(cmd);
-                return;
-            case GfxCmdType_Custom:
-                cmd->custom.callback(cmd->custom.param, dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
-                free(cmd);
-                return;
-        }
+    struct Texture* tex = param;
+    if (tex) {
+        texX1 = (float)(srcx       ) / tex->width;
+        texY1 = (float)(srcy       ) / tex->height;
+        texX2 = (float)(srcx + srcw) / tex->width;
+        texY2 = (float)(srcy + srch) / tex->height;
     }
-    else graphics_select_texture(NULL);
+    graphics_select_texture(tex);
     graphics_draw(dstX1, dstY1, dstX2, dstY2, texX1, texY1, texX2, texY2, color);
 }
 
-struct GfxCommand* gfxcmd_select_shader(struct GfxResource* shader) {
+struct GfxCommand* gfxcmd_texture(const char* path) {
     struct GfxCommand* cmd = calloc(sizeof(struct GfxCommand), 1);
-    cmd->type = GfxCmdType_SelectShader;
-    cmd->shader = shader;
-    return cmd;
-}
-
-struct GfxCommand* gfxcmd_render() {
-    struct GfxCommand* cmd = calloc(sizeof(struct GfxCommand), 1);
-    cmd->type = GfxCmdType_Render;
-    return cmd;
-}
-
-struct GfxCommand* gfxcmd_shader_set_int(const char* uniform, int value) {
-    struct GfxCommand* cmd = calloc(sizeof(struct GfxCommand), 1);
-    cmd->type = GfxCmdType_ShaderSetInt;
-    cmd->shader_uniform.uniform_name = uniform;
-    cmd->shader_uniform.int_value = value;
-    return cmd;
-}
-
-struct GfxCommand* gfxcmd_shader_set_float(const char* uniform, float value) {
-    struct GfxCommand* cmd = calloc(sizeof(struct GfxCommand), 1);
-    cmd->type = GfxCmdType_ShaderSetFloat;
-    cmd->shader_uniform.uniform_name = uniform;
-    cmd->shader_uniform.float_value = value;
+    cmd->callback = gfxcmd_draw_texture;
+    cmd->param = path ? GET_ASSET(struct Texture, path) : NULL;
     return cmd;
 }
 
 struct GfxCommand* gfxcmd_custom(GfxCmdCustom func, void* param) {
     struct GfxCommand* cmd = calloc(sizeof(struct GfxCommand), 1);
-    cmd->type = GfxCmdType_Custom;
-    cmd->custom.callback = func;
-    cmd->custom.param = param;
+    cmd->callback = func;
+    cmd->param = param;
+    return cmd;
+}
+
+struct GfxCommand* gfxcmd_eternal(struct GfxCommand* cmd) {
+    cmd->eternal = true;
     return cmd;
 }

@@ -8,6 +8,7 @@
 #include "game/overlay/transition.h"
 #include "game/savefile.h"
 #include "game/entities/functions.h"
+#include "io/io.h"
 #include "main.h"
 #include "io/assets/assets.h"
 #include "font/font.h"
@@ -348,18 +349,18 @@ bool render_menu(LE_DrawList* drawlist) {
     get_menu_bounds(&x, &y, &w, &h);
     x += offsetX;
     LE_DrawSetColor(drawlist, 0x0000007F);
-    LE_DrawListAppend(drawlist, NULL, x, y, w, h, 0, 0, 0, 0);
+    LE_DrawListAppend(drawlist, gfxcmd_texture(NULL), x, y, w, h, 0, 0, 0, 0);
     int text_pos = y + MENU_PADDING;
     visual_cursor_pos += (visual_cursor_index - visual_cursor_pos) / 5;
     float cursor_pos = y + MENU_PADDING + visual_cursor_pos * (8 + MENU_SPACING) + 4 - MENU_CURSOR_HEIGHT / 2.f;
     LE_DrawSetColor(drawlist, 0xFFFFFF7F); //                             ^ fontHeight/2
-    LE_DrawListAppend(drawlist, NULL, x, cursor_pos, w, MENU_CURSOR_HEIGHT, 0, 0, 0, 0);
+    LE_DrawListAppend(drawlist, gfxcmd_texture(NULL), x, cursor_pos, w, MENU_CURSOR_HEIGHT, 0, 0, 0, 0);
     LE_DrawSetColor(drawlist, 0xFFFFFFFF);
     while (curr) {
         struct MenuItem* item = curr->item;
         switch (item->type) {
             case ItemType_Image:
-                LE_DrawListAppend(drawlist, GET_ASSET(struct GfxResource, item->imgpath),
+                LE_DrawListAppend(drawlist, gfxcmd_texture(item->imgpath),
                     item->image.dstx + offsetX, item->image.dsty, item->image.dstw, item->image.dsth,
                     item->image.srcx,           item->image.srcy, item->image.srcw, item->image.srch
                 );

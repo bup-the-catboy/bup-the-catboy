@@ -6,7 +6,6 @@
 
 #include "game/overlay/transition.h"
 #include "game/savefile.h"
-#include "io/assets/assets.h"
 #include "game/data.h"
 #include "game/input.h"
 #include "game/camera.h"
@@ -24,12 +23,14 @@ static void draw_dead_player(void* param, float dstx, float dsty, float dstw, fl
     float shake_intensity = max(0, (30 - timer) / 30) * 8;
     float x = random_range(-shake_intensity, shake_intensity);
     float y = random_range(-shake_intensity, shake_intensity);
-    graphics_set_shader(GET_ASSET(struct GfxResource, "shaders/iris.glsl"));
+    graphics_flush();
+    graphics_push_shader("iris");
     graphics_shader_set_float("u_xpos", 0);
     graphics_shader_set_float("u_ypos", 0);
     graphics_shader_set_float("u_radius", 0);
-    gfxcmd_process(GET_ASSET(struct GfxResource, "images/entities/player.png"), dstx + x, dsty + y, dstw, dsth, srcx, srcy, srcw, srch, color);
-    graphics_set_shader(graphics_dummy_shader());
+    gfxcmd_process(gfxcmd_texture("images/entities/player.png"), dstx + x, dsty + y, dstw, dsth, srcx, srcy, srcw, srch, color);
+    graphics_flush();
+    graphics_pop_shader();
     if (timer >= 60) {
         shake_intensity = max(0, (30 - (timer - 60)) / 30) * 8;
         x = random_range(-shake_intensity, shake_intensity);
@@ -47,9 +48,12 @@ static void draw_dead_player(void* param, float dstx, float dsty, float dstw, fl
 static void draw_player(void* param, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
     LE_Entity* entity = param;
     bool is_hidden = get(entity, "hidden", Bool, false);
-    if (is_hidden) graphics_set_shader(GET_ASSET(struct GfxResource, "shaders/noise.glsl"));
-    gfxcmd_process(GET_ASSET(struct GfxResource, "images/entities/player.png"), dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
-    graphics_set_shader(graphics_dummy_shader());
+    graphics_flush();
+    if (is_hidden) graphics_push_shader("noise");
+    else graphics_push_shader(NULL);
+    gfxcmd_process(gfxcmd_texture("images/entities/player.png"), dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
+    graphics_flush();
+    graphics_pop_shader();
 }
 
 static int idle_anim_table[] = { 0, 1, 2, 3, 2, 1 };

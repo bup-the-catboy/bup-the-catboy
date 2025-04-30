@@ -12,20 +12,19 @@
 
 void* window;
 void* renderer;
-struct GfxResource* current_texture;
+struct Texture* current_texture;
 float res_width, res_height;
 float win_width, win_height;
 float view_width, view_height;
 int scissor_x, scissor_y, scissor_w, scissor_h;
 float target_fps;
 
-struct GfxResource* graphics_load_texture(unsigned char* buf, size_t len) {
-    struct GfxResource* res = malloc(sizeof(struct GfxResource));
-    unsigned char* image = stbi_load_from_memory(buf, len, &res->texture.width, &res->texture.height, NULL, STBI_rgb_alpha);
-    res->type = GfxResType_Texture;
-    res->texture.texture_handle = sdl_texture_create(renderer, image, res->texture.width, res->texture.height);
+struct Texture* graphics_load_texture(unsigned char* buf, size_t len) {
+    struct Texture* tex = malloc(sizeof(struct Texture));
+    unsigned char* image = stbi_load_from_memory(buf, len, &tex->width, &tex->height, NULL, STBI_rgb_alpha);
+    tex->texture_handle = sdl_texture_create(renderer, image, tex->width, tex->height);
     stbi_image_free(image);
-    return res;
+    return tex;
 }
 
 void graphics_init(const char* window_name, int width, int height) {
@@ -70,7 +69,7 @@ void graphics_get_size(int* width, int* height) {
     sdl_window_size(window, width, height);
 }
 
-void graphics_select_texture(struct GfxResource* texture) {
+void graphics_select_texture(struct Texture* texture) {
     current_texture = texture;
 }
 
@@ -96,7 +95,7 @@ void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, f
             h = -h;
             y -= h;
         }
-        void* tex = current_texture->texture.texture_handle;
+        void* tex = current_texture->texture_handle;
         sdl_texture_size(tex, &tex_w, &tex_h);
         sdl_renderer_draw_texture(renderer, tex,
             round(u1 * tex_w),
@@ -112,21 +111,12 @@ void graphics_deinit() {
     sdl_window_deinit(window);
 }
 
-struct GfxResource* graphics_load_shader(const char* shader) {
-    struct GfxResource* res = malloc(sizeof(struct GfxResource));
-    res->type = GfxResType_Shader;
-    res->shader_id = 0;
-    return res;
-}
-
-void graphics_render() {}
-void graphics_select_shader(struct GfxResource* shader) {}
-void graphics_set_shader(struct GfxResource* shader) {}
+void graphics_flush() {}
+void graphics_register_shader(const char* name, const char* shader) {}
+void graphics_push_shader(const char* name) {}
+void graphics_pop_shader() {}
+void graphics_pop_all_shaders() {}
 void graphics_shader_set_int(const char* name, int value) {}
 void graphics_shader_set_float(const char* name, float value) {}
-
-struct GfxResource* graphics_dummy_shader() {
-    return NULL;
-}
 
 #endif

@@ -1,5 +1,4 @@
 #include "functions.h"
-#include "io/assets/assets.h"
 #include "io/io.h"
 #include "rng.h"
 
@@ -10,7 +9,7 @@ entity_texture(sparkles) {
     entity_animate(srcX, srcY, srcW, srcH, 16, 16, 4, 4, false, entity_get_anim_frame(entity));
     *w = 16;
     *h = 16;
-    return GET_ASSET(struct GfxResource, "images/entities/sparkles.png");
+    return gfxcmd_texture("images/entities/sparkles.png");
 }
 
 entity_update(coin_particle) {
@@ -27,5 +26,5 @@ entity_texture(coin_particle) {
     *srcH = 4;
     *w = 4;
     *h = 4;
-    return gfxcmd_custom(entity_dither, dither_context(entity, GET_ASSET(struct GfxResource, "images/entities/coin_particle.png")));
+    return gfxcmd_custom(entity_dither, dither_context(entity, gfxcmd_texture("images/entities/coin_particle.png")));
 }
