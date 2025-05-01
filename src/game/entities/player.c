@@ -35,7 +35,7 @@ static void draw_dead_player(void* param, float dstx, float dsty, float dstw, fl
         shake_intensity = max(0, (30 - (timer - 60)) / 30) * 8;
         x = random_range(-shake_intensity, shake_intensity);
         y = random_range(-shake_intensity, shake_intensity);
-        float width, height;
+        float width = 0, height = 0;
         const char* msg = "${^200}DEFEAT";
         LE_DrawList* dl = LE_CreateDrawList();
         text_size(&width, &height, msg);
