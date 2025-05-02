@@ -35,7 +35,7 @@ void graphics_get_size(int* width, int* height);
 void graphics_select_texture(struct Texture* texture);
 void graphics_draw(float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, uint32_t color);
 void graphics_deinit();
-void graphics_flush();
+void graphics_flush(bool redraw);
 void graphics_register_shader(const char* name, const char* shader);
 void graphics_push_shader(const char* name);
 void graphics_pop_shader();

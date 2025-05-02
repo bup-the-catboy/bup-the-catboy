@@ -116,7 +116,7 @@ void graphics_deinit() {
     sdl_window_deinit(window);
 }
 
-void graphics_flush() {}
+void graphics_flush(bool redraw) {}
 void graphics_register_shader(const char* name, const char* shader) {}
 void graphics_push_shader(const char* name) {}
 void graphics_pop_shader() {}

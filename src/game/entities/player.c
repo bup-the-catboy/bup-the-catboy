@@ -23,13 +23,13 @@ static void draw_dead_player(void* param, float dstx, float dsty, float dstw, fl
     float shake_intensity = max(0, (30 - timer) / 30) * 8;
     float x = random_range(-shake_intensity, shake_intensity);
     float y = random_range(-shake_intensity, shake_intensity);
-    graphics_flush();
+    graphics_flush(false);
     graphics_push_shader("iris");
     graphics_shader_set_float("u_xpos", 0);
     graphics_shader_set_float("u_ypos", 0);
     graphics_shader_set_float("u_radius", 0);
     gfxcmd_process(gfxcmd_texture("images/entities/player.png"), dstx + x, dsty + y, dstw, dsth, srcx, srcy, srcw, srch, color);
-    graphics_flush();
+    graphics_flush(false);
     graphics_pop_shader();
     if (timer >= 60) {
         shake_intensity = max(0, (30 - (timer - 60)) / 30) * 8;
@@ -49,13 +49,15 @@ static void draw_player(void* param, float dstx, float dsty, float dstw, float d
     LE_Entity* entity = param;
     bool is_hidden = get(entity, "hidden", Bool, false);
     float iframes = get(entity, "iframes", Float, 0);
-    graphics_flush();
+    graphics_flush(false);
     if (is_hidden) graphics_push_shader("noise");
     else graphics_push_shader(NULL);
     graphics_push_shader("dither");
     graphics_shader_set_int("u_dither_amount", min(8, iframes / 180 * 8));
+    graphics_shader_set_float("u_offset_x", remainder(-dstx, 1));
+    graphics_shader_set_float("u_offset_y", remainder(-dsty, 1));
     gfxcmd_process(gfxcmd_texture("images/entities/player.png"), dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
-    graphics_flush();
+    graphics_flush(false);
     graphics_pop_shader();
     graphics_pop_shader();
 }

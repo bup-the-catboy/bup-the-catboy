@@ -62,7 +62,6 @@ entity_collision(crate_coin) {
 
 entity_collision(crate_heart) {
     if (strcmp(get(collider, "tag", Ptr, ""), "player") != 0) return;
-    LE_EntityList* list = LE_EntityGetList(collider);
     // todo: some fancy effect or some shit idk
     savefile->hearts++;
     LE_DeleteEntity(entity);

@@ -129,13 +129,13 @@ void entity_dither(void* _context, float dstx, float dsty, float dstw, float dst
     struct DitherContext* context = _context;
     float timer = get(context->entity, "despawn_timer", Float, 0);
     int dither_amount = round(max(0, 16 - timer / 2));
-    graphics_flush();
+    graphics_flush(false);
     graphics_push_shader("dither");
     graphics_shader_set_int("u_dither_amount", dither_amount);
     graphics_shader_set_float("u_offset_x", remainder(-dstx, 1));
     graphics_shader_set_float("u_offset_y", remainder(-dsty, 1));
     gfxcmd_process(context->gfxcmd, dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
-    graphics_flush();
+    graphics_flush(false);
     graphics_pop_shader();
     free(context);
 }

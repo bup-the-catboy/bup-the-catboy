@@ -217,13 +217,15 @@ void graphics_init_framebuffer() {
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void graphics_draw_framebuffer() {
+void graphics_draw_framebuffer(bool use_shader) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, rendertexture_id);
-    glUseProgram(shader_id);
-    graphics_update_shader_params();
-    glUniform1iv(glGetUniformLocation(shader_id, "shader_stack"), SHADER_STACK_SIZE, shader_stack);
-    glUniform1i (glGetUniformLocation(shader_id, "shader_stack_len"), shader_stack_len);
+    if (use_shader) {
+        glUseProgram(shader_id);
+        graphics_update_shader_params();
+        glUniform1iv(glGetUniformLocation(shader_id, "shader_stack"), SHADER_STACK_SIZE, shader_stack);
+        glUniform1i (glGetUniformLocation(shader_id, "shader_stack_len"), shader_stack_len);
+    }
     float x1 = ((scissor_x + 0)         / (float)win_width)  * 2 - 1;
     float y1 = ((scissor_y + 0)         / (float)win_height) * 2 - 1;
     float x2 = ((scissor_x + scissor_w) / (float)win_width)  * 2 - 1;
@@ -347,7 +349,7 @@ void graphics_start_frame() {
 
 void graphics_end_frame() {
     graphics_render();
-    graphics_draw_framebuffer();
+    graphics_draw_framebuffer(false);
     graphics_deinit_framebuffer();
     glFlush();
     sdl_opengl_flush(window);
@@ -397,9 +399,19 @@ void graphics_register_shader(const char* name, const char* shader) {
     }
 }
 
-void graphics_flush() {
+void graphics_flush(bool redraw) {
     graphics_render();
-    graphics_draw_framebuffer();
+    if (redraw) {
+        graphics_draw_framebuffer(false);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_id);
+        glBlitFramebuffer(
+            0, 0, win_width, win_height,
+            0, 0, win_width, win_height,
+            GL_COLOR_BUFFER_BIT, GL_NEAREST
+        );
+    }
+    graphics_draw_framebuffer(true);
 }
 
 void graphics_push_shader(const char* name) {

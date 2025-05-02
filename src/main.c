@@ -81,8 +81,6 @@ int main(int argc, char** argv) {
         render_interpolation = min((ticks() - game_start_ticks) / STEP_TIME * TIME_SCALE, 1);
         render_level(drawlist, WIDTH, HEIGHT, render_interpolation);
         LE_Render(drawlist, gfxcmd_process);
-        graphics_pop_all_shaders();
-        graphics_flush();
         LE_ClearDrawList(drawlist);
         graphics_end_frame();
     }
