@@ -49,6 +49,7 @@ entity_update(level_finish);
 entity_update(worldmap_player);
 entity_update(notified);
 entity_update(crate_loot);
+entity_update(nap_spot);
 entity_collision(squash);
 entity_collision(crate_coin);
 entity_collision(crate_heart);
@@ -71,6 +72,7 @@ entity_texture(notified);
 entity_texture(crate_coin);
 entity_texture(crate_heart);
 entity_texture(broken_heart);
+entity_texture(nap_spot);
 
 powerup(death);
 powerup(base);

@@ -27,6 +27,7 @@ int pause_state = UNPAUSED;
 struct PostUpdate {
     void(*func)(void*);
     void *user_data;
+    int timer;
     struct PostUpdate* next;
 };
 
@@ -250,12 +251,7 @@ struct Level* parse_level(unsigned char* data, int datalen) {
 }
 
 void do_warp() {
-    if (curr_level_id != current_warp->next_level) {
-        curr_level_id  = current_warp->next_level;
-        char level_name[32];
-        snprintf(level_name, 31, "levels/level%d.lvl", curr_level_id);
-        load_level(GET_ASSET(struct Binary, level_name));
-    }
+    if (curr_level_id != current_warp->next_level) load_level_by_id(current_warp->next_level);
     change_level_music(current_warp->next_music);
     change_level_theme(current_warp->next_theme);
     camera_set_bounds(camera, current_level->cambounds[current_warp->next_cambound]);
@@ -290,6 +286,13 @@ void load_level_impl(unsigned char* data, int datalen) {
     threadlock_mutex_unlock(THREADLOCK_LEVEL_UPDATE);
 }
 
+void load_level_by_id(int id) {
+    curr_level_id = id;
+    char level_name[32];
+    snprintf(level_name, 31, "levels/level%d.lvl", curr_level_id);
+    load_level(GET_ASSET(struct Binary, level_name));
+}
+
 void reload_level() {
     pause_state = UNPAUSED;
     unsigned char* leveldata = malloc(current_level->raw_length);
@@ -310,7 +313,8 @@ void process_post_update() {
     struct PostUpdate* curr = post_update_list;
     init_post_update_list();
     while (curr) {
-        if (curr->func) curr->func(curr->user_data);
+        if (curr->timer > 0) post_update_timer(curr->func, curr->user_data, curr->timer - 1);
+        else if (curr->func) curr->func(curr->user_data);
         struct PostUpdate* next = curr->next;
         free(curr);
         curr = next;
@@ -318,8 +322,13 @@ void process_post_update() {
 }
 
 void post_update(void(*func)(void*), void* user_data) {
+    post_update_timer(func, user_data, 0);
+}
+
+void post_update_timer(void(*func)(void*), void* user_data, int timer) {
     post_update_list_head->func = func;
     post_update_list_head->user_data = user_data;
+    post_update_list_head->timer = timer;
     post_update_list_head->next = calloc(sizeof(struct PostUpdate), 1);
     post_update_list_head = post_update_list_head->next;
 }

@@ -8,13 +8,14 @@
 #include "rng.h"
 
 entity_update(level_finish) {
-    float timer = get(entity, "timer", Float, 0);
+    float timer = get(entity, "timer", Float, -60);
     timer += delta_time;
     set(entity, "timer", Float, timer);
 }
 
 entity_texture(level_finish) {
     float timer = get(entity, "timer", Float, 0);
+    if (timer < 0) return NULL;
     float shake = max(0, (30 - timer) / 30) * 16;
     float text_w, text_h;
     const char* text = "${^200}LEVEL CLEAR";

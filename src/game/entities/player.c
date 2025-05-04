@@ -65,7 +65,15 @@ static void draw_player(void* param, float dstx, float dsty, float dstw, float d
 static int idle_anim_table[] = { 0, 1, 2, 3, 2, 1 };
 
 entity_texture(player) {
-    bool disable_input = get(entity, "disable_input", Bool, false);
+    if (get(entity, "sleeping", Bool, false)) {
+        *srcX = 16 * ((global_timer / 30) % 2 + 11);
+        *srcY = 0;
+        *srcW = 16;
+        *srcH = 16;
+        *w = 16;
+        *h = 16;
+        return gfxcmd_texture("images/entities/player.png");
+    }
     if (get(entity, "powerup_state", Int, POWERUP_base) == POWERUP_death) {
         *srcX = 9 * 16;
         *srcY = 0;
@@ -78,12 +86,10 @@ entity_texture(player) {
     int sprite = idle_anim_table[(global_timer / 10) % 6];
     bool pouncing    = get(entity, "pouncing",    Bool, false);
     bool facing_left = get(entity, "facing_left", Bool, false);
-    if (!disable_input) {
-        if (is_button_pressed(BUTTON_MOVE_LEFT))  facing_left = true;
-        if (is_button_pressed(BUTTON_MOVE_RIGHT)) facing_left = false;
-        if (is_button_released(BUTTON_MOVE_RIGHT) && is_button_down(BUTTON_MOVE_LEFT)) facing_left = true;
-        if (is_button_released(BUTTON_MOVE_LEFT) && is_button_down(BUTTON_MOVE_RIGHT)) facing_left = false;
-    }
+    if (is_button_pressed(BUTTON_MOVE_LEFT))  facing_left = true;
+    if (is_button_pressed(BUTTON_MOVE_RIGHT)) facing_left = false;
+    if (is_button_released(BUTTON_MOVE_RIGHT) && is_button_down(BUTTON_MOVE_LEFT)) facing_left = true;
+    if (is_button_released(BUTTON_MOVE_LEFT) && is_button_down(BUTTON_MOVE_RIGHT)) facing_left = false;
     if (fabs(entity->velX) > 0) sprite = (int)(entity->posX) % 2 + 4;
     if (
         (entity->velX < 0 && is_button_down(BUTTON_MOVE_RIGHT)) ||
@@ -104,12 +110,13 @@ entity_texture(player) {
 }
 
 entity_update(player_spawner) {
+    if (get(entity, "spawned", Bool, false)) return;
     camera = camera_create();
     if (current_level->default_cambound >= 0 && current_level->default_cambound < current_level->num_cambounds) {
         camera_set_bounds(camera, current_level->cambounds[current_level->default_cambound]);
     }
     LE_CreateEntity(LE_EntityGetList(entity), get_entity_builder_by_id(player), entity->posX, entity->posY);
-    LE_DeleteEntity(entity);
+    set(entity, "spawned", Bool, true);
 }
 
 entity_update(player) {
@@ -173,7 +180,7 @@ powerup(death) {
 }
 
 powerup(base) {
-    bool disable_input = get(entity, "disable_input", Bool, false);
+    bool disable_input = get(entity, "sleeping", Bool, false);
     bool pouncing = get(entity, "pouncing", Bool, false);
     float pounce_timer = get(entity, "pounce_timer", Float, 0);
     if (!pouncing) {

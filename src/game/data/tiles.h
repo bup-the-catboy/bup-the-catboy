@@ -142,22 +142,18 @@ TILE(hor_pipe_conn_bottom_right,
 
 TILE(catcoin_top_left,
     SIMPLE_ANIMATED_TEXTURE(4, 10, 24, 26, 28, 30)
-    COLLISION(tilecol_finish)
 )
 
 TILE(catcoin_top_right,
     SIMPLE_ANIMATED_TEXTURE(4, 10, 25, 27, 29, 31)
-    COLLISION(tilecol_finish)
 )
 
 TILE(catcoin_bottom_left,
     SIMPLE_ANIMATED_TEXTURE(4, 10, 40, 42, 44, 46)
-    COLLISION(tilecol_finish)
 )
 
 TILE(catcoin_bottom_right,
     SIMPLE_ANIMATED_TEXTURE(4, 10, 41, 43, 45, 47)
-    COLLISION(tilecol_finish)
 )
 
 TILE(catcoin_top_left_outline,

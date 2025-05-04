@@ -7,4 +7,3 @@ tile_collision(crate);
 tile_collision(brick);
 tile_collision(coin);
 tile_collision(life_coin);
-tile_collision(finish);

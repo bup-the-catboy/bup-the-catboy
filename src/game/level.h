@@ -12,6 +12,9 @@
 #define PAUSE_FLAG_USER_PAUSED        (1<<2)
 #define UNPAUSED 0
 
+#define LVLID_TITLE 100
+#define LVLID_WORLDMAP 101
+
 enum EntityPropertyType {
     EntityPropertyType_Int,
     EntityPropertyType_Bool,
@@ -46,6 +49,7 @@ extern Camera* camera;
 
 void load_level(struct Binary* data);
 void load_level_impl(unsigned char* data, int datalen);
+void load_level_by_id(int id);
 void change_level_music(int track);
 void change_level_theme(int theme);
 void activate_warp_no_transition(struct Warp* warp);
@@ -55,6 +59,7 @@ void set_pause_state(int pause_state);
 void update_level(float delta_time);
 void render_level(LE_DrawList* drawlist, int width, int height, float interpolation);
 void post_update(void(*func)(void*), void* user_data);
+void post_update_timer(void(*func)(void*), void* user_data, int timer);
 uint32_t get_unique_entity_id();
 
 #endif

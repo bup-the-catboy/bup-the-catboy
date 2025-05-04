@@ -4,10 +4,14 @@
 
 ENTITY(player_spawner,
     UPDATE(player_spawner_update)
+    TEXTURE(nap_spot_texture)
     SIZE(0.75f, 0.75f)
     DEFAULT_PROPERTY("tag", Ptr, (void*)"player")
     LVLEDIT_TEXTURE("images/entities/player.png")
     LVLEDIT_CROP(0, 0, 16, 16)
+    LVLEDIT_PROPERTIES(
+        bool(display_nap_spot, true)
+    )
 )
 
 ENTITY(player,
@@ -247,4 +251,16 @@ ENTITY(broken_heart,
     FLAGS(LE_EntityFlags_DisableCollision)
     DEFAULT_PROPERTY("gravity", Float, 0.03)
     LVLEDIT_HIDE()
+)
+
+ENTITY(nap_spot,
+    UPDATE(nap_spot_update)
+    TEXTURE(nap_spot_texture)
+    SIZE(2.f, 2.f)
+    FLAGS(LE_EntityFlags_DisableCollision)
+    LVLEDIT_TEXTURE("images/entities/napspot.png")
+    LVLEDIT_CROP(8, 16, 16, 16)
+    LVLEDIT_PROPERTIES(
+        bool(is_secret, false)
+    )
 )
