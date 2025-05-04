@@ -8,8 +8,7 @@
 #define CHAR_COIN2 "\x81"
 #define CHAR_COIN3 "\x82"
 #define CHAR_COIN4 "\x83"
-#define CHAR_LIVES "\x7F"
-#define CHAR_HEART "\xA4"
+#define CHAR_HEART "\x7F"
 #define CHAR_COINS (CHAR_COIN1 CHAR_COIN2 CHAR_COIN3 CHAR_COIN4)
 
 #define CHAR_CATCOIN_TLO "\x84"

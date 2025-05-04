@@ -60,7 +60,6 @@ const char* cat_coin_glint[] = {
 };
 
 struct HUDElement hud_elements[] = {
-    { { 0,          0, 56, 52 }, 0x00FF00,          HIDDEN_POS, INIT },
     { { 0,          0, 56, 52 }, 0xFFFF00,          HIDDEN_POS, INIT },
     { { 0,          0, 56, 52 }, 0xFF3F3F,          HIDDEN_POS, INIT },
     { { WIDTH - 80, 0, 80, 40 }, 0xFFFFFF, CAT_COIN_HIDDEN_POS, INIT }
@@ -166,10 +165,9 @@ void hud_update(LE_Entity* player) {
             hud_elements[i].y = hud_elements[i].dst_y = suggest_y_pos(&hud_elements[i]);
         }
     }
-    hud_update_element(player, &hud_elements[0], savefile->lives);
-    hud_update_element(player, &hud_elements[1], savefile->coins);
-    hud_update_element(player, &hud_elements[2], savefile->hearts);
-    hud_update_element(player, &hud_elements[3], 0);
+    hud_update_element(player, &hud_elements[0], savefile->coins);
+    hud_update_element(player, &hud_elements[1], savefile->hearts);
+    hud_update_element(player, &hud_elements[2], 0);
 }
 
 void render_hud_element(LE_DrawList* drawlist, struct HUDElement* element, const char* fmt, ...) {
@@ -219,9 +217,8 @@ void render_cat_coins(LE_DrawList* drawlist) {
 }
 
 void render_hud(LE_DrawList* drawlist) {
-    render_hud_element(drawlist, &hud_elements[0], HUD_OPAC CHAR_LIVES HUD_COLOR_MOD "*%02d",                                      savefile->lives);
-    render_hud_element(drawlist, &hud_elements[1], HUD_OPAC "%c"       HUD_COLOR_MOD "*%02d", CHAR_COINS[(global_timer / 10) % 4], savefile->coins);
-    render_hud_element(drawlist, &hud_elements[2], HUD_OPAC CHAR_HEART HUD_COLOR_MOD "*%02d",                                      savefile->hearts);
+    render_hud_element(drawlist, &hud_elements[0], HUD_OPAC "%c"       HUD_COLOR_MOD "*%02d", CHAR_COINS[(global_timer / 10) % 4], savefile->coins);
+    render_hud_element(drawlist, &hud_elements[1], HUD_OPAC CHAR_HEART HUD_COLOR_MOD "*%02d",                                      savefile->hearts);
     render_cat_coins(drawlist);
 }
 
