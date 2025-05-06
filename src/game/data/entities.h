@@ -99,11 +99,15 @@ ENTITY(dust,
 )
 
 ENTITY(shader_controller,
+    UPDATE(timer_update)
     TEXTURE(shader_controller_texture)
     SIZE(0.75f, 0.75f)
-    DEFAULT_PROPERTY("shader", Ptr, (void*)"")
     LVLEDIT_TEXTURE("images/lvledit/shader.png")
     LVLEDIT_CROP(0, 0, 16, 16)
+    LVLEDIT_PROPERTIES(
+        string(shader, "")
+        bool(redraw, true)
+    )
 )
 
 ENTITY(death_barrier,
@@ -167,8 +171,9 @@ ENTITY(trail,
 )
 
 ENTITY(level_finish,
-    UPDATE(level_finish_update)
+    UPDATE(timer_update)
     TEXTURE(level_finish_texture)
+    DEFAULT_PROPERTY("timer", Float, -60)
     LVLEDIT_HIDE()
 )
 

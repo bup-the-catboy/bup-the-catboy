@@ -90,7 +90,8 @@ const char* shader_common =
     "varying vec4 v_color;"_
     ""_
     "uniform sampler2D u_texture;"_
-    "uniform int u_timer;"_
+    "uniform int u_level_timer;"_
+    "uniform int u_global_timer;"_
     "uniform int u_width;"_
     "uniform int u_height;"_
     "uniform float u_scale;"_
@@ -115,7 +116,7 @@ void graphics_render() {
 }
 
 void graphics_update_shader_params() {
-    graphics_shader_set_int("u_timer",  global_timer + render_interpolation);
+    graphics_shader_set_int("u_global_timer", global_timer + render_interpolation);
     graphics_shader_set_int("u_width",  res_width);
     graphics_shader_set_int("u_height", res_height);
     graphics_shader_set_float("u_scale", scissor_w / res_width);

@@ -244,6 +244,7 @@ struct Level* parse_level(unsigned char* data, int datalen) {
                 layer->scaleW *= tilemap->scaleW;
                 layer->scaleH *= tilemap->scaleH;
             }
+            else LE_EntityAssignTilemap(entitylist, NULL);
         }
         iter = LE_LayerListNext(iter);
     }

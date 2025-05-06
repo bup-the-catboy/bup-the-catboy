@@ -72,6 +72,12 @@ entity_update(friction) {
     }
 }
 
+entity_update(timer) {
+    float timer = get(entity, "timer", Float, 0);
+    timer += delta_time;
+    set(entity, "timer", Float, timer);
+}
+
 entity_collision(squash) {
     const char* tag = get(collider, "tag", Ptr, "");
     if (strcmp(tag, "turtle_shell") == 0) {

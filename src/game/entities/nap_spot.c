@@ -1,9 +1,11 @@
+#include "font/font.h"
 #include "functions.h"
 #include "game/overlay/transition.h"
 #include "game/savefile.h"
 #include "io/io.h"
 #include "game/level.h"
 #include "game/data.h"
+#include "rng.h"
 #include <stdlib.h>
 
 static void load_world_map() {
@@ -37,4 +39,15 @@ entity_texture(nap_spot) {
     *srcW = *w = 32;
     *srcH = *h = 32;
     return gfxcmd_texture("images/entities/napspot.png");
+}
+
+entity_texture(level_finish) {
+    float timer = get(entity, "timer", Float, 0);
+    if (timer < 0) return NULL;
+    float shake = max(0, (30 - timer) / 30) * 16;
+    float text_w, text_h;
+    const char* text = "${^200}LEVEL CLEAR";
+    text_size(&text_w, &text_h, text);
+    render_text(drawlist, (WIDTH - text_w) / 2 + random_range(-shake, shake), 64 + random_range(-shake, shake), text);
+    return NULL;
 }

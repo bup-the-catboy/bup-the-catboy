@@ -45,7 +45,7 @@ entity_update(friction);
 entity_update(death_barrier);
 entity_update(coin_particle);
 entity_update(trail_spawner);
-entity_update(level_finish);
+entity_update(timer);
 entity_update(worldmap_player);
 entity_update(notified);
 entity_update(crate_loot);
