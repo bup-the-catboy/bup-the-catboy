@@ -210,17 +210,19 @@ void graphics_init_framebuffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
     glGenTextures(1, &rendertexture_id);
     glBindTexture(GL_TEXTURE_2D, rendertexture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, win_width, win_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scissor_w, scissor_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rendertexture_id, 0);
     glClearColor(.5f, .5f, .5f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
+    glViewport(0, 0, scissor_w, scissor_h);
 }
 
 void graphics_draw_framebuffer(bool use_shader) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, rendertexture_id);
+    glViewport(0, 0, win_width, win_height);
     if (use_shader) {
         glUseProgram(shader_id);
         graphics_update_shader_params();
@@ -247,6 +249,7 @@ void graphics_draw_framebuffer(bool use_shader) {
     glUseProgram(basic_shader_id);
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
+    glViewport(0, 0, scissor_w, scissor_h);
     struct Texture* tex = current_texture;
     current_texture = NULL;
     graphics_select_texture(tex);
@@ -335,7 +338,6 @@ void graphics_start_frame() {
     scissor_h = view_height;
     view_width  /= win_width;
     view_height /= win_height;
-    glViewport(0, 0, win_width, win_height);
     if (shader_id == 0) {
         graphics_build_shader();
         glUseProgram(shader_id);
@@ -407,8 +409,8 @@ void graphics_flush(bool redraw) {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_id);
         glBlitFramebuffer(
-            0, 0, win_width, win_height,
-            0, 0, win_width, win_height,
+            scissor_x, scissor_y, scissor_x + scissor_w, scissor_y + scissor_h,
+            0, 0, scissor_w, scissor_h,
             GL_COLOR_BUFFER_BIT, GL_NEAREST
         );
     }
