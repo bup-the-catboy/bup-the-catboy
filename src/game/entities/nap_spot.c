@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 static void load_world_map() {
-    load_level_by_id(LVLID_WORLDMAP + savefile->map_id);
+    load_world_map_with_node(savefile->map_id, savefile->map_node);
 }
 
 static void start_world_map_transition() {
@@ -28,7 +28,7 @@ entity_update(nap_spot) {
     set(player, "sleeping", Bool, true);
     set(player, "gravity", Float, 0);
     LE_CreateEntity(LE_EntityGetList(player), get_entity_builder_by_id(level_finish), 0, 0);
-    savefile->level_flags[0] |= get(entity, "is_secret", Bool, false) ? LEVEL_FLAG_SECRET_EXIT : LEVEL_FLAG_COMPLETED;
+    savefile->level_flags[curr_level_id] |= get(entity, "is_secret", Bool, false) ? LEVEL_FLAG_SECRET_EXIT : LEVEL_FLAG_COMPLETED;
     savefile_save();
 }
 

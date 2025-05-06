@@ -15,8 +15,3 @@ tile_collision(coin) {
     }
     savefile->coins++;
 }
-
-tile_collision(life_coin) {
-    LE_TilemapSetTile(tilemap, tileX, tileY, TILE_DATA_air);
-    savefile->lives++;
-}

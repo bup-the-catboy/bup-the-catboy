@@ -148,8 +148,7 @@ int anim_arg = 0;
 
 static void start_game() {
     load_menu(none);
-    load_level_by_id(LVLID_WORLDMAP + savefile->map_id);
-    set(find_entity_with_tag("player"), "curr_node", Int, savefile->map_node);
+    load_world_map_with_node(savefile->map_id, savefile->map_node);
 }
 
 void menubtn_start(int selected_index) {

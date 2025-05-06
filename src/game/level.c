@@ -294,6 +294,11 @@ void load_level_by_id(int id) {
     load_level(GET_ASSET(struct Binary, level_name));
 }
 
+void load_world_map_with_node(int id, int node) {
+    load_level_by_id(LVLID_WORLDMAP + id);
+    set(find_entity_with_tag("player"), "curr_node", Int, node);
+}
+
 void reload_level() {
     pause_state = UNPAUSED;
     unsigned char* leveldata = malloc(current_level->raw_length);

@@ -32,14 +32,16 @@ int copy_what = -1;
 void savefile_load() {
     FILE* f = fopen(SAVEFILE_FILENAME, "r" BINARY);
     if (!f) {
+        savedata.selected_savefile = 0;
         for (int i = 0; i < NUM_SAVEFILES; i++) {
             savefile_erase(i);
         }
         savefile_save();
-        return;
     }
-    fread(&savedata, sizeof(savedata), 1, f);
-    fclose(f);
+    else {
+        fread(&savedata, sizeof(savedata), 1, f);
+        fclose(f);
+    }
     savefile_select(savedata.selected_savefile);
 }
 
@@ -50,7 +52,6 @@ void savefile_select(int file) {
 
 void savefile_erase(int file) {
     memset(&savedata.savefiles[file], 0, sizeof(struct SaveFile));
-    savedata.savefiles[file].lives = 3;
 }
 
 void savefile_copy(int from, int to) {

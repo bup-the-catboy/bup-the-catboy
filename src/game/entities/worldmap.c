@@ -11,9 +11,7 @@
 
 static int activated_level = 0;
 static void start_level() {
-    char level[32];
-    snprintf(level, 32, "levels/level%d.lvl", activated_level);
-    load_level(GET_ASSET(struct Binary, level));
+    load_level_by_id(activated_level);
 }
 
 static bool can_go(LE_Entity* entity) {
@@ -47,11 +45,11 @@ static LE_Entity* get_worldmap_node(LE_Entity* entity, int id) {
 
 static int continue_to(LE_Entity* entity, int prev, int curr) {
     LE_Entity* curr_node = get_worldmap_node(entity, curr);
-    int up    = get(curr_node,    "up_node", Int, 0);
-    int left  = get(curr_node,  "left_node", Int, 0);
-    int down  = get(curr_node,  "down_node", Int, 0);
-    int right = get(curr_node, "right_node", Int, 0);
-    int level = get(curr_node, "level_id"  , Int, 0);
+    int up    = get(curr_node,    "up_node", Int, -1);
+    int left  = get(curr_node,  "left_node", Int, -1);
+    int down  = get(curr_node,  "down_node", Int, -1);
+    int right = get(curr_node, "right_node", Int, -1);
+    int level = get(curr_node, "level_id"  , Int, -1);
     if (level != -1) return curr;
     int next = curr;
     if (up == prev) {
@@ -82,11 +80,14 @@ static int idle_anim_table[] = { 0, 1, 2, 3, 2, 1 };
 static int walk_anim_table[] = { 4, 5 };
 
 entity_texture(worldmap_player) {
-    float prev_pos_x = get(entity, "prev_pos", Int, entity->posX);
+    int curr_node_id = get(entity, "curr_node", Int, 0);
+    int next_node_id = get(entity, "next_node", Int, curr_node_id);
+    LE_Entity* curr_node = get_worldmap_node(entity, curr_node_id);
+    LE_Entity* next_node = get_worldmap_node(entity, next_node_id);
     bool flipped = get(entity, "flipped", Bool, false);
-    bool walking = entity->posX != prev_pos_x;
-    if (entity->posX < prev_pos_x) flipped = true;
-    if (entity->posX > prev_pos_x) flipped = false;
+    bool walking = curr_node_id != next_node_id;
+    if (curr_node->posX < next_node->posX) flipped = false;
+    if (curr_node->posX > next_node->posX) flipped = true;
     *srcX = (walking
         ? walk_anim_table[(global_timer / 10) % 2]
         : idle_anim_table[(global_timer / 10) % 6]
@@ -96,7 +97,6 @@ entity_texture(worldmap_player) {
     *srcH = 16;
     *w = flipped ? -16 : 16;
     *h = 16;
-    set(entity, "prev_pos", Float, entity->posX);
     return gfxcmd_texture("images/entities/player.png");
 }
 
@@ -120,6 +120,11 @@ entity_update(worldmap_player) {
             int prev_node_id = curr_node_id;
             curr_node_id = next_node_id;
             next_node_id = continue_to(entity, prev_node_id, curr_node_id);
+            if (curr_node_id == next_node_id) {
+                savefile->map_id = curr_level_id - LVLID_WORLDMAP;
+                savefile->map_node = curr_node_id;
+                savefile_save();
+            }
         }
     }
     else {
@@ -138,6 +143,6 @@ entity_update(worldmap_player) {
         if (is_button_pressed(BUTTON_MOVE_RIGHT)) next_node_id = right;
         if (next_node_id == -1) next_node_id = curr_node_id;
     }
-    get(entity, "curr_node", Int, curr_node_id);
-    get(entity, "next_node", Int, next_node_id);
+    set(entity, "curr_node", Int, curr_node_id);
+    set(entity, "next_node", Int, next_node_id);
 }

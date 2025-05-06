@@ -204,9 +204,10 @@ powerup(base) {
             }
         }
         if (get(entity, "jumping", Bool, false)) {
+            LE_Direction collided_dir;
             float height = get(entity, "jumping_from", Float, entity->posY) - entity->posY;
             set(entity, "coyote", Float, 999);
-            if (height > 3 || !(is_button_down(BUTTON_JUMP) || disable_input)) set(entity, "jumping", Bool, false);
+            if (height > 3 || !(is_button_down(BUTTON_JUMP) || disable_input) || (entity_collided(entity, &collided_dir) && collided_dir == LE_Direction_Down)) set(entity, "jumping", Bool, false);
             else entity->velY = -0.3f;
         }
         if (entity_jump_requested(entity, is_button_pressed(BUTTON_JUMP) && !disable_input) & (int)entity_can_jump(entity)) {

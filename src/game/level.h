@@ -50,6 +50,7 @@ extern Camera* camera;
 void load_level(struct Binary* data);
 void load_level_impl(unsigned char* data, int datalen);
 void load_level_by_id(int id);
+void load_world_map_with_node(int id, int node);
 void change_level_music(int track);
 void change_level_theme(int theme);
 void activate_warp_no_transition(struct Warp* warp);
