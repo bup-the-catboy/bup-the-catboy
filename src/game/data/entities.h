@@ -226,6 +226,7 @@ ENTITY(crate_loot,
     LVLEDIT_CROP(0, 0, 16, 16)
     LVLEDIT_PROPERTIES(
         int(entity_or_warp_id, -1)
+        int(entity_param, 0)
         bool(is_warp, false)
     )
 )
@@ -268,4 +269,14 @@ ENTITY(nap_spot,
     LVLEDIT_PROPERTIES(
         bool(is_secret, false)
     )
+)
+
+ENTITY(crate_powerup,
+    UPDATE(gravity_update)
+    UPDATE(crate_loot_update)
+    COLLISION(crate_powerup_collision)
+    TEXTURE(crate_powerup_texture)
+    SIZE(.75f, .75f)
+    DEFAULT_PROPERTY("gravity", Float, 0.03)
+    LVLEDIT_HIDE()
 )

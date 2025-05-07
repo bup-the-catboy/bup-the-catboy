@@ -15,6 +15,13 @@ void draw_coin(void* context, float dstX, float dstY, float dstW, float dstH, in
     LE_DestroyDrawList(dl);
 }
 
+void draw_collar(void* context, float dstX, float dstY, float dstW, float dstH, int srcX, int srcY, int srcW, int srcH, unsigned int color) {
+    LE_Entity* entity = context;
+    int powerup_color = get_powerup(get(entity, "crate_loot_param", Int, POWERUP_base))->color;
+    gfxcmd_process(gfxcmd_texture("images/entities/collar.png"), dstX, dstY, dstW, dstH,  0, 0, 16, 16, color);
+    gfxcmd_process(gfxcmd_texture("images/entities/collar.png"), dstX, dstY, dstW, dstH, 16, 0, 16, 16, ((powerup_color & 0xFFFFFF) << 8) | 0xFF);
+}
+
 entity_update(crate_loot) {
     if (entity_init(entity)) {
         entity->velY = -.4f;
@@ -30,10 +37,6 @@ entity_update(crate_loot) {
 }
 
 entity_texture(crate_coin) {
-    *srcX = 0;
-    *srcY = 0;
-    *srcW = 16;
-    *srcH = 16;
     *w = 16;
     *h = 16;
     return gfxcmd_custom(draw_coin, entity);
@@ -47,6 +50,12 @@ entity_texture(crate_heart) {
     *w = 16;
     *h = 16;
     return gfxcmd_texture("images/entities/heart.png");
+}
+
+entity_texture(crate_powerup) {
+    *w = 16;
+    *h = 16;
+    return gfxcmd_custom(draw_collar, entity);
 }
 
 entity_collision(crate_coin) {
@@ -64,6 +73,21 @@ entity_collision(crate_heart) {
     if (strcmp(get(collider, "tag", Ptr, ""), "player") != 0) return;
     // todo: some fancy effect or some shit idk
     savefile->hearts++;
+    LE_DeleteEntity(entity);
+}
+
+entity_collision(crate_powerup) {
+    if (strcmp(get(collider, "tag", Ptr, ""), "player") != 0) return;
+    int id = get(entity, "crate_loot_param", Int, POWERUP_base);
+    struct Powerup* powerup = get_powerup(id);
+    struct Powerup* curr    = get_powerup(get(collider, "powerup_state", Int, POWERUP_base));
+    while (curr) {
+        if (curr == powerup) return;
+        curr = curr->parent;
+    }
+    savefile->powerup = id;
+    set(collider, "powerup_state", Int, id);
+    // todo: more fancy effects
     LE_DeleteEntity(entity);
 }
 

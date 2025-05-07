@@ -53,6 +53,7 @@ entity_update(nap_spot);
 entity_collision(squash);
 entity_collision(crate_coin);
 entity_collision(crate_heart);
+entity_collision(crate_powerup);
 entity_texture(player);
 entity_texture(dead_player);
 entity_texture(mouse);
@@ -71,6 +72,7 @@ entity_texture(worldmap_player);
 entity_texture(notified);
 entity_texture(crate_coin);
 entity_texture(crate_heart);
+entity_texture(crate_powerup);
 entity_texture(broken_heart);
 entity_texture(nap_spot);
 
