@@ -201,6 +201,7 @@ powerup(base) {
     bool disable_input = get(entity, "sleeping", Bool, false);
     bool pouncing = get(entity, "pouncing", Bool, false);
     float pounce_timer = get(entity, "pounce_timer", Float, 0);
+    float stomp_timer = get(entity, "stomp_timer", Float, 0);
     if (!pouncing) {
         bool l = is_button_down(BUTTON_MOVE_LEFT) && !disable_input;
         bool r = is_button_down(BUTTON_MOVE_RIGHT) && !disable_input;
@@ -250,6 +251,8 @@ powerup(base) {
         }
     }
     else pounce_timer -= delta_time;
+    if (stomp_timer > 0) stomp_timer -= delta_time;
+    if (stomp_timer < 0) stomp_timer  = 0;
     float peak_height = get(entity, "peak_height", Float, entity->posY);
     bool prev_in_air = get(entity, "prev_in_air", Bool, false);
     if (prev_in_air && (entity->flags & LE_EntityFlags_OnGround) && entity->posY - peak_height > 5) {
@@ -262,6 +265,7 @@ powerup(base) {
     entity_update_squish(entity, 5);
     set(entity, "pouncing", Bool, pouncing);
     set(entity, "pounce_timer", Float, pounce_timer);
+    set(entity, "stomp_tmer", Float, stomp_timer);
     return false;
 }
 
