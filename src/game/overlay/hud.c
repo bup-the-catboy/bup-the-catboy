@@ -44,6 +44,7 @@ struct HUDElement {
     int bump_timer;
     int value;
     int opacity;
+    bool invert_bump;
 };
 
 int standing_timer = 0;
@@ -145,6 +146,8 @@ void hud_update_element(LE_Entity* player, struct HUDElement* element, int targe
     element->bump_timer++;
     element->show_timer++;
     approach(&element->opacity, target_opacity, FADE_SPEED);
+    if (element->value < target_value) element->invert_bump = false;
+    if (element->value > target_value) element->invert_bump = true;
     if (approach(&element->value, target_value, 1)) {
         _show_hud_element(element);
         element->bump_timer = 0;
@@ -176,7 +179,7 @@ void render_hud_element(LE_DrawList* drawlist, struct HUDElement* element, const
     char formatted[1024];
     vsnprintf(formatted, 1024, fmt, args);
     va_end(args);
-    float y = element->y - max(0, min(-abs(element->bump_timer - BUMP_HEIGHT) + BUMP_HEIGHT, BUMP_HEIGHT));
+    float y = element->y - max(0, min(-abs(element->bump_timer - BUMP_HEIGHT) + BUMP_HEIGHT, BUMP_HEIGHT)) * (element->invert_bump ? -1 : 1);
     unsigned int color = interpolate_color(element->color, 0xFFFFFF, clamp(element->bump_timer / (float)FADE_DELAY, 0, 1));
     render_text(drawlist, element->x, y, formatted, element->opacity * 100 / 255, color);
 }
