@@ -29,6 +29,7 @@ entity_update(nap_spot) {
     set(player, "gravity", Float, 0);
     LE_CreateEntity(LE_EntityGetList(player), get_entity_builder_by_id(level_finish), 0, 0);
     savefile->level_flags[curr_level_id] |= get(entity, "is_secret", Bool, false) ? LEVEL_FLAG_SECRET_EXIT : LEVEL_FLAG_COMPLETED;
+    if (savefile->hearts > 1) savefile->hearts = 1; // nuh uh no heart farming :3
     savefile_save();
 }
 
