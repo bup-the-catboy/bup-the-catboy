@@ -50,8 +50,7 @@ static void draw_player(void* param, float dstx, float dsty, float dstw, float d
     bool is_hidden = get(entity, "hidden", Bool, false);
     float iframes = get(entity, "iframes", Float, 0);
     int powerup_id = get(entity, "powerup_state", Int, POWERUP_base);
-    int powerup_color = get_powerup(powerup_id)->color;
-    powerup_color = 0xB00B69;
+    int powerup_color = powerup_id != -1 ? get_powerup(powerup_id)->color : -1;
 
     graphics_flush(false);
     if (powerup_color != -1) {
@@ -163,6 +162,7 @@ entity_update(player) {
             }
             iframes = 300;
         }
+        savefile->powerup = id;
         set(entity, "powerup_state", Int, id);
     }
     iframes -= delta_time;
