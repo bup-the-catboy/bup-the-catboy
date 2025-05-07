@@ -25,9 +25,9 @@ static void draw_dead_player(void* param, float dstx, float dsty, float dstw, fl
     float y = random_range(-shake_intensity, shake_intensity);
     graphics_flush(false);
     graphics_push_shader("iris");
-    graphics_shader_set_float("u_xpos", 0);
-    graphics_shader_set_float("u_ypos", 0);
-    graphics_shader_set_float("u_radius", 0);
+    graphics_shader_set_float("u_iris_posx", 0);
+    graphics_shader_set_float("u_iris_posy", 0);
+    graphics_shader_set_float("u_iris_radius", 0);
     gfxcmd_process(gfxcmd_texture("images/entities/player.png"), dstx + x, dsty + y, dstw, dsth, srcx, srcy, srcw, srch, color);
     graphics_flush(false);
     graphics_pop_shader();
@@ -49,14 +49,32 @@ static void draw_player(void* param, float dstx, float dsty, float dstw, float d
     LE_Entity* entity = param;
     bool is_hidden = get(entity, "hidden", Bool, false);
     float iframes = get(entity, "iframes", Float, 0);
+    int powerup_id = get(entity, "powerup_state", Int, POWERUP_base);
+    int powerup_color = get_powerup(powerup_id)->color;
+    powerup_color = 0xB00B69;
+
     graphics_flush(false);
+    if (powerup_color != -1) {
+        int alpha = sin_range(global_timer / 300.f, 0.8, 1.0) * 255;
+        graphics_push_shader("rotation");
+        graphics_shader_set_float("u_rot_posx", dstx + fabsf(dstw) / 2);
+        graphics_shader_set_float("u_rot_posy", dsty + fabsf(dsth) / 2);
+        graphics_shader_set_float("u_rot_angle", global_timer / 180.f * 2 * M_PI);
+        gfxcmd_process(gfxcmd_texture("images/entities/player_glow.png"), dstx, dsty, dstw, dsth, 0, 0, 16, 16, ((powerup_color & 0xFFFFFF) << 8) | alpha);
+        graphics_flush(false);
+        graphics_pop_shader();
+    }
     if (is_hidden) graphics_push_shader("noise");
     else graphics_push_shader(NULL);
     graphics_push_shader("dither");
     graphics_shader_set_int("u_dither_amount", min(8, iframes / 180 * 8));
-    graphics_shader_set_float("u_offset_x", remainder(-dstx, 1));
-    graphics_shader_set_float("u_offset_y", remainder(-dsty, 1));
+    graphics_shader_set_float("u_dither_offx", remainder(-dstx, 1));
+    graphics_shader_set_float("u_dither_offy", remainder(-dsty, 1));
     gfxcmd_process(gfxcmd_texture("images/entities/player.png"), dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
+    if (powerup_color != -1) {
+        gfxcmd_process(gfxcmd_texture("images/entities/player.png"), dstx, dsty, dstw, dsth, srcx, srcy + 16*1, srcw, srch, 0xFFFFFFFF);
+        gfxcmd_process(gfxcmd_texture("images/entities/player.png"), dstx, dsty, dstw, dsth, srcx, srcy + 16*2, srcw, srch, ((powerup_color & 0xFFFFFF) << 8) | 0xFF);
+    }
     graphics_flush(false);
     graphics_pop_shader();
     graphics_pop_shader();

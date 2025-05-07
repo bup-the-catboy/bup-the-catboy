@@ -30,6 +30,7 @@ MATHFUNC(min, a, b)
 MATHFUNC(max, a, b)
 MATHFUNC(lerp, x, f, t)
 MATHFUNC(map, fmin, fmax, tmin, tmax, x)
+MATHFUNC(sin_range, x, min, max)
 
 float linear(float x);
 float sin_in(float x);

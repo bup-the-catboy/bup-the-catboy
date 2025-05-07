@@ -1,6 +1,6 @@
 uniform int u_dither_amount;
-uniform float u_offset_x;
-uniform float u_offset_y;
+uniform float u_dither_offx;
+uniform float u_dither_offy;
 
 const int thresholds[] = int[16](
     1, 9, 3, 11,
@@ -10,8 +10,8 @@ const int thresholds[] = int[16](
 );
 
 vec4 dither(vec4 color) {
-    int x = int(v_coord.x * u_width  + u_offset_x) % 4;
-    int y = int(v_coord.y * u_height + u_offset_y) % 4;
+    int x = int(v_coord.x * u_width  + u_dither_offx) % 4;
+    int y = int(v_coord.y * u_height + u_dither_offy) % 4;
     int threshold = thresholds[y * 4 + x];
     if (u_dither_amount < threshold) return color;
     else discard;

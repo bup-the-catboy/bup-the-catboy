@@ -102,6 +102,11 @@ const char* shader_common =
     ""_
     "float random(inout float seed) {"_
     "    return seed = fract(sin(dot(vec3(v_coord, seed), vec3(12.9898, 78.233, 37.719))) * 43758.5453);"_
+    "}"_
+    ""_
+    "vec4 get_texture(sampler2D texture, vec2 coords) {"_
+    "    if (coords.x < 0 || coords.y < 0 || coords.x > 1 || coords.y > 1) return vec4(0, 0, 0, 0);"_
+    "    return texture2D(texture, coords);"_
     "}";
 
 void graphics_render() {
@@ -162,7 +167,7 @@ int graphics_compile_shader(const char* code) {
 void graphics_build_shader() {
     const char* header =
         "void main() {"_
-        "    vec4 color = texture2D(u_texture, v_coord) * v_color;"_
+        "    vec4 color = get_texture(u_texture, v_coord) * v_color;"_
         "    for (int i = 0; i < shader_stack_len; i++) {"_
         "        switch (shader_stack[i]) {"_;
     const char* footer =

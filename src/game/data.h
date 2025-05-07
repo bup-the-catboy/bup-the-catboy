@@ -10,12 +10,12 @@
 #define get_powerup_by_id(       id) get_powerup       (       POWERUP_##id)
 #define _tile(                   id)                   [     TILE_DATA_##id]
 
-#define ENTITY(      id, _1) ,ENTITY_BUILDER_##id
-#define TILESET(     id, _1) ,       TILESET_##id
-#define TILE(        id, _1) ,     TILE_DATA_##id
-#define THEME(       id, _1) ,         THEME_##id
-#define POWERUP(     id, _1) ,       POWERUP_##id
-#define TILE_PALETTE(id, _1) ,__TILE_PALETTE_##id = -1 _1
+#define POWERUP(     id, _1, _2) ,       POWERUP_##id
+#define TILESET(     id, _1)     ,       TILESET_##id
+#define TILE(        id, _1)     ,     TILE_DATA_##id
+#define THEME(       id, _1)     ,         THEME_##id
+#define ENTITY(      id, _1)     ,ENTITY_BUILDER_##id
+#define TILE_PALETTE(id, _1)     ,__TILE_PALETTE_##id = -1 _1
 #define TILESET_TYPE(id    )    TILESET_TYPE_##id,
 
 #define ENUM(value) = value
@@ -65,6 +65,7 @@ enum PowerupIDs {
 struct Powerup {
     struct Powerup* parent;
     bool(*callback)(LE_Entity*);
+    int color;
 };
 
 void init_data();
