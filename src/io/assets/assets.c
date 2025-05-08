@@ -35,9 +35,7 @@ struct Asset* asset_list;
 bool force_binary = false;
 
 unsigned char asset_data[] = {
-#ifdef NO_VSCODE // so it doesnt destroy the intellisense
-#include "asset_data.h"
-#endif
+#embed "assets.bin"
 };
 
 void get_extension(char* out, const char* in) {

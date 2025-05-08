@@ -49,22 +49,11 @@ void write_file(FILE* f, const char* filename) {
 }
 
 int main() {
-    FILE* f = fopen("assets_temp.bin", "w+" BINARY);
+    FILE* f = fopen("assets.bin", "w+" BINARY);
     chdir("assets");
     write_file(f, ".");
     uint8_t zero = 0;
     fwrite(&zero, 1, 1, f);
-    chdir("..");
-    size_t size = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    FILE* out = fopen("src/io/assets/asset_data.h", "w");
-    for (size_t i = 0; i < size; i++) {
-        uint8_t byte;
-        fread(&byte, 1, 1, f);
-        fprintf(out, "0x%02x,", byte);
-    }
     fclose(f);
-    fclose(out);
-    unlink("assets_temp.bin");
     return 0;
 }

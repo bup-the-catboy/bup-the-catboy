@@ -20,7 +20,7 @@ SRCS := $(shell find $(SRC_DIR) -type f -name "*.c")
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 TOOLS_SRC := $(shell find $(TOOLS_SRCDIR) -type f -name "*.c")
 TOOLS_EXEC := $(patsubst $(TOOLS_SRCDIR)/%.c,$(TOOLS_BINDIR)/%,$(TOOLS_SRC))
-CFLAGS = -Wall -g -I src -I include
+CFLAGS = -Wall -g -I src -I include --std=gnu23
 LDFLAGS := -L./$(LIBS_DIR)
 LIBS :=
 

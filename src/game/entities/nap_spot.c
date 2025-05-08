@@ -12,7 +12,7 @@ static void load_world_map() {
     load_world_map_with_node(savefile->map_id, savefile->map_node);
 }
 
-static void start_world_map_transition() {
+static void start_world_map_transition(void* _) {
     start_transition(load_world_map, 60, LE_Direction_Up, cubic_in_out);
 }
 

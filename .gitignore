@@ -1,7 +1,7 @@
 build
 *.a
-asset_data.h
 assets/*
+assets.bin
 !assets/shaders
 btcb.sav
 lvledit
