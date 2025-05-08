@@ -15,7 +15,8 @@ void entity_spawn_dust(LE_Entity* entity, bool left, bool right, float speed);
 bool entity_should_squish(LE_Entity* entity, LE_Entity* collider);
 
 void  entity_dither(void* context, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color);
-void* dither_context(LE_Entity* entity, void* gfxcmd);
+void  entity_turtle_shelled(void* _context, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color);
+void* custom_cmd_context(LE_Entity* entity, void* gfxcmd);
 
 LE_Entity* find_entity_with_tag(const char* tag);
 LE_Entity* find_nearest_entity_with_tag(LE_Entity* self, const char* tag, float* distance);
@@ -37,6 +38,7 @@ entity_update(dead_player);
 entity_update(walk);
 entity_update(squashed_mouse);
 entity_update(turtle_shell);
+entity_update(turtle_shelled);
 entity_update(dust);
 entity_update(gravity);
 entity_update(animable);

@@ -6,7 +6,6 @@ ENTITY(player_spawner,
     UPDATE(player_spawner_update)
     TEXTURE(nap_spot_texture)
     SIZE(0.75f, 0.75f)
-    DEFAULT_PROPERTY("tag", Ptr, (void*)"player")
     LVLEDIT_TEXTURE("images/entities/player.png")
     LVLEDIT_CROP(0, 0, 16, 16)
     LVLEDIT_PROPERTIES(
@@ -40,6 +39,7 @@ ENTITY(mouse,
     UPDATE(gravity_update)
     UPDATE(walk_update)
     UPDATE(animable_update)
+    UPDATE(turtle_shelled_update)
     COLLISION(squash_collision)
     TEXTURE(mouse_texture)
     SIZE(0.75f, 0.75f)
@@ -80,6 +80,7 @@ ENTITY(turtle,
     UPDATE(gravity_update)
     UPDATE(walk_update)
     UPDATE(animable_update)
+    UPDATE(turtle_shelled_update)
     COLLISION(squash_collision)
     TEXTURE(turtle_texture)
     SIZE(0.75f, 0.75f)

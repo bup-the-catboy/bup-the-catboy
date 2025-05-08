@@ -117,5 +117,5 @@ entity_texture(crate_fragment) {
     *srcW = 8;
     *srcH = 8;
     set(entity, "timer", Float, timer);
-    return gfxcmd_custom(entity_dither, dither_context(entity, gfxcmd_texture("images/entities/crate_fragment.png")));
+    return gfxcmd_custom(entity_dither, custom_cmd_context(entity, gfxcmd_texture("images/entities/crate_fragment.png")));
 }

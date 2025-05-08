@@ -1,5 +1,6 @@
 #include "functions.h"
 #include "game/data.h"
+#include "game/level.h"
 #include "main.h"
 #include "rng.h"
 
@@ -78,15 +79,28 @@ entity_update(timer) {
     set(entity, "timer", Float, timer);
 }
 
+entity_update(turtle_shelled) {
+    if (!get(entity, "turtle_shelled", Bool, false)) return;
+    float timer = get(entity, "turtle_shelled_timer", Float, 0);
+    timer += delta_time;
+    set(entity, "turtle_shelled_timer", Float, timer);
+    if (timer >= 120) LE_DeleteEntity(entity);
+}
+
 entity_collision(squash) {
     const char* tag = get(collider, "tag", Ptr, "");
     if (strcmp(tag, "turtle_shell") == 0) {
-        LE_DeleteEntity(entity);
-        return;
+        set(entity, "turtle_shelled", Bool, true);
+        entity->velX = collider->velX;
+        entity->velY = -0.25;
+        entity->flags |= LE_EntityFlags_DisableCollision;
+        camera_screenshake(camera, 5, .125f, .125f);
     }
+    if (get(entity, "turtle_shelled", Bool, false)) return;
     if (strcmp(tag, "player") != 0) return;
     if (!entity_should_squish(entity, collider)) {
         if (get(collider, "hidden", Bool, false)) return;
+        if (get(collider, "stomp_timer", Float, false) > 0) return;
         set(collider, "powerup_state", Int, hurt);
         set(collider, "death_left", Bool, collider->posX < entity->posX);
         return;

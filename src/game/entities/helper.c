@@ -109,23 +109,20 @@ void entity_spawn_dust(LE_Entity* entity, bool left, bool right, float speed) {
 }
 
 bool entity_should_squish(LE_Entity* entity, LE_Entity* collider) {
-    float stomp_timer = get(collider, "stomp_timer", Float, 0);
-    if (stomp_timer != 0) return true;
-    bool squish = false;
     if (collider->velY > 0.05) {
         set(collider, "stomp_timer", Float, 5);
-        squish = true;
+        return true;
     }
-    return squish || stomp_timer != 0;
+    return false;
 }
 
-struct DitherContext {
+struct CustomCommandContext {
     LE_Entity* entity;
     void* gfxcmd;
 };
 
 void entity_dither(void* _context, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
-    struct DitherContext* context = _context;
+    struct CustomCommandContext* context = _context;
     float timer = get(context->entity, "despawn_timer", Float, 0);
     int dither_amount = round(max(0, 16 - timer / 2));
     graphics_flush(false);
@@ -139,8 +136,22 @@ void entity_dither(void* _context, float dstx, float dsty, float dstw, float dst
     free(context);
 }
 
-void* dither_context(LE_Entity* entity, void* gfxcmd) {
-    struct DitherContext* context = malloc(sizeof(struct DitherContext));
+void entity_turtle_shelled(void* _context, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
+    struct CustomCommandContext* context = _context;
+    float timer = get(context->entity, "turtle_shelled_timer", Float, 0);
+    graphics_flush(false);
+    graphics_push_shader("rotation");
+    graphics_shader_set_float("u_rot_angle", timer / 30.f * 2 * M_PI);
+    graphics_shader_set_float("u_rot_posx", dstx + fabsf(dstw) / 2);
+    graphics_shader_set_float("u_rot_posy", dsty + fabsf(dsth) / 2);
+    gfxcmd_process(context->gfxcmd, dstx, dsty, dstw, -dsth, srcx, srcy, srcw, srch, color);
+    graphics_flush(false);
+    graphics_pop_shader();
+    free(context);
+}
+
+void* custom_cmd_context(LE_Entity* entity, void* gfxcmd) {
+    struct CustomCommandContext* context = malloc(sizeof(struct CustomCommandContext));
     context->entity = entity;
     context->gfxcmd = gfxcmd;
     return context;

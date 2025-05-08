@@ -15,5 +15,5 @@ entity_texture(notified) {
     *w = 16;
     *h = 16;
     entity_apply_squish(entity, w, h);
-    return gfxcmd_custom(entity_dither, dither_context(entity, gfxcmd_texture("images/entities/notified.png")));
+    return gfxcmd_custom(entity_dither, custom_cmd_context(entity, gfxcmd_texture("images/entities/notified.png")));
 }

@@ -210,10 +210,10 @@ powerup(base) {
             if (is_button_pressed(BUTTON_MOVE_RIGHT) && !disable_input) entity_spawn_dust(entity, true, false, 0.2f - entity->velX);
         }
         float accel = 0.04;
-        float decel = 0.01;
+        float decel = 0.02;
         if (!(entity->flags & LE_EntityFlags_OnGround)) {
             accel /= 2;
-            decel /= 2;
+            decel /= 4;
         }
         if (l && !r && entity->velX >= -0.2f) entity->velX -= accel * delta_time;
         else if (!l && r && entity->velX <= 0.2f) entity->velX += accel * delta_time;
@@ -270,7 +270,7 @@ powerup(base) {
     entity_update_squish(entity, 5);
     set(entity, "pouncing", Bool, pouncing);
     set(entity, "pounce_timer", Float, pounce_timer);
-    set(entity, "stomp_tmer", Float, stomp_timer);
+    set(entity, "stomp_timer", Float, stomp_timer);
     return false;
 }
 

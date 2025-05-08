@@ -26,5 +26,5 @@ entity_texture(coin_particle) {
     *srcH = 4;
     *w = 4;
     *h = 4;
-    return gfxcmd_custom(entity_dither, dither_context(entity, gfxcmd_texture("images/entities/coin_particle.png")));
+    return gfxcmd_custom(entity_dither, custom_cmd_context(entity, gfxcmd_texture("images/entities/coin_particle.png")));
 }
