@@ -209,10 +209,15 @@ powerup(base) {
             if (is_button_pressed(BUTTON_MOVE_LEFT ) && !disable_input) entity_spawn_dust(entity, false, true, 0.2f + entity->velX);
             if (is_button_pressed(BUTTON_MOVE_RIGHT) && !disable_input) entity_spawn_dust(entity, true, false, 0.2f - entity->velX);
         }
-        if (l && !r && entity->velX >= -0.2f) entity->velX -= 0.02f * delta_time;
-        else if (!l && r && entity->velX <= 0.2f) entity->velX += 0.02f * delta_time;
+        float accel = 0.04;
+        float decel = 0.01;
+        if (!(entity->flags & LE_EntityFlags_OnGround)) {
+            accel /= 2;
+            decel /= 2;
+        }
+        if (l && !r && entity->velX >= -0.2f) entity->velX -= accel * delta_time;
+        else if (!l && r && entity->velX <= 0.2f) entity->velX += accel * delta_time;
         else {
-            float decel = (entity->flags & LE_EntityFlags_OnGround) ? 0.02f : 0.01f;
             if (entity->velX < 0) {
                 entity->velX += decel * delta_time;
                 if (entity->velX > 0) entity->velX = 0;
