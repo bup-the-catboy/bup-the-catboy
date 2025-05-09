@@ -281,3 +281,15 @@ ENTITY(crate_powerup,
     DEFAULT_PROPERTY("gravity", Float, 0.03)
     LVLEDIT_HIDE()
 )
+
+ENTITY(cat_coin,
+    COLLISION(cat_coin_collision)
+    TEXTURE(cat_coin_texture)
+    SIZE(2.f, 2.f)
+    DEFAULT_PROPERTY("id", Int, 0)
+    LVLEDIT_TEXTURE("images/tilesets/grass.png")
+    LVLEDIT_CROP(232, 24, 16, 16)
+    LVLEDIT_PROPERTIES(
+        int(id, 0)
+    )
+)
