@@ -265,7 +265,7 @@ powerup(base) {
     }
     if ((entity->flags & LE_EntityFlags_OnGround) && pounce_timer <= 0) pouncing = false;
     hud_update(entity);
-    if (!disable_input) camera_set_focus(camera, entity->posX, 8);
+    if (!disable_input) camera_set_focus(camera, entity->posX, entity->posY - 8);
     entity_fall_squish(entity, 10, .5f, .25f);
     entity_update_squish(entity, 5);
     set(entity, "pouncing", Bool, pouncing);

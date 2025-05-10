@@ -1,6 +1,5 @@
 #include "camera.h"
 #include "main.h"
-#include "math_util.h"
 #include "rng.h"
 
 #include <stdlib.h>
@@ -19,37 +18,38 @@ typedef struct {
     } screenshakes[NUM_SCREENSHAKES];
 } _Camera;
 
-static float distance(Point a, Point b) {
-    return sqrtf((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+static bool rect_contains_point(float x, float y, float rx, float ry, float rw, float rh) {
+    return x >= rx && y >= ry && x <= rx + rw && y <= ry + rh;
 }
 
-static Point line_project(Point p, Point a, Point b) {
-    float dx = b.x - a.x;
-    float dy = b.y - a.y;
-    float apx = p.x - a.x;
-    float apy = p.y - a.y;
-    float ab_ab =  dx * dx +  dy * dy;
-    float ap_ab = apx * dx + apy * dy;
-    if (ap_ab == 0) return a;
-    else {
-        float t = ap_ab / ab_ab;
-        if (t < 0) return a;
-        if (t > 1) return b;
-        return (Point){ a.x + t * dx, a.y + t * dy };
-    }
+static bool rect_intersects_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh) {
+    return 0
+        || rect_contains_point(rx,      ry,      cx, cy, cw, ch)
+        || rect_contains_point(rx + rw, ry,      cx, cy, cw, ch)
+        || rect_contains_point(rx + rw, ry + rh, cx, cy, cw, ch)
+        || rect_contains_point(rx,      ry + rh, cx, cy, cw, ch);
 }
 
-static bool is_in_polygon(Point point, Point* polygon, int num_verts) {
-    int count = 0;
-    for (int i = 0; i < num_verts; i++) {
-        Point a = polygon[i];
-        Point b = polygon[(i + 1) % num_verts];
-        if ((point.y > min(a.y, b.y)) && (point.y <= max(a.y, b.y)) && (point.x <= max(a.x, b.x))) {
-            float xIntersect = (point.y - a.y) * (b.x - a.x) / (b.y - a.y) + a.x;
-            if (a.x == b.x || point.x <= xIntersect) count++;
-        }
+static bool rect_contains_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh) {
+    return 1
+        && rect_contains_point(rx,      ry,      cx, cy, cw, ch)
+        && rect_contains_point(rx + rw, ry,      cx, cy, cw, ch)
+        && rect_contains_point(rx + rw, ry + rh, cx, cy, cw, ch)
+        && rect_contains_point(rx,      ry + rh, cx, cy, cw, ch);
+}
+
+static void clamp_rect(float cx, float cy, float cw, float ch, float* rx, float* ry, float rw, float rh) {
+    if (rw < cw) {
+        if (*rx < cx) *rx = cx;
+        else if (*rx + rw > cx + cw) *rx = cx + cw - rw;
     }
-    return count % 2 == 1;
+    else *rx = cx + (cw - rw) / 2;
+
+    if (rh < ch) {
+        if (*ry < cy) *ry = cy;
+        else if (*ry + rh > cy + ch) *ry = cy + ch - rh;
+    }
+    else *ry = cy + (ch - rh) / 2;
 }
 
 Camera* camera_create() {
@@ -62,26 +62,34 @@ void camera_set_bounds(Camera* camera, CameraBounds* bounds) {
     camera_set_focus(camera, cam->foc_x, cam->foc_y);
 }
 
-void camera_set_focus(Camera* camera, float x, float y) {
+void camera_set_focus(Camera* camera, float foc_x, float foc_y) {
     _Camera* cam = (_Camera*)camera;
-    Point target = (Point){ x, y };
-    if (cam->bounds && !is_in_polygon(target, cam->bounds->poly, cam->bounds->num_vert)) {
-        Point proj;
-        float dist = FLT_MAX;
-        for (int i = 0; i < cam->bounds->num_vert; i++) {
-            Point a = cam->bounds->poly[i];
-            Point b = cam->bounds->poly[(i + 1) % cam->bounds->num_vert];
-            Point curr_proj = line_project(target, a, b);
-            float curr_dist = distance(target, curr_proj);
-            if (dist > curr_dist) {
-                dist = curr_dist;
-                proj = curr_proj;
+    if (cam->bounds) {
+        float x = foc_x - 12;
+        float y = foc_y - 8;
+        float best_dist = INFINITY;
+        float best_x, best_y;
+        bool skip = false;
+        for (int i = 0; i < cam->bounds->num_rects && !skip; i++) {
+            Rectangle* rect = &cam->bounds->rects[i];
+            if (rect_contains_rect(rect->x, rect->y, rect->w, rect->h, x, y, 24, 16)) skip = true;
+            if (!rect_intersects_rect(rect->x, rect->y, rect->w, rect->h, x, y, 24, 16)) continue;
+            float new_x = x;
+            float new_y = y;
+            clamp_rect(rect->x, rect->y, rect->w, rect->h, &new_x, &new_y, 24, 16);
+            float dist = (x - new_x) * (x - new_x) + (y - new_y) * (y - new_y);
+            if (best_dist > dist) {
+                best_dist = dist;
+                best_x = new_x;
+                best_y = new_y;
             }
         }
-        target = proj;
+        if (!skip) x = best_x, y = best_y;
+        foc_x = x + 12;
+        foc_y = y + 8;
     }
-    cam->foc_x = target.x;
-    cam->foc_y = target.y;
+    cam->foc_x = foc_x;
+    cam->foc_y = foc_y;
 }
 
 void camera_get(Camera* camera, float* x, float* y) {

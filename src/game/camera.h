@@ -6,12 +6,12 @@
 typedef struct {} Camera;
 
 typedef struct {
-    float x, y;
-} Point;
+    float x, y, w, h;
+} Rectangle;
 
 typedef struct {
-    Point* poly;
-    int num_vert;
+    Rectangle* rects;
+    int num_rects;
 } CameraBounds;
 
 Camera* camera_create();

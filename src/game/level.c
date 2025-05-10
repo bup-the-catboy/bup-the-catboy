@@ -66,7 +66,7 @@ void change_level_theme(int theme) {
 
 void destroy_level(struct Level* level) {
     for (int i = 0; i < level->num_cambounds; i++) {
-        free(level->cambounds[i]->poly);
+        free(level->cambounds[i]->rects);
         free(level->cambounds[i]);
     }
     free(level->cambounds);
@@ -117,11 +117,13 @@ struct Level* parse_level(unsigned char* data, int datalen) {
     for (unsigned int i = 0; i < level->num_cambounds; i++) {
         stream = binary_stream_goto(stream);
         CameraBounds* bounds = malloc(sizeof(CameraBounds));
-        BINARY_STREAM_READ(stream, bounds->num_vert);
-        bounds->poly = malloc(sizeof(Point) * bounds->num_vert);
-        for (unsigned int j = 0; j < bounds->num_vert; j++) {
-            BINARY_STREAM_READ(stream, bounds->poly[j].x);
-            BINARY_STREAM_READ(stream, bounds->poly[j].y);
+        BINARY_STREAM_READ(stream, bounds->num_rects);
+        bounds->rects = malloc(sizeof(Rectangle) * bounds->num_rects);
+        for (unsigned int j = 0; j < bounds->num_rects; j++) {
+            BINARY_STREAM_READ(stream, bounds->rects[j].x);
+            BINARY_STREAM_READ(stream, bounds->rects[j].y);
+            BINARY_STREAM_READ(stream, bounds->rects[j].w);
+            BINARY_STREAM_READ(stream, bounds->rects[j].h);
         }
         level->cambounds[i] = bounds;
         stream = binary_stream_close(stream);
