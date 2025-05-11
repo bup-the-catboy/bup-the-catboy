@@ -265,7 +265,20 @@ powerup(base) {
     }
     if ((entity->flags & LE_EntityFlags_OnGround) && pounce_timer <= 0) pouncing = false;
     hud_update(entity);
-    if (!disable_input) camera_set_focus(camera, entity->posX, entity->posY - 8);
+    if (!disable_input) {
+        float camX = entity->posX;
+        float camY = entity->posY - 0.5f;
+        LE_LayerListIter* iter = LE_LayerListGetIter(current_level->layers);
+        while (iter) {
+            LE_Layer* layer = LE_LayerListGet(iter);
+            if (LE_LayerGetDataPointer(layer) == LE_EntityGetList(entity)) {
+                LE_LayerToGlobalSpace(layer, camX, camY, &camX, &camY);
+                break;
+            }
+            iter = LE_LayerListNext(iter);
+        }
+        camera_set_focus(camera, camX, camY);
+    }
     entity_fall_squish(entity, 10, .5f, .25f);
     entity_update_squish(entity, 5);
     set(entity, "pouncing", Bool, pouncing);

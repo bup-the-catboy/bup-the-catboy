@@ -91,6 +91,8 @@ void LE_MoveLayer(LE_Layer* layer, int index);
 int  LE_IndexOfLayer(LE_Layer* layer);
 void LE_ScrollCamera(LE_LayerList* layers, float camX, float camY);
 void LE_GetCameraPos(LE_LayerList* layers, float* camX, float* camY);
+void LE_GlobalToLayerSpace(LE_Layer* layer, float in_x, float in_y, float* out_x, float* out_y);
+void LE_LayerToGlobalSpace(LE_Layer* layer, float in_x, float in_y, float* out_x, float* out_y);
 LE_LayerType LE_LayerGetType(LE_Layer* layer);
 void* LE_LayerGetDataPointer(LE_Layer* layer);
 void LE_UpdateLayerList(LE_LayerList* layers);
