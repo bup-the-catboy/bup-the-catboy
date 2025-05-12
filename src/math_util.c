@@ -99,3 +99,49 @@ float sin_in_out(float x) IN_OUT(sin)
 float quad_in_out(float x) IN_OUT(quad)
 float cubic_in_out(float x) IN_OUT(cubic)
 float elastic_in_out(float x) IN_OUT(elastic)
+
+bool rect_contains_point(float x, float y, float rx, float ry, float rw, float rh) {
+    return x >= rx && y >= ry && x <= rx + rw && y <= ry + rh;
+}
+
+static bool _rect_intersects_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh) {
+    return 0
+        || rect_contains_point(rx,      ry,      cx, cy, cw, ch)
+        || rect_contains_point(rx + rw, ry,      cx, cy, cw, ch)
+        || rect_contains_point(rx + rw, ry + rh, cx, cy, cw, ch)
+        || rect_contains_point(rx,      ry + rh, cx, cy, cw, ch);
+}
+
+static bool _rect_contains_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh) {
+    return 1
+        && rect_contains_point(rx,      ry,      cx, cy, cw, ch)
+        && rect_contains_point(rx + rw, ry,      cx, cy, cw, ch)
+        && rect_contains_point(rx + rw, ry + rh, cx, cy, cw, ch)
+        && rect_contains_point(rx,      ry + rh, cx, cy, cw, ch);
+}
+
+bool rect_intersects_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh) {
+    return 0
+        || _rect_intersects_rect(cx, cy, cw, ch, rx, ry, rw, rh)
+        || _rect_intersects_rect(rx, ry, rw, rh, cx, cy, cw, ch);
+}
+
+bool rect_contains_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh) {
+    return 0
+        || _rect_contains_rect(cx, cy, cw, ch, rx, ry, rw, rh)
+        || _rect_contains_rect(rx, ry, rw, rh, cx, cy, cw, ch);
+}
+
+void clamp_rect(float cx, float cy, float cw, float ch, float* rx, float* ry, float rw, float rh) {
+    if (rw < cw) {
+        if (*rx < cx) *rx = cx;
+        else if (*rx + rw > cx + cw) *rx = cx + cw - rw;
+    }
+    else *rx = cx + (cw - rw) / 2;
+
+    if (rh < ch) {
+        if (*ry < cy) *ry = cy;
+        else if (*ry + rh > cy + ch) *ry = cy + ch - rh;
+    }
+    else *ry = cy + (ch - rh) / 2;
+}

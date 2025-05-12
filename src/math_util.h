@@ -9,6 +9,7 @@
 #include <foreach.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef float(*Easing)(float);
 
@@ -45,6 +46,11 @@ float cubic_in_out(float x);
 float elastic_in(float x);
 float elastic_out(float x);
 float elastic_in_out(float x);
+
+bool rect_contains_point(float x, float y, float rx, float ry, float rw, float rh);
+bool rect_intersects_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh);
+bool rect_contains_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh);
+void clamp_rect(float cx, float cy, float cw, float ch, float* rx, float* ry, float rw, float rh);
 
 #undef _
 #undef __

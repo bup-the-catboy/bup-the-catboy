@@ -1,10 +1,13 @@
 #include "io.h"
 #include "io/assets/assets.h"
+#include "main.h"
+#include "math_util.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 void gfxcmd_process(void* resource, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
+    if (!rect_intersects_rect(0, 0, WIDTH, HEIGHT, dstx, dsty, dstw, dsth)) return;
     struct GfxCommand* cmd = resource;
     cmd->callback(cmd->param, dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
     if (!cmd->eternal) free(cmd);

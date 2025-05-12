@@ -31,7 +31,7 @@ entity_texture(coin_particle) {
     *srcH = 4;
     *w = 4;
     *h = 4;
-    return gfxcmd_custom(entity_dither, custom_cmd_context(entity, gfxcmd_texture("images/entities/coin_particle.png")));
+    return gfxcmd_texture("images/entities/coin_particle.png");
 }
 
 static void draw_cat_coin(void* entity, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {

@@ -1,5 +1,6 @@
 #include "camera.h"
 #include "main.h"
+#include "math_util.h"
 #include "rng.h"
 
 #include <stdlib.h>
@@ -17,40 +18,6 @@ typedef struct {
         float x, y;
     } screenshakes[NUM_SCREENSHAKES];
 } _Camera;
-
-static bool rect_contains_point(float x, float y, float rx, float ry, float rw, float rh) {
-    return x >= rx && y >= ry && x <= rx + rw && y <= ry + rh;
-}
-
-static bool rect_intersects_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh) {
-    return 0
-        || rect_contains_point(rx,      ry,      cx, cy, cw, ch)
-        || rect_contains_point(rx + rw, ry,      cx, cy, cw, ch)
-        || rect_contains_point(rx + rw, ry + rh, cx, cy, cw, ch)
-        || rect_contains_point(rx,      ry + rh, cx, cy, cw, ch);
-}
-
-static bool rect_contains_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh) {
-    return 1
-        && rect_contains_point(rx,      ry,      cx, cy, cw, ch)
-        && rect_contains_point(rx + rw, ry,      cx, cy, cw, ch)
-        && rect_contains_point(rx + rw, ry + rh, cx, cy, cw, ch)
-        && rect_contains_point(rx,      ry + rh, cx, cy, cw, ch);
-}
-
-static void clamp_rect(float cx, float cy, float cw, float ch, float* rx, float* ry, float rw, float rh) {
-    if (rw < cw) {
-        if (*rx < cx) *rx = cx;
-        else if (*rx + rw > cx + cw) *rx = cx + cw - rw;
-    }
-    else *rx = cx + (cw - rw) / 2;
-
-    if (rh < ch) {
-        if (*ry < cy) *ry = cy;
-        else if (*ry + rh > cy + ch) *ry = cy + ch - rh;
-    }
-    else *ry = cy + (ch - rh) / 2;
-}
 
 Camera* camera_create() {
     return memset(malloc(sizeof(_Camera)), 0, sizeof(_Camera));

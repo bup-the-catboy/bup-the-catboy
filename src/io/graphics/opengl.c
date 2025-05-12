@@ -51,7 +51,10 @@ struct ShaderResource* registered_shaders;
 struct ShaderResource* registered_shaders_head;
 int shader_stack[SHADER_STACK_SIZE];
 int shader_stack_len;
+int curr_shader_stack[SHADER_STACK_SIZE];
+int curr_shader_stack_len;
 GLuint shader_id, basic_shader_id;
+bool force_flush;
 
 #define _ "\n"
 #define _STR(x) #x
@@ -353,7 +356,10 @@ void graphics_start_frame() {
     glEnable(GL_BLEND);
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     graphics_init_framebuffer();
+    force_flush = false;
 }
+
+int flushes, redraws;
 
 void graphics_end_frame() {
     graphics_render();
@@ -361,6 +367,8 @@ void graphics_end_frame() {
     graphics_deinit_framebuffer();
     glFlush();
     sdl_opengl_flush(window);
+    printf("flushes: %d (%d redraws)\n", flushes, redraws);
+    flushes = redraws = 0;
 }
 
 void graphics_get_size(int* width, int* height) {
@@ -408,9 +416,18 @@ void graphics_register_shader(const char* name, const char* shader) {
 }
 
 void graphics_flush(bool redraw) {
+    if (!redraw && !force_flush
+        && curr_shader_stack_len == shader_stack_len
+        && memcmp(curr_shader_stack, shader_stack, sizeof(int) * shader_stack_len) == 0) return;
+    shader_stack_len = curr_shader_stack_len;
+    memcpy(shader_stack, curr_shader_stack, sizeof(shader_stack));
+    bool do_draw_framebuffer = vertex_ptr != 0;
     graphics_render();
+    force_flush = false;
+    flushes++;
     if (redraw) {
-        graphics_draw_framebuffer(false);
+        redraws++;
+        if (do_draw_framebuffer) graphics_draw_framebuffer(false);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_id);
         glBlitFramebuffer(
@@ -418,8 +435,10 @@ void graphics_flush(bool redraw) {
             0, 0, scissor_w, scissor_h,
             GL_COLOR_BUFFER_BIT, GL_NEAREST
         );
+        graphics_draw_framebuffer(true);
+        return;
     }
-    graphics_draw_framebuffer(true);
+    if (do_draw_framebuffer) graphics_draw_framebuffer(true);
 }
 
 void graphics_push_shader(const char* name) {
@@ -433,32 +452,32 @@ void graphics_push_shader(const char* name) {
             curr = curr->next;
         }
     }
-    if (shader_stack_len < SHADER_STACK_SIZE) shader_stack[shader_stack_len] = id;
-    shader_stack_len++;
+    if (curr_shader_stack_len < SHADER_STACK_SIZE) curr_shader_stack[curr_shader_stack_len] = id;
+    curr_shader_stack_len++;
 }
 
 void graphics_pop_shader() {
-    shader_stack_len--;
+    curr_shader_stack_len--;
 }
 
 void graphics_pop_all_shaders() {
-    shader_stack_len = 0;
+    curr_shader_stack_len = 0;
 }
 
-void graphics_shader_set_int(const char* name, int value) {
-    GLint last_shader;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &last_shader);
-    glUseProgram(shader_id);
-    glUniform1i(glGetUniformLocation(shader_id, name), value);
-    glUseProgram(last_shader);
-}
+#define shader_func(symbol, type) \
+    void graphics_shader_set_##type(const char* name, type value) { \
+        type prev;                                                   \
+        GLint last_shader;                                            \
+        GLint location = glGetUniformLocation(shader_id, name);        \
+        glGetIntegerv(GL_CURRENT_PROGRAM, &last_shader);                \
+        glUseProgram(shader_id);                                         \
+        glGetUniform##symbol##v(shader_id, location, &prev);              \
+        glUniform1##symbol(location, value);                               \
+        glUseProgram(last_shader);                                          \
+        if (prev != value) force_flush = true;                               \
+    }
 
-void graphics_shader_set_float(const char* name, float value) {
-    GLint last_shader;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &last_shader);
-    glUseProgram(shader_id);
-    glUniform1f(glGetUniformLocation(shader_id, name), value);
-    glUseProgram(last_shader);
-}
+shader_func(i, int)
+shader_func(f, float)
 
 #endif
