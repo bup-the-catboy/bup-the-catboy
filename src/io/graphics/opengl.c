@@ -359,16 +359,12 @@ void graphics_start_frame() {
     force_flush = false;
 }
 
-int flushes, redraws;
-
 void graphics_end_frame() {
     graphics_render();
     graphics_draw_framebuffer(false);
     graphics_deinit_framebuffer();
     glFlush();
     sdl_opengl_flush(window);
-    printf("flushes: %d (%d redraws)\n", flushes, redraws);
-    flushes = redraws = 0;
 }
 
 void graphics_get_size(int* width, int* height) {
@@ -424,9 +420,7 @@ void graphics_flush(bool redraw) {
     bool do_draw_framebuffer = vertex_ptr != 0;
     graphics_render();
     force_flush = false;
-    flushes++;
     if (redraw) {
-        redraws++;
         if (do_draw_framebuffer) graphics_draw_framebuffer(false);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_id);
