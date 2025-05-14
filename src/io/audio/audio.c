@@ -120,6 +120,7 @@ void audio_deinit() {
 
 void* audio_thread(void* param) {
     short buffer[2048];
+    audio_backend_open();
     while (audio_do_loop) {
         audio_update(buffer, 2048);
         audio_backend_queue(buffer, 2048);

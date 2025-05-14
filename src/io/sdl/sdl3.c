@@ -88,20 +88,18 @@ void controller_deinit() {
 }
 
 void audio_backend_open() {
+    SDL_Init(SDL_INIT_AUDIO);
     SDL_AudioSpec spec = { SDL_AUDIO_S16, 2, AUDIO_SAMPLE_RATE };
-    audio_stream = SDL_CreateAudioStream(&spec, &spec);
+    audio_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
+    SDL_ResumeAudioStreamDevice(audio_stream);
 }
 
 void audio_backend_queue(short* samples, int num_samples) {
-    if (SDL_GetAudioStreamQueued(audio_stream) > 0) {
-        int wait_time = num_samples / (float)AUDIO_SAMPLE_RATE * 1000;
-        if (wait_time > 0) {
-            SDL_Delay(wait_time);
-            return;
-        }
+    while (SDL_GetAudioStreamQueued(audio_stream) > sizeof(short) * num_samples) {
+        SDL_Delay(1);
     }
     SDL_PutAudioStreamData(audio_stream, samples, num_samples * sizeof(short));
-    SDL_Delay(num_samples / (float)AUDIO_SAMPLE_RATE * 1000);
+    SDL_Delay(1);
 }
 
 void audio_backend_close() {
