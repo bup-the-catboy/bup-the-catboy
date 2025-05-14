@@ -5,6 +5,8 @@
 #include "game/savefile.h"
 #include "io/io.h"
 #include "rng.h"
+#include "context.h"
+
 #include <string.h>
 
 // haha funny robot game
@@ -34,10 +36,10 @@ entity_texture(coin_particle) {
     return gfxcmd_texture("images/entities/coin_particle.png");
 }
 
-static void draw_cat_coin(void* entity, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
-    bool collected = savefile->level_flags[curr_level_id] & (1 << get(entity, "id", Int, 0));
+static void draw_cat_coin(void* context, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
+    bool collected = savefile->level_flags[curr_level_id] & (1 << context_get_int(context, "id"));
     LE_DrawList* dl = LE_CreateDrawList();
-    LE_Tileset* tileset = LE_TilemapGetTileset(LE_EntityGetTilemap(LE_EntityGetList(entity)));
+    LE_Tileset* tileset = context_get_ptr(context, "tileset");
     LE_TileData** data = get_tile_palette_by_id(generic);
     LE_DrawTileAt(data[collected * 4 + TILE_DATA_catcoin_top_left],     tileset, dstx +  0, dsty +  0, 1, 1, dl);
     LE_DrawTileAt(data[collected * 4 + TILE_DATA_catcoin_top_right],    tileset, dstx + 16, dsty +  0, 1, 1, dl);
@@ -45,12 +47,16 @@ static void draw_cat_coin(void* entity, float dstx, float dsty, float dstw, floa
     LE_DrawTileAt(data[collected * 4 + TILE_DATA_catcoin_bottom_right], tileset, dstx + 16, dsty + 16, 1, 1, dl);
     LE_Render(dl, gfxcmd_process);
     LE_DestroyDrawList(dl);
+    context_destroy(context);
 }
 
 entity_texture(cat_coin) {
     *w = 32;
     *h = 32;
-    return gfxcmd_custom(draw_cat_coin, entity);
+    return gfxcmd_custom(draw_cat_coin, context_create(
+        context_int("id", get(entity, "id", Int, 0)),
+        context_ptr("tileset", LE_TilemapGetTileset(LE_EntityGetTilemap(LE_EntityGetList(entity))))
+    ));
 }
 
 entity_collision(cat_coin) {

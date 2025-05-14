@@ -1,3 +1,4 @@
+#include "context.h"
 #include "functions.h"
 #include "io/io.h"
 #include "main.h"
@@ -7,7 +8,10 @@ entity_texture(mouse) {
     entity_animate(srcX, srcY, srcW, srcH, 16, 16, 10, 2, true, global_timer);
     *w = 16 * (do_flip ? -1 : 1);
     *h = 16;
-    return gfxcmd_custom(entity_turtle_shelled, custom_cmd_context(entity, gfxcmd_texture("images/entities/mouse.png")));
+    return gfxcmd_custom(entity_turtle_shelled, context_create(
+        context_float("timer", get(entity, "turtle_shelled_timer", Float, 0)),
+        context_ptr("gfxcmd", gfxcmd_texture("images/entities/mouse.png"))
+    ));
 }
 
 entity_texture(squashed_mouse) {
@@ -18,7 +22,10 @@ entity_texture(squashed_mouse) {
     *w = 16;
     *h = 16;
     entity_apply_squish(entity, w, h);
-    return gfxcmd_custom(entity_dither, custom_cmd_context(entity, gfxcmd_texture( "images/entities/mouse.png")));
+    return gfxcmd_custom(entity_dither, context_create(
+        context_float("timer", get(entity, "despawn_timer", Float, 0)),
+        context_ptr("gfxcmd", gfxcmd_texture("images/entities/mouse.png"))
+    ));
 }
 
 entity_update(squashed_mouse) {

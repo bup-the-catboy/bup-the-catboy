@@ -1,5 +1,6 @@
 #include "functions.h"
 
+#include "context.h"
 #include "io/io.h"
 
 entity_update(notified) {
@@ -15,5 +16,8 @@ entity_texture(notified) {
     *w = 16;
     *h = 16;
     entity_apply_squish(entity, w, h);
-    return gfxcmd_custom(entity_dither, custom_cmd_context(entity, gfxcmd_texture("images/entities/notified.png")));
+    return gfxcmd_custom(entity_dither, context_create(
+        context_float("timer", get(entity, "despawn_timer", Float, 0)),
+        context_ptr("gfxcmd", gfxcmd_texture("images/entities/notified.png"))
+    ));
 }

@@ -1,3 +1,4 @@
+#include "context.h"
 #include "functions.h"
 #include "game/level.h"
 #include "io/io.h"
@@ -116,45 +117,31 @@ bool entity_should_squish(LE_Entity* entity, LE_Entity* collider) {
     return false;
 }
 
-struct CustomCommandContext {
-    LE_Entity* entity;
-    void* gfxcmd;
-};
-
-void entity_dither(void* _context, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
-    struct CustomCommandContext* context = _context;
-    float timer = get(context->entity, "despawn_timer", Float, 0);
+void entity_dither(void* context, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
+    float timer = context_get_float(context, "timer");
     int dither_amount = round(max(0, 16 - timer / 2));
     graphics_flush(false);
     graphics_push_shader("dither");
     graphics_shader_set_int("u_dither_amount", dither_amount);
     graphics_shader_set_float("u_dither_offx", remainder(-dstx, 1));
     graphics_shader_set_float("u_dither_offy", remainder(-dsty, 1));
-    gfxcmd_process(context->gfxcmd, dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
+    gfxcmd_process(context_get_ptr(context, "gfxcmd"), dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
     graphics_flush(false);
     graphics_pop_shader();
-    free(context);
+    context_destroy(context);
 }
 
-void entity_turtle_shelled(void* _context, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
-    struct CustomCommandContext* context = _context;
-    float timer = get(context->entity, "turtle_shelled_timer", Float, 0);
+void entity_turtle_shelled(void* context, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
+    float timer = context_get_float(context, "timer");
     graphics_flush(false);
     graphics_push_shader("rotation");
     graphics_shader_set_float("u_rot_angle", timer / 30.f * 2 * M_PI);
     graphics_shader_set_float("u_rot_posx", dstx + fabsf(dstw) / 2);
     graphics_shader_set_float("u_rot_posy", dsty + fabsf(dsth) / 2);
-    gfxcmd_process(context->gfxcmd, dstx, dsty, dstw, -dsth, srcx, srcy, srcw, srch, color);
+    gfxcmd_process(context_get_ptr(context, "gfxcmd"), dstx, dsty, dstw, -dsth, srcx, srcy, srcw, srch, color);
     graphics_flush(false);
     graphics_pop_shader();
-    free(context);
-}
-
-void* custom_cmd_context(LE_Entity* entity, void* gfxcmd) {
-    struct CustomCommandContext* context = malloc(sizeof(struct CustomCommandContext));
-    context->entity = entity;
-    context->gfxcmd = gfxcmd;
-    return context;
+    context_destroy(context);
 }
 
 LE_Entity* find_entity_with_tag(const char* tag) {

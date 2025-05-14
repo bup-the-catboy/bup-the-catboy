@@ -14,12 +14,12 @@
 #include "io/io.h"
 #include "main.h"
 #include "rng.h"
+#include "context.h"
 
 #define arrsize(x) (sizeof(x) / sizeof(*(x)))
 
-static void draw_dead_player(void* param, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
-    LE_Entity* entity = param;
-    float timer = get(entity, "dead_timer", Float, 0);
+static void draw_dead_player(void* context, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
+    float timer = context_get_float(context, "timer");
     float shake_intensity = max(0, (30 - timer) / 30) * 8;
     float x = random_range(-shake_intensity, shake_intensity);
     float y = random_range(-shake_intensity, shake_intensity);
@@ -43,13 +43,13 @@ static void draw_dead_player(void* param, float dstx, float dsty, float dstw, fl
         LE_Render(dl, gfxcmd_process);
         LE_DestroyDrawList(dl);
     }
+    context_destroy(context);
 }
 
-static void draw_player(void* param, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
-    LE_Entity* entity = param;
-    bool is_hidden = get(entity, "hidden", Bool, false);
-    float iframes = get(entity, "iframes", Float, 0);
-    int powerup_id = get(entity, "powerup_state", Int, POWERUP_base);
+static void draw_player(void* context, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
+    bool is_hidden = context_get_int(context, "hidden");
+    float iframes = context_get_float(context, "iframes");
+    int powerup_id = context_get_int(context, "powerup_state");
     int powerup_color = powerup_id != -1 ? get_powerup(powerup_id)->color : -1;
 
     graphics_flush(false);
@@ -77,6 +77,7 @@ static void draw_player(void* param, float dstx, float dsty, float dstw, float d
     graphics_flush(false);
     graphics_pop_shader();
     graphics_pop_shader();
+    context_destroy(context);
 }
 
 static int idle_anim_table[] = { 0, 1, 2, 3, 2, 1 };
@@ -98,7 +99,9 @@ entity_texture(player) {
         *srcH = 16;
         *w = 16 * (get(entity, "death_left", Bool, false) ? 1 : -1);
         *h = 16;
-        return gfxcmd_custom(draw_dead_player, entity);
+        return gfxcmd_custom(draw_dead_player, context_create(
+            context_float("timer", get(entity, "dead_timer", Float, 0))
+        ));
     }
     int sprite = idle_anim_table[(global_timer / 10) % 6];
     bool pouncing    = get(entity, "pouncing",    Bool, false);
@@ -123,7 +126,11 @@ entity_texture(player) {
     *w = facing_left ? -16 : 16;
     *h = 16;
     entity_apply_squish(entity, w, h);
-    return gfxcmd_custom(draw_player, entity);
+    return gfxcmd_custom(draw_player, context_create(
+        context_int("hidden", get(entity, "hidden", Bool, false)),
+        context_float("iframes", get(entity, "iframes", Float, 0)),
+        context_int("powerup_state", get(entity, "powerup_state", Int, 0))
+    ));
 }
 
 entity_update(player_spawner) {

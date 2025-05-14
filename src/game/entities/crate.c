@@ -1,5 +1,6 @@
 #include "functions.h"
 
+#include "context.h"
 #include "game/data.h"
 #include "game/savefile.h"
 #include "io/io.h"
@@ -7,19 +8,18 @@
 
 #include <string.h>
 
-void draw_coin(void* context, float dstX, float dstY, float dstW, float dstH, int srcX, int srcY, int srcW, int srcH, unsigned int color) {
-    LE_Entity* entity = context;
+void draw_coin(void* tileset, float dstX, float dstY, float dstW, float dstH, int srcX, int srcY, int srcW, int srcH, unsigned int color) {
     LE_DrawList* dl = LE_CreateDrawList();
-    LE_DrawTileAt(get_tile_palette_by_id(generic)[TILE_DATA_coin], LE_TilemapGetTileset(LE_EntityGetTilemap(LE_EntityGetList(entity))), dstX, dstY, dstW / 16, dstH / 16, dl);
+    LE_DrawTileAt(get_tile_palette_by_id(generic)[TILE_DATA_coin], tileset, dstX, dstY, dstW / 16, dstH / 16, dl);
     LE_Render(dl, gfxcmd_process);
     LE_DestroyDrawList(dl);
 }
 
 void draw_collar(void* context, float dstX, float dstY, float dstW, float dstH, int srcX, int srcY, int srcW, int srcH, unsigned int color) {
-    LE_Entity* entity = context;
-    int powerup_color = get_powerup(get(entity, "crate_loot_param", Int, POWERUP_base))->color;
+    int powerup_color = get_powerup(context_get_int(context, "powerup"))->color;
     gfxcmd_process(gfxcmd_texture("images/entities/collar.png"), dstX, dstY, dstW, dstH,  0, 0, 16, 16, color);
     gfxcmd_process(gfxcmd_texture("images/entities/collar.png"), dstX, dstY, dstW, dstH, 16, 0, 16, 16, ((powerup_color & 0xFFFFFF) << 8) | 0xFF);
+    context_destroy(context);
 }
 
 entity_update(crate_loot) {
@@ -39,7 +39,7 @@ entity_update(crate_loot) {
 entity_texture(crate_coin) {
     *w = 16;
     *h = 16;
-    return gfxcmd_custom(draw_coin, entity);
+    return gfxcmd_custom(draw_coin, LE_TilemapGetTileset(LE_EntityGetTilemap(LE_EntityGetList(entity))));
 }
 
 entity_texture(crate_heart) {
@@ -55,7 +55,9 @@ entity_texture(crate_heart) {
 entity_texture(crate_powerup) {
     *w = 16;
     *h = 16;
-    return gfxcmd_custom(draw_collar, entity);
+    return gfxcmd_custom(draw_collar, context_create(
+        context_int("powerup", get(entity, "crate_loot_param", Int, 0))
+    ));
 }
 
 entity_collision(crate_coin) {
@@ -117,5 +119,8 @@ entity_texture(crate_fragment) {
     *srcW = 8;
     *srcH = 8;
     set(entity, "timer", Float, timer);
-    return gfxcmd_custom(entity_dither, custom_cmd_context(entity, gfxcmd_texture("images/entities/crate_fragment.png")));
+    return gfxcmd_custom(entity_dither, context_create(
+        context_float("timer", get(entity, "despawn_timer", Float, 0)),
+        context_ptr("gfxcmd", gfxcmd_texture("images/entities/crate_fragment.png"))
+    ));
 }
