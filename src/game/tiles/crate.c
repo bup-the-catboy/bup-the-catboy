@@ -3,6 +3,7 @@
 
 #include "game/data.h"
 #include "game/level.h"
+#include "io/audio/audio.h"
 #include "rng.h"
 
 #include <string.h>
@@ -26,5 +27,6 @@ tile_collision(crate) {
             set(obj, "from_crate", Bool, true);
             set(obj, "crate_loot_param", Int, get(loot, "entity_param", Int, 0));
         }
+        audio_play_oneshot(GET_ASSET(struct Audio, "audio/crate.sfs"));
     }
 }

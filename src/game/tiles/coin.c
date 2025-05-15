@@ -2,6 +2,8 @@
 #include "game/data.h"
 #include "game/savefile.h"
 #include "game/entities/functions.h"
+#include "io/assets/assets.h"
+#include "io/audio/audio.h"
 
 #include <string.h>
 
@@ -13,5 +15,6 @@ tile_collision(coin) {
     for (int i = 0; i < 8; i++) {
         LE_CreateEntity(list, get_entity_builder_by_id(coin_particle), tileX + 0.5, tileY + 0.5);
     }
+    audio_play_oneshot(GET_ASSET(struct Audio, "audio/coin.sfs"));
     savefile->coins++;
 }

@@ -7,8 +7,8 @@
 #include <string.h>
 
 void gfxcmd_process(void* resource, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color) {
-    if (!rect_intersects_rect(0, 0, WIDTH, HEIGHT, dstx, dsty, dstw, dsth)) return;
     struct GfxCommand* cmd = resource;
+    if (!rect_intersects_rect(-4, 0, WIDTH, HEIGHT, dstx, dsty, dstw, dsth) && !cmd->important) return;
     cmd->callback(cmd->param, dstx, dsty, dstw, dsth, srcx, srcy, srcw, srch, color);
     if (!cmd->eternal) free(cmd);
 }
@@ -54,5 +54,10 @@ struct GfxCommand* gfxcmd_custom(GfxCmdCustom func, void* param) {
 
 struct GfxCommand* gfxcmd_eternal(struct GfxCommand* cmd) {
     cmd->eternal = true;
+    return cmd;
+}
+
+struct GfxCommand* gfxcmd_important(struct GfxCommand* cmd) {
+    cmd->important = true;
     return cmd;
 }

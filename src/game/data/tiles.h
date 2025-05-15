@@ -84,8 +84,25 @@ TILE(death_fade_right,
     SIMPLE_STATIONARY_TEXTURE(18)
 )
 
-TILE(black,
-    SIMPLE_STATIONARY_TEXTURE(39)
+TILE(death_fade,
+    SIMPLE_STATIONARY_TEXTURE(19)
+)
+
+TILE(tree_stomp,
+    SIMPLE_STATIONARY_TEXTURE(85)
+)
+
+TILE(tree_bush,
+    SIMPLE_STATIONARY_TEXTURE(69) // nice
+)
+
+TILE(cave_background,
+    SIMPLE_STATIONARY_TEXTURE(20)
+)
+
+TILE(invisible_wall,
+    SIMPLE_STATIONARY_TEXTURE(0)
+    SOLID()
 )
 
 )

@@ -67,6 +67,7 @@ entity_collision(crate_coin) {
     for (int i = 0; i < 8; i++) {
         LE_CreateEntity(list, get_entity_builder_by_id(coin_particle), entity->posX, entity->posY - 0.5f);
     }
+    audio_play_oneshot(GET_ASSET(struct Audio, "audio/coin.sfs"));
     savefile->coins++;
     LE_DeleteEntity(entity);
 }
@@ -75,6 +76,7 @@ entity_collision(crate_heart) {
     if (strcmp(get(collider, "tag", Ptr, ""), "player") != 0) return;
     // todo: some fancy effect or some shit idk
     savefile->hearts++;
+    audio_play_oneshot(GET_ASSET(struct Audio, "audio/powerup.sfs"));
     LE_DeleteEntity(entity);
 }
 
@@ -90,6 +92,7 @@ entity_collision(crate_powerup) {
     savefile->powerup = id;
     set(collider, "powerup_state", Int, id);
     // todo: more fancy effects
+    audio_play_oneshot(GET_ASSET(struct Audio, "audio/powerup.sfs"));
     LE_DeleteEntity(entity);
 }
 

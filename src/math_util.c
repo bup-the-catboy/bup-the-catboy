@@ -104,32 +104,20 @@ bool rect_contains_point(float x, float y, float rx, float ry, float rw, float r
     return x >= rx && y >= ry && x <= rx + rw && y <= ry + rh;
 }
 
-static bool _rect_intersects_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh) {
-    return 0
-        || rect_contains_point(rx,      ry,      cx, cy, cw, ch)
-        || rect_contains_point(rx + rw, ry,      cx, cy, cw, ch)
-        || rect_contains_point(rx + rw, ry + rh, cx, cy, cw, ch)
-        || rect_contains_point(rx,      ry + rh, cx, cy, cw, ch);
+bool rect_intersects_rect(float r1x, float r1y, float r1w, float r1h, float r2x, float r2y, float r2w, float r2h) {
+    float r1t = fminf(r1y, r1y + r1h); float r2t = fminf(r2y, r2y + r2h);
+    float r1b = fmaxf(r1y, r1y + r1h); float r2b = fmaxf(r2y, r2y + r2h);
+    float r1l = fminf(r1x, r1x + r1w); float r2l = fminf(r2x, r2x + r2w);
+    float r1r = fmaxf(r1x, r1x + r1w); float r2r = fmaxf(r2x, r2x + r2w);
+    return r2l < r1r && r2r > r1l && r2t < r1b && r2b > r1t;
 }
 
-static bool _rect_contains_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh) {
-    return 1
-        && rect_contains_point(rx,      ry,      cx, cy, cw, ch)
-        && rect_contains_point(rx + rw, ry,      cx, cy, cw, ch)
-        && rect_contains_point(rx + rw, ry + rh, cx, cy, cw, ch)
-        && rect_contains_point(rx,      ry + rh, cx, cy, cw, ch);
-}
-
-bool rect_intersects_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh) {
-    return 0
-        || _rect_intersects_rect(cx, cy, cw, ch, rx, ry, rw, rh)
-        || _rect_intersects_rect(rx, ry, rw, rh, cx, cy, cw, ch);
-}
-
-bool rect_contains_rect(float cx, float cy, float cw, float ch, float rx, float ry, float rw, float rh) {
-    return 0
-        || _rect_contains_rect(cx, cy, cw, ch, rx, ry, rw, rh)
-        || _rect_contains_rect(rx, ry, rw, rh, cx, cy, cw, ch);
+bool rect_contains_rect(float r1x, float r1y, float r1w, float r1h, float r2x, float r2y, float r2w, float r2h)  {
+    float r1t = fminf(r1y, r1y + r1h); float r2t = fminf(r2y, r2y + r2h);
+    float r1b = fmaxf(r1y, r1y + r1h); float r2b = fmaxf(r2y, r2y + r2h);
+    float r1l = fminf(r1x, r1x + r1w); float r2l = fminf(r2x, r2x + r2w);
+    float r1r = fmaxf(r1x, r1x + r1w); float r2r = fmaxf(r2x, r2x + r2w);
+    return r1l >= r2l && r1r <= r2r && r1t >= r2t && r1b <= r2b;
 }
 
 void clamp_rect(float cx, float cy, float cw, float ch, float* rx, float* ry, float rw, float rh) {

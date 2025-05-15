@@ -18,13 +18,14 @@ typedef void(*GfxCmdCustom)(void* param, float dstx, float dsty, float dstw, flo
 struct GfxCommand {
     GfxCmdCustom callback;
     void* param;
-    bool eternal;
+    bool eternal, important;
 };
 
 void gfxcmd_process(void* resource, float dstx, float dsty, float dstw, float dsth, int srcx, int srcy, int srcw, int srch, unsigned int color);
 struct GfxCommand* gfxcmd_texture(const char* path);
 struct GfxCommand* gfxcmd_custom(GfxCmdCustom func, void* param);
 struct GfxCommand* gfxcmd_eternal(struct GfxCommand* cmd);
+struct GfxCommand* gfxcmd_important(struct GfxCommand* cmd);
 
 struct Texture* graphics_load_texture(unsigned char* buf, size_t len);
 void graphics_init(const char* window_name, int width, int height);

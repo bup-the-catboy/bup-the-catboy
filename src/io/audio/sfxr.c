@@ -307,10 +307,7 @@ void* audio_sfxr_init(void* context) {
     return instance;
 }
 
-void audio_sfxr_seek(void* context, void* instance, float sec) {
-    
-}
-
+void audio_sfxr_seek(void* context, void* instance, float sec) {}
 void audio_sfxr_speed(void* context, void* instance, float speed) {}
 
 void audio_sfxr_free(void* context, void* instance) {
@@ -321,7 +318,7 @@ bool audio_sfxr_play(void* context, void* instance, short* out, int samples) {
     float s[samples / 2];
     memset(s, 0, sizeof(float) * samples / 2);
     bool playing = audio_sfxr_synth(samples / 2, s, (struct SFXRContext*)instance);
-    for (int i = 0; i < samples; i++) {
+    for (int i = 0; i < samples / 2; i++) {
         out[i * 2] = out[i * 2 + 1] = s[i] * 65536;
     }
     return playing;

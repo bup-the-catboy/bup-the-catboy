@@ -28,7 +28,7 @@ static void draw_dead_player(void* context, float dstx, float dsty, float dstw, 
     graphics_shader_set_float("u_iris_posx", 0);
     graphics_shader_set_float("u_iris_posy", 0);
     graphics_shader_set_float("u_iris_radius", 0);
-    gfxcmd_process(gfxcmd_texture("images/entities/player.png"), dstx + x, dsty + y, dstw, dsth, srcx, srcy, srcw, srch, color);
+    gfxcmd_process(gfxcmd_important(gfxcmd_texture("images/entities/player.png")), dstx + x, dsty + y, dstw, dsth, srcx, srcy, srcw, srch, color);
     graphics_flush(false);
     graphics_pop_shader();
     if (timer >= 60) {
@@ -99,9 +99,9 @@ entity_texture(player) {
         *srcH = 16;
         *w = 16 * (get(entity, "death_left", Bool, false) ? 1 : -1);
         *h = 16;
-        return gfxcmd_custom(draw_dead_player, context_create(
+        return gfxcmd_important(gfxcmd_custom(draw_dead_player, context_create(
             context_float("timer", get(entity, "dead_timer", Float, 0))
-        ));
+        )));
     }
     int sprite = idle_anim_table[(global_timer / 10) % 6];
     bool pouncing    = get(entity, "pouncing",    Bool, false);
@@ -167,6 +167,7 @@ entity_update(player) {
                 if (parent == NULL) parent = get_powerup_by_id(death);
                 id = (int)((uintptr_t)parent - (uintptr_t)get_powerup(0)) / sizeof(struct Powerup);
             }
+            audio_play_oneshot(GET_ASSET(struct Audio, "audio/hit.sfs"));
             iframes = 300;
         }
         savefile->powerup = id;
@@ -195,6 +196,7 @@ powerup(death) {
         entity->velX =  0.05f * (get(entity, "death_left", Bool, false) ? -1 : 1);
         entity->velY = -0.05f;
         entity->flags |= LE_EntityFlags_DisableCollision;
+        audio_play_oneshot(GET_ASSET(struct Audio, "audio/death.sfs"));
         return true;
     }
     float dead_timer = get(entity, "dead_timer", Float, 0);
@@ -241,13 +243,14 @@ powerup(base) {
             if (height > 3 || !(is_button_down(BUTTON_JUMP) || disable_input) || (entity_collided(entity, &collided_dir) && collided_dir == LE_Direction_Down)) set(entity, "jumping", Bool, false);
             else entity->velY = -0.3f;
         }
-        if (entity_jump_requested(entity, is_button_pressed(BUTTON_JUMP) && !disable_input) & (int)entity_can_jump(entity)) {
+        else if (entity_jump_requested(entity, is_button_pressed(BUTTON_JUMP) && !disable_input) & (int)entity_can_jump(entity)) {
             set(entity, "squish", Float, 1.5f);
             set(entity, "coyote", Float, 999);
             set(entity, "jumping", Bool, true);
             set(entity, "jumping_from", Float, entity->posY);
             if (!l && !r) entity->velX *= 0.6f;
             entity_spawn_dust(entity, true, true, 0.2f);
+            audio_play_oneshot(GET_ASSET(struct Audio, "audio/jump.sfs"));
         }
         if (is_button_pressed(BUTTON_POUNCE) && !disable_input) {
             set(entity, "squish", Float, 1.75f);
@@ -260,6 +263,7 @@ powerup(base) {
             if (entity->velX < -0.35f) entity->velX = -0.35f;
             entity_spawn_dust(entity, true, true, 0.2f);
             camera_screenshake(camera, 10, 0.5, 0.5);
+            audio_play_oneshot(GET_ASSET(struct Audio, "audio/pounce.sfs"));
         }
     }
     else pounce_timer -= delta_time;

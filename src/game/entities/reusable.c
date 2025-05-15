@@ -1,15 +1,18 @@
 #include "functions.h"
 #include "game/data.h"
 #include "game/level.h"
+#include "io/audio/audio.h"
 #include "main.h"
 #include "rng.h"
 
 #include <string.h>
 
 entity_update(walk) {
-    float distance = 0;
-    LE_Entity* player = find_nearest_entity_with_tag(entity, "player", &distance);
-    if (player && distance > 256) return;
+    float draw_x, draw_y;
+    LE_Entity* player = find_nearest_entity_with_tag(entity, "player", NULL);
+    LE_EntityLastDrawnPos(entity, &draw_x, &draw_y);
+    if (player && draw_x > -16 && draw_y > -16 && draw_x < WIDTH + 16 && draw_y < HEIGHT + 16) set(entity, "enabled", Bool, true);
+    if (!get(entity, "enabled", Bool, false)) return;
     float walk_speed = get(entity, "walk_speed", Float, 0);
     float walk_timer = get(entity, "walk_timer", Float, 0);
     LE_Direction dir;
@@ -95,6 +98,7 @@ entity_collision(squash) {
         entity->velY = -0.25;
         entity->flags |= LE_EntityFlags_DisableCollision;
         camera_screenshake(camera, 5, .125f, .125f);
+        audio_play_oneshot(GET_ASSET(struct Audio, "audio/shell.sfs"));
     }
     if (get(entity, "turtle_shelled", Bool, false)) return;
     if (strcmp(tag, "player") != 0) return;
@@ -109,4 +113,5 @@ entity_collision(squash) {
     enum EntityBuilderIDs builder = get(entity, "squashed", Int, 0);
     LE_CreateEntity(LE_EntityGetList(entity), get_entity_builder(builder), entity->posX, entity->posY);
     LE_DeleteEntity(entity);
+    audio_play_oneshot(GET_ASSET(struct Audio, "audio/squash.sfs"));
 }

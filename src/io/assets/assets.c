@@ -13,6 +13,7 @@
 #include "io/io.h"
 #include "io/audio/nsf.h"
 #include "io/audio/wav.h"
+#include "io/audio/sfxr.h"
 #include "binary_reader.h"
 
 #ifdef WINDOWS
@@ -101,6 +102,9 @@ void load_assets() {
             }
             EXT(nsf) {
                 asset->data = audio_load_nsf(data, datasize);
+            }
+            EXT(sfs) {
+                asset->data = audio_load_sfxr(data, datasize);
             }
             EXT(glsl) {
                 char* shader = malloc(datasize + 1);

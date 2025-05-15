@@ -25,9 +25,9 @@ static void shader_controller(void* context, float dstx, float dsty, float dstw,
 }
 
 entity_texture(shader_controller) {
-    return gfxcmd_custom(shader_controller, context_create(
+    return gfxcmd_important(gfxcmd_custom(shader_controller, context_create(
         context_ptr("shader", get(entity, "shader", Ptr, "")),
         context_int("redraw", get(entity, "redraw", Bool, true)),
         context_float("timer", get(entity, "timer", Float, true))
-    ));
+    )));
 }

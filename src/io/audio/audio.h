@@ -1,7 +1,7 @@
 #ifndef BTCB_AUDIO_H
 #define BTCB_AUDIO_H
 
-#define AUDIO_SAMPLE_RATE 48000
+#define AUDIO_SAMPLE_RATE 44100
 
 #include <stdbool.h>
 
